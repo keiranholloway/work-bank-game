@@ -234,6 +234,15 @@
                 const saved = loadSavedData();
                 return saved ? saved.finalScore : 0;
             });
+            const [timeLeft, setTimeLeft] = useState(() => {
+                const saved = loadSavedData();
+                return saved && saved.timeLeft !== undefined ? saved.timeLeft : 180; // 3 minutes = 180 seconds
+            });
+            const [gameStarted, setGameStarted] = useState(() => {
+                const saved = loadSavedData();
+                return saved ? saved.gameStarted : false;
+            });
+            const [timerActive, setTimerActive] = useState(false);
 
             // Save game state whenever it changes
             useEffect(() => {
@@ -243,10 +252,44 @@
                         foundWords,
                         totalScore,
                         gameFinished,
-                        finalScore
+                        finalScore,
+                        timeLeft,
+                        gameStarted
                     });
                 }
-            }, [letterBank, foundWords, totalScore, gameFinished, finalScore, wordsLoaded]);
+            }, [letterBank, foundWords, totalScore, gameFinished, finalScore, timeLeft, gameStarted, wordsLoaded]);
+
+            // Timer effect
+            useEffect(() => {
+                let interval = null;
+                
+                if (timerActive && timeLeft > 0 && !gameFinished) {
+                    interval = setInterval(() => {
+                        setTimeLeft(prevTime => {
+                            if (prevTime <= 1) {
+                                // Time's up!
+                                setGameFinished(true);
+                                setFinalScore(totalScore);
+                                setTimerActive(false);
+                                setMessage(`Time's up! Final score: ${totalScore} points with ${foundWords.length} words found.`);
+                                return 0;
+                            }
+                            return prevTime - 1;
+                        });
+                    }, 1000);
+                }
+                
+                return () => {
+                    if (interval) clearInterval(interval);
+                };
+            }, [timerActive, timeLeft, gameFinished, totalScore, foundWords.length]);
+
+            // Start game timer when first word is attempted
+            useEffect(() => {
+                if (gameStarted && !timerActive && !gameFinished && timeLeft > 0) {
+                    setTimerActive(true);
+                }
+            }, [gameStarted, timerActive, gameFinished, timeLeft]);
 
             // Install prompt for PWA
             useEffect(() => {
@@ -280,7 +323,13 @@
             };
 
             const handleLetterClick = (letter, index) => {
-                if (gameFinished) return;
+                if (gameFinished || timeLeft === 0) return;
+                
+                // Start the game timer on first interaction
+                if (!gameStarted) {
+                    setGameStarted(true);
+                }
+                
                 if (currentWord.length < 5 && !selectedLetters.includes(index)) {
                     setCurrentWord(prev => prev + letter);
                     setSelectedLetters(prev => [...prev, index]);
@@ -288,13 +337,19 @@
             };
 
             const clearWord = () => {
-                if (gameFinished) return;
+                if (gameFinished || timeLeft === 0) return;
                 setCurrentWord('');
                 setSelectedLetters([]);
             };
 
             const submitWord = () => {
-                if (gameFinished) return;
+                if (gameFinished || timeLeft === 0) return;
+                
+                // Start the game timer on first interaction
+                if (!gameStarted) {
+                    setGameStarted(true);
+                }
+                
                 if (currentWord.length !== 5) {
                     setMessage('Word must be exactly 5 letters!');
                     setTimeout(() => setMessage(''), 3000);
@@ -331,11 +386,11 @@
             const finishGame = () => {
                 setGameFinished(true);
                 setFinalScore(totalScore);
+                setTimerActive(false);
                 setMessage(`Game finished! Final score: ${totalScore} points with ${foundWords.length} words found.`);
             };
 
             const generateNewBank = () => {
-                if (gameFinished) return;
                 const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
                 const newBank = [];
                 for (let i = 0; i < 15; i++) {
@@ -349,8 +404,25 @@
                 setSelectedLetters([]);
                 setGameFinished(false);
                 setFinalScore(0);
-                setMessage('New letter bank generated!');
+                setTimeLeft(180); // Reset to 3 minutes
+                setGameStarted(false);
+                setTimerActive(false);
+                setMessage('Practice mode - no time limit!');
                 setTimeout(() => setMessage(''), 3000);
+            };
+
+            // Format time as MM:SS
+            const formatTime = (seconds) => {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            };
+
+            // Get timer color based on time remaining
+            const getTimerColor = () => {
+                if (timeLeft > 60) return 'text-green-400';
+                if (timeLeft > 30) return 'text-yellow-400';
+                return 'text-red-400';
             };
 
             // Calculate possible words for hints
@@ -403,12 +475,12 @@
                         }, 'Create 5-letter words from your daily bank')
                     ),
 
-                    // Score Display
+                    // Score Display with Timer
                     React.createElement('div', {
                         className: "bg-white/20 rounded-2xl p-4 mb-6 text-center"
                     },
                         React.createElement('div', {
-                            className: "flex justify-between items-center"
+                            className: "flex justify-between items-center mb-3"
                         },
                             React.createElement('div', null,
                                 React.createElement('p', { className: "text-white/80 text-sm" }, 'Score'),
@@ -422,6 +494,25 @@
                                 React.createElement('p', { className: "text-white/80 text-sm" }, 'Possible'),
                                 React.createElement('p', { className: "text-2xl font-bold text-blue-400" }, possibleWords.length)
                             )
+                        ),
+                        
+                        // Timer Display
+                        React.createElement('div', {
+                            className: "border-t border-white/20 pt-3"
+                        },
+                            React.createElement('div', {
+                                className: "flex items-center justify-center gap-2"
+                            },
+                                React.createElement('div', {
+                                    className: "text-white/80 text-sm"
+                                }, timeLeft > 0 && !gameStarted ? 'Time starts when you play' : 'Time Remaining'),
+                                React.createElement('div', {
+                                    className: `text-3xl font-bold ${getTimerColor()}`
+                                }, formatTime(timeLeft))
+                            ),
+                            timeLeft <= 30 && timeLeft > 0 && timerActive && React.createElement('div', {
+                                className: "text-red-300 text-xs mt-1 animate-pulse"
+                            }, '⚠️ Hurry up!')
                         )
                     ),
 
@@ -464,13 +555,15 @@
                     },
                         React.createElement('h2', {
                             className: "text-2xl font-bold text-yellow-400 mb-3"
-                        }, '🎉 Game Complete!'),
+                        }, timeLeft === 0 ? '⏰ Time\'s Up!' : '🎉 Game Complete!'),
                         React.createElement('div', {
                             className: "space-y-2 text-white"
                         },
                             React.createElement('p', { className: "text-lg" }, `Final Score: ${finalScore} points`),
                             React.createElement('p', null, `Words Found: ${foundWords.length} / ${possibleWords.length}`),
-                            React.createElement('p', { className: "text-sm text-purple-200" }, 'Come back tomorrow for a new challenge!')
+                            React.createElement('p', { className: "text-sm text-purple-200" }, timeLeft === 0 ? 
+                                'Time ran out! Come back tomorrow for a new challenge!' : 
+                                'Come back tomorrow for a new challenge!')
                         )
                     ),
 
@@ -479,7 +572,7 @@
                         className: "mb-6"
                     },
                         React.createElement('div', {
-                            className: `bg-white/20 rounded-2xl p-4 ${gameFinished ? 'opacity-50' : ''}`
+                            className: `bg-white/20 rounded-2xl p-4 ${gameFinished || timeLeft === 0 ? 'opacity-50' : ''}`
                         },
                             React.createElement('div', {
                                 className: "flex justify-center gap-2 mb-4"
@@ -497,15 +590,15 @@
                             },
                                 React.createElement('button', {
                                     onClick: clearWord,
-                                    className: `px-4 py-2 bg-red-500/80 text-white rounded-xl hover:bg-red-600/80 transition-colors ${gameFinished ? 'opacity-50 cursor-not-allowed' : ''}`,
-                                    disabled: currentWord.length === 0 || gameFinished
+                                    className: `px-4 py-2 bg-red-500/80 text-white rounded-xl hover:bg-red-600/80 transition-colors ${gameFinished || timeLeft === 0 ? 'opacity-50 cursor-not-allowed' : ''}`,
+                                    disabled: currentWord.length === 0 || gameFinished || timeLeft === 0
                                 }, 'Clear'),
                                 React.createElement('button', {
                                     onClick: submitWord,
-                                    className: `px-6 py-2 bg-green-500/80 text-white rounded-xl hover:bg-green-600/80 transition-colors font-semibold ${gameFinished ? 'opacity-50 cursor-not-allowed' : ''}`,
-                                    disabled: currentWord.length !== 5 || gameFinished
+                                    className: `px-6 py-2 bg-green-500/80 text-white rounded-xl hover:bg-green-600/80 transition-colors font-semibold ${gameFinished || timeLeft === 0 ? 'opacity-50 cursor-not-allowed' : ''}`,
+                                    disabled: currentWord.length !== 5 || gameFinished || timeLeft === 0
                                 }, 'Submit'),
-                                !gameFinished && React.createElement('button', {
+                                !gameFinished && timeLeft > 0 && React.createElement('button', {
                                     onClick: finishGame,
                                     className: "px-6 py-2 bg-yellow-500/80 text-white rounded-xl hover:bg-yellow-600/80 transition-colors font-semibold"
                                 }, 'Finish')
@@ -514,7 +607,7 @@
                         
                         message && React.createElement('p', {
                             className: `text-center mt-3 font-semibold ${
-                                message.includes('Great!') || message.includes('Game finished!') ? 'text-green-300' : 'text-yellow-300'
+                                message.includes('Great!') || message.includes('Game finished!') || message.includes('Time\'s up!') ? 'text-green-300' : 'text-yellow-300'
                             }`
                         }, message)
                     ),
