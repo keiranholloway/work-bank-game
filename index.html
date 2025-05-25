@@ -286,7 +286,127 @@
                 return streak;
             };
 
-            // Get stats from localStorage
+            // Achievement definitions
+            const achievementDefinitions = {
+                firstGame: {
+                    id: 'firstGame',
+                    name: 'Getting Started',
+                    description: 'Complete your first game',
+                    icon: '🎯',
+                    condition: (stats, gameData) => stats.overallStats.gamesPlayed >= 1
+                },
+                speedDemon: {
+                    id: 'speedDemon',
+                    name: 'Speed Demon',
+                    description: 'Finish with 2+ minutes remaining',
+                    icon: '⚡',
+                    condition: (stats, gameData) => gameData.completedEarly && gameData.timeTaken <= 60
+                },
+                wordHunter: {
+                    id: 'wordHunter',
+                    name: 'Word Hunter',
+                    description: 'Find 10+ words in a single game',
+                    icon: '🎯',
+                    condition: (stats, gameData) => gameData.wordsFound >= 10
+                },
+                perfectionist: {
+                    id: 'perfectionist',
+                    name: 'Perfectionist',
+                    description: 'Find 90%+ of possible words',
+                    icon: '💎',
+                    condition: (stats, gameData) => gameData.completionPercentage >= 90
+                },
+                streak3: {
+                    id: 'streak3',
+                    name: 'On Fire',
+                    description: 'Play 3 days in a row',
+                    icon: '🔥',
+                    condition: (stats) => stats.overallStats.currentStreak >= 3
+                },
+                streak7: {
+                    id: 'streak7',
+                    name: 'Dedicated',
+                    description: 'Play 7 days in a row',
+                    icon: '🏆',
+                    condition: (stats) => stats.overallStats.currentStreak >= 7
+                },
+                highScorer: {
+                    id: 'highScorer',
+                    name: 'High Scorer',
+                    description: 'Score 50+ points in a game',
+                    icon: '🌟',
+                    condition: (stats, gameData) => gameData.score >= 50
+                },
+                centurion: {
+                    id: 'centurion',
+                    name: 'Centurion',
+                    description: 'Score 100+ points in a game',
+                    icon: '💯',
+                    condition: (stats, gameData) => gameData.score >= 100
+                },
+                earlyBird: {
+                    id: 'earlyBird',
+                    name: 'Early Bird',
+                    description: 'Play before 9 AM',
+                    icon: '🌅',
+                    condition: (stats, gameData) => {
+                        const hour = new Date().getHours();
+                        return hour < 9;
+                    }
+                },
+                nightOwl: {
+                    id: 'nightOwl',
+                    name: 'Night Owl',
+                    description: 'Play after 10 PM',
+                    icon: '🦉',
+                    condition: (stats, gameData) => {
+                        const hour = new Date().getHours();
+                        return hour >= 22;
+                    }
+                },
+                veteran: {
+                    id: 'veteran',
+                    name: 'Veteran',
+                    description: 'Play 30 games',
+                    icon: '🎖️',
+                    condition: (stats) => stats.overallStats.gamesPlayed >= 30
+                },
+                wordSmith: {
+                    id: 'wordSmith',
+                    name: 'Word Smith',
+                    description: 'Find 500 total words',
+                    icon: '⚒️',
+                    condition: (stats) => stats.overallStats.totalWords >= 500
+                }
+            };
+
+            // Check for new achievements
+            const checkAchievements = (gameData) => {
+                const stats = getStats();
+                const currentAchievements = { ...achievements };
+                const newlyUnlocked = [];
+
+                Object.values(achievementDefinitions).forEach(achievement => {
+                    if (!currentAchievements[achievement.id] && achievement.condition(stats, gameData)) {
+                        currentAchievements[achievement.id] = {
+                            ...achievement,
+                            unlockedAt: new Date().toISOString()
+                        };
+                        newlyUnlocked.push(achievement);
+                    }
+                });
+
+                if (newlyUnlocked.length > 0) {
+                    setAchievements(currentAchievements);
+                    setNewAchievements(newlyUnlocked);
+                    localStorage.setItem('wordBankGameAchievements', JSON.stringify(currentAchievements));
+                    
+                    // Show achievement notification
+                    setTimeout(() => {
+                        setNewAchievements([]);
+                    }, 5000);
+                }
+            };
             const getStats = () => {
                 const saved = localStorage.getItem('wordBankGame');
                 if (saved) {
@@ -351,6 +471,12 @@
             });
             const [timerActive, setTimerActive] = useState(false);
             const [showStats, setShowStats] = useState(false);
+            const [showShare, setShowShare] = useState(false);
+            const [achievements, setAchievements] = useState(() => {
+                const saved = localStorage.getItem('wordBankGameAchievements');
+                return saved ? JSON.parse(saved) : {};
+            });
+            const [newAchievements, setNewAchievements] = useState([]);
 
             // Save game state whenever it changes
             useEffect(() => {
@@ -375,9 +501,18 @@
                     interval = setInterval(() => {
                         setTimeLeft(prevTime => {
                             if (prevTime <= 1) {
-                                // Time's up! Save stats
+                                // Time's up! Save stats and check achievements
                                 const timeTaken = 180; // Full time used
-                                saveDailyStats(totalScore, foundWords.length, possibleWords.length, timeTaken, false);
+                                const gameData = {
+                                    score: totalScore,
+                                    wordsFound: foundWords.length,
+                                    totalPossible: possibleWords.length,
+                                    timeTaken,
+                                    completedEarly: false,
+                                    completionPercentage: Math.round((foundWords.length / possibleWords.length) * 100)
+                                };
+                                saveDailyStats(gameData.score, gameData.wordsFound, gameData.totalPossible, gameData.timeTaken, gameData.completedEarly);
+                                checkAchievements(gameData);
                                 setGameFinished(true);
                                 setFinalScore(totalScore);
                                 setTimerActive(false);
@@ -495,7 +630,16 @@
 
             const finishGame = () => {
                 const timeTaken = 180 - timeLeft; // How much time was used
-                saveDailyStats(totalScore, foundWords.length, possibleWords.length, timeTaken, true);
+                const gameData = {
+                    score: totalScore,
+                    wordsFound: foundWords.length,
+                    totalPossible: possibleWords.length,
+                    timeTaken,
+                    completedEarly: true,
+                    completionPercentage: Math.round((foundWords.length / possibleWords.length) * 100)
+                };
+                saveDailyStats(gameData.score, gameData.wordsFound, gameData.totalPossible, gameData.timeTaken, gameData.completedEarly);
+                checkAchievements(gameData);
                 setGameFinished(true);
                 setFinalScore(totalScore);
                 setTimerActive(false);
@@ -571,6 +715,161 @@
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
             );
+
+            const ShareIcon = () => (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+            );
+
+            const TrophyIcon = () => (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                    <path d="M4 22h16"></path>
+                    <path d="M10 14.66V17c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-2.34"></path>
+                    <path d="M2 14a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-4a6 6 0 0 0-6-6H8a6 6 0 0 0-6 6v4z"></path>
+                </svg>
+            );
+
+            // Generate share text
+            const generateShareText = () => {
+                const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const completionPercentage = Math.round((foundWords.length / possibleWords.length) * 100);
+                const timeUsed = gameFinished && timeLeft > 0 ? formatTime(180 - timeLeft) : '3:00';
+                
+                return `Word Bank ${today}
+🎯 Score: ${finalScore}
+📝 Words: ${foundWords.length}/${possibleWords.length} (${completionPercentage}%)
+⏱️ Time: ${timeUsed}
+
+Play daily at: ${window.location.href}`;
+            };
+
+            // Share Modal Component
+            const ShareModal = () => {
+                const shareText = generateShareText();
+                const completionPercentage = Math.round((foundWords.length / possibleWords.length) * 100);
+                
+                const copyToClipboard = async () => {
+                    try {
+                        await navigator.clipboard.writeText(shareText);
+                        setMessage('Results copied to clipboard! 📋');
+                        setTimeout(() => setMessage(''), 3000);
+                        setShowShare(false);
+                    } catch (err) {
+                        console.error('Failed to copy:', err);
+                        setMessage('Copy failed - try selecting the text manually');
+                        setTimeout(() => setMessage(''), 3000);
+                    }
+                };
+
+                const shareToTwitter = () => {
+                    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+                    window.open(url, '_blank');
+                };
+
+                const shareToFacebook = () => {
+                    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(shareText)}`;
+                    window.open(url, '_blank');
+                };
+
+                return React.createElement('div', {
+                    className: "fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+                },
+                    React.createElement('div', {
+                        className: "bg-gradient-to-br from-purple-900 to-blue-900 rounded-3xl p-6 max-w-sm w-full border border-white/20"
+                    },
+                        // Header
+                        React.createElement('div', {
+                            className: "flex justify-between items-center mb-6"
+                        },
+                            React.createElement('h2', {
+                                className: "text-2xl font-bold text-white flex items-center gap-2"
+                            },
+                                React.createElement(ShareIcon),
+                                'Share Results'
+                            ),
+                            React.createElement('button', {
+                                onClick: () => setShowShare(false),
+                                className: "text-white/60 hover:text-white transition-colors"
+                            }, React.createElement(CloseIcon))
+                        ),
+
+                        // Results Card
+                        React.createElement('div', {
+                            className: "bg-white/10 rounded-2xl p-6 mb-6 text-center border border-white/20"
+                        },
+                            React.createElement('div', {
+                                className: "text-4xl mb-3"
+                            }, finalScore >= 100 ? '💯' : finalScore >= 50 ? '⭐' : '🎯'),
+                            React.createElement('div', {
+                                className: "text-3xl font-bold text-yellow-400 mb-2"
+                            }, finalScore),
+                            React.createElement('div', {
+                                className: "text-white/80 mb-4"
+                            }, `${foundWords.length}/${possibleWords.length} words (${completionPercentage}%)`),
+                            React.createElement('div', {
+                                className: "text-purple-200 text-sm"
+                            }, `Time: ${gameFinished && timeLeft > 0 ? formatTime(180 - timeLeft) : '3:00'}`)
+                        ),
+
+                        // Share Text Preview
+                        React.createElement('div', {
+                            className: "bg-white/5 rounded-xl p-4 mb-6 text-sm text-white/80 font-mono whitespace-pre-line border border-white/10"
+                        }, shareText),
+
+                        // Share Buttons
+                        React.createElement('div', {
+                            className: "space-y-3"
+                        },
+                            React.createElement('button', {
+                                onClick: copyToClipboard,
+                                className: "w-full bg-gradient-to-r from-green-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:from-green-700 hover:to-teal-700 transition-all duration-200"
+                            }, '📋 Copy to Clipboard'),
+                            React.createElement('div', {
+                                className: "grid grid-cols-2 gap-3"
+                            },
+                                React.createElement('button', {
+                                    onClick: shareToTwitter,
+                                    className: "bg-blue-500 text-white py-2 rounded-xl font-semibold hover:bg-blue-600 transition-colors"
+                                }, '🐦 Twitter'),
+                                React.createElement('button', {
+                                    onClick: shareToFacebook,
+                                    className: "bg-blue-600 text-white py-2 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                                }, '📘 Facebook')
+                            )
+                        )
+                    )
+                );
+            };
+
+            // Achievement Notification Component
+            const AchievementNotification = ({ achievement }) => {
+                return React.createElement('div', {
+                    className: "fixed top-4 right-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white p-4 rounded-2xl shadow-2xl border border-yellow-400/50 z-50 animate-bounce"
+                },
+                    React.createElement('div', {
+                        className: "flex items-center gap-3"
+                    },
+                        React.createElement('div', {
+                            className: "text-2xl"
+                        }, achievement.icon),
+                        React.createElement('div', null,
+                            React.createElement('div', {
+                                className: "font-bold text-sm"
+                            }, 'Achievement Unlocked!'),
+                            React.createElement('div', {
+                                className: "text-sm"
+                            }, achievement.name)
+                        )
+                    )
+                );
+            };
 
             // Stats Modal Component
             const StatsModal = () => {
@@ -679,7 +978,7 @@
 
                         // Additional Stats
                         overallStats.gamesPlayed > 0 && React.createElement('div', {
-                            className: "bg-white/10 rounded-xl p-4"
+                            className: "bg-white/10 rounded-xl p-4 mb-4"
                         },
                             React.createElement('h3', {
                                 className: "text-white font-semibold mb-3 text-center"
@@ -700,6 +999,40 @@
                                     React.createElement('span', { className: "font-semibold" }, Math.round(overallStats.totalWords / overallStats.gamesPlayed))
                                 )
                             )
+                        ),
+
+                        // Achievements Section
+                        React.createElement('div', {
+                            className: "bg-white/10 rounded-xl p-4"
+                        },
+                            React.createElement('h3', {
+                                className: "text-white font-semibold mb-3 text-center flex items-center justify-center gap-2"
+                            },
+                                React.createElement(TrophyIcon),
+                                'Achievements'
+                            ),
+                            React.createElement('div', {
+                                className: "grid grid-cols-4 gap-2"
+                            },
+                                Object.values(achievementDefinitions).map(achievement => {
+                                    const isUnlocked = !!achievements[achievement.id];
+                                    return React.createElement('div', {
+                                        key: achievement.id,
+                                        className: `text-center p-2 rounded-lg ${isUnlocked ? 'bg-yellow-500/20 border border-yellow-400/50' : 'bg-gray-600/20 border border-gray-500/30'}`,
+                                        title: `${achievement.name}: ${achievement.description}`
+                                    },
+                                        React.createElement('div', {
+                                            className: `text-lg ${isUnlocked ? '' : 'grayscale opacity-50'}`
+                                        }, achievement.icon),
+                                        React.createElement('div', {
+                                            className: `text-xs ${isUnlocked ? 'text-yellow-300' : 'text-gray-400'} mt-1`
+                                        }, achievement.name.split(' ')[0])
+                                    );
+                                })
+                            ),
+                            React.createElement('div', {
+                                className: "text-center mt-3 text-xs text-white/60"
+                            }, `${Object.keys(achievements).length}/${Object.keys(achievementDefinitions).length} unlocked`)
                         )
                     )
                 );
@@ -708,8 +1041,15 @@
             return React.createElement('div', {
                 className: "min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4"
             }, 
-                // Stats Modal
+                // Modals and Notifications
                 showStats && React.createElement(StatsModal),
+                showShare && React.createElement(ShareModal),
+                newAchievements.map((achievement, index) => 
+                    React.createElement(AchievementNotification, { 
+                        key: achievement.id, 
+                        achievement 
+                    })
+                ),
                 
                 !wordsLoaded ? 
                     React.createElement('div', {
@@ -836,7 +1176,14 @@
                             React.createElement('p', null, `Words Found: ${foundWords.length} / ${possibleWords.length}`),
                             React.createElement('p', { className: "text-sm text-purple-200" }, timeLeft === 0 ? 
                                 'Time ran out! Come back tomorrow for a new challenge!' : 
-                                'Come back tomorrow for a new challenge!')
+                                'Come back tomorrow for a new challenge!'),
+                            React.createElement('button', {
+                                onClick: () => setShowShare(true),
+                                className: "mt-3 bg-gradient-to-r from-green-600 to-teal-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-green-700 hover:to-teal-700 transition-all duration-200 flex items-center gap-2 mx-auto"
+                            },
+                                React.createElement(ShareIcon),
+                                'Share Results'
+                            )
                         )
                     ),
 
