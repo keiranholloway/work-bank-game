@@ -201,10 +201,117 @@
             // Save data to localStorage
             const saveData = (data) => {
                 const today = new Date().toDateString();
+                const existing = localStorage.getItem('wordBankGame');
+                let fullData = existing ? JSON.parse(existing) : {};
+                
+                // Preserve historical stats
+                const dailyStats = fullData.dailyStats || {};
+                const overallStats = fullData.overallStats || {
+                    gamesPlayed: 0,
+                    bestScore: 0,
+                    totalWords: 0,
+                    currentStreak: 0,
+                    lastPlayedDate: null
+                };
+
                 localStorage.setItem('wordBankGame', JSON.stringify({
                     ...data,
-                    date: today
+                    date: today,
+                    dailyStats,
+                    overallStats
                 }));
+            };
+
+            // Save daily stats when game finishes
+            const saveDailyStats = (finalScore, wordsFound, totalPossible, timeTaken, completedEarly) => {
+                const today = new Date().toDateString();
+                const existing = localStorage.getItem('wordBankGame');
+                let fullData = existing ? JSON.parse(existing) : {};
+                
+                const dailyStats = fullData.dailyStats || {};
+                const overallStats = fullData.overallStats || {
+                    gamesPlayed: 0,
+                    bestScore: 0,
+                    totalWords: 0,
+                    currentStreak: 0,
+                    lastPlayedDate: null
+                };
+
+                // Update daily stats
+                dailyStats[today] = {
+                    score: finalScore,
+                    wordsFound,
+                    totalPossible,
+                    timeTaken,
+                    completedEarly,
+                    completionPercentage: Math.round((wordsFound / totalPossible) * 100)
+                };
+
+                // Update overall stats
+                const newStats = {
+                    gamesPlayed: overallStats.gamesPlayed + 1,
+                    bestScore: Math.max(overallStats.bestScore, finalScore),
+                    totalWords: overallStats.totalWords + wordsFound,
+                    currentStreak: calculateStreak(dailyStats, today, overallStats.lastPlayedDate),
+                    lastPlayedDate: today
+                };
+
+                const updatedData = {
+                    ...fullData,
+                    dailyStats,
+                    overallStats: newStats,
+                    date: today
+                };
+
+                localStorage.setItem('wordBankGame', JSON.stringify(updatedData));
+            };
+
+            // Calculate current streak
+            const calculateStreak = (dailyStats, today, lastPlayedDate) => {
+                const dates = Object.keys(dailyStats).sort((a, b) => new Date(b) - new Date(a));
+                let streak = 0;
+                let currentDate = new Date(today);
+                
+                for (let date of dates) {
+                    const gameDate = new Date(date);
+                    const daysDiff = Math.floor((currentDate - gameDate) / (1000 * 60 * 60 * 24));
+                    
+                    if (daysDiff === streak) {
+                        streak++;
+                    } else {
+                        break;
+                    }
+                }
+                
+                return streak;
+            };
+
+            // Get stats from localStorage
+            const getStats = () => {
+                const saved = localStorage.getItem('wordBankGame');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    return {
+                        dailyStats: data.dailyStats || {},
+                        overallStats: data.overallStats || {
+                            gamesPlayed: 0,
+                            bestScore: 0,
+                            totalWords: 0,
+                            currentStreak: 0,
+                            lastPlayedDate: null
+                        }
+                    };
+                }
+                return {
+                    dailyStats: {},
+                    overallStats: {
+                        gamesPlayed: 0,
+                        bestScore: 0,
+                        totalWords: 0,
+                        currentStreak: 0,
+                        lastPlayedDate: null
+                    }
+                };
             };
 
             const [letterBank, setLetterBank] = useState(() => {
@@ -243,6 +350,7 @@
                 return saved ? saved.gameStarted : false;
             });
             const [timerActive, setTimerActive] = useState(false);
+            const [showStats, setShowStats] = useState(false);
 
             // Save game state whenever it changes
             useEffect(() => {
@@ -267,7 +375,9 @@
                     interval = setInterval(() => {
                         setTimeLeft(prevTime => {
                             if (prevTime <= 1) {
-                                // Time's up!
+                                // Time's up! Save stats
+                                const timeTaken = 180; // Full time used
+                                saveDailyStats(totalScore, foundWords.length, possibleWords.length, timeTaken, false);
                                 setGameFinished(true);
                                 setFinalScore(totalScore);
                                 setTimerActive(false);
@@ -384,6 +494,8 @@
             };
 
             const finishGame = () => {
+                const timeTaken = 180 - timeLeft; // How much time was used
+                saveDailyStats(totalScore, foundWords.length, possibleWords.length, timeTaken, true);
                 setGameFinished(true);
                 setFinalScore(totalScore);
                 setTimerActive(false);
@@ -444,9 +556,161 @@
                 </svg>
             );
 
+            const StatsIcon = () => (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 3v18h18"></path>
+                    <path d="M7 16V9"></path>
+                    <path d="M12 16V6"></path>
+                    <path d="M17 16v-3"></path>
+                </svg>
+            );
+
+            const CloseIcon = () => (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            );
+
+            // Stats Modal Component
+            const StatsModal = () => {
+                const stats = getStats();
+                const { dailyStats, overallStats } = stats;
+                
+                // Get last 7 days of data
+                const last7Days = [];
+                const today = new Date();
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date(today);
+                    date.setDate(date.getDate() - i);
+                    const dateStr = date.toDateString();
+                    const dayData = dailyStats[dateStr];
+                    last7Days.push({
+                        date: dateStr,
+                        shortDate: date.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' }),
+                        played: !!dayData,
+                        score: dayData ? dayData.score : 0,
+                        wordsFound: dayData ? dayData.wordsFound : 0,
+                        completionPercentage: dayData ? dayData.completionPercentage : 0
+                    });
+                }
+
+                const maxScore = Math.max(...last7Days.map(d => d.score), 1);
+                const avgScore = overallStats.gamesPlayed > 0 ? Math.round((Object.values(dailyStats).reduce((sum, day) => sum + day.score, 0)) / overallStats.gamesPlayed) : 0;
+
+                return React.createElement('div', {
+                    className: "fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+                },
+                    React.createElement('div', {
+                        className: "bg-gradient-to-br from-purple-900 to-blue-900 rounded-3xl p-6 max-w-md w-full max-h-96 overflow-y-auto border border-white/20"
+                    },
+                        // Header
+                        React.createElement('div', {
+                            className: "flex justify-between items-center mb-6"
+                        },
+                            React.createElement('h2', {
+                                className: "text-2xl font-bold text-white flex items-center gap-2"
+                            },
+                                React.createElement(StatsIcon),
+                                'Your Stats'
+                            ),
+                            React.createElement('button', {
+                                onClick: () => setShowStats(false),
+                                className: "text-white/60 hover:text-white transition-colors"
+                            }, React.createElement(CloseIcon))
+                        ),
+
+                        // Overall Stats Cards
+                        React.createElement('div', {
+                            className: "grid grid-cols-2 gap-3 mb-6"
+                        },
+                            React.createElement('div', {
+                                className: "bg-white/10 rounded-xl p-3 text-center"
+                            },
+                                React.createElement('div', { className: "text-2xl font-bold text-yellow-400" }, overallStats.gamesPlayed),
+                                React.createElement('div', { className: "text-white/80 text-sm" }, 'Games Played')
+                            ),
+                            React.createElement('div', {
+                                className: "bg-white/10 rounded-xl p-3 text-center"
+                            },
+                                React.createElement('div', { className: "text-2xl font-bold text-green-400" }, overallStats.bestScore),
+                                React.createElement('div', { className: "text-white/80 text-sm" }, 'Best Score')
+                            ),
+                            React.createElement('div', {
+                                className: "bg-white/10 rounded-xl p-3 text-center"
+                            },
+                                React.createElement('div', { className: "text-2xl font-bold text-blue-400" }, avgScore),
+                                React.createElement('div', { className: "text-white/80 text-sm" }, 'Avg Score')
+                            ),
+                            React.createElement('div', {
+                                className: "bg-white/10 rounded-xl p-3 text-center"
+                            },
+                                React.createElement('div', { className: "text-2xl font-bold text-purple-400" }, overallStats.currentStreak),
+                                React.createElement('div', { className: "text-white/80 text-sm" }, 'Day Streak')
+                            )
+                        ),
+
+                        // 7-Day Chart
+                        React.createElement('div', {
+                            className: "bg-white/10 rounded-xl p-4 mb-4"
+                        },
+                            React.createElement('h3', {
+                                className: "text-white font-semibold mb-3 text-center"
+                            }, 'Last 7 Days'),
+                            React.createElement('div', {
+                                className: "flex items-end justify-between gap-1 h-24"
+                            },
+                                last7Days.map((day, index) =>
+                                    React.createElement('div', {
+                                        key: index,
+                                        className: "flex flex-col items-center flex-1"
+                                    },
+                                        React.createElement('div', {
+                                            className: `bg-gradient-to-t ${day.played ? 'from-purple-500 to-blue-500' : 'from-gray-600 to-gray-500'} rounded-t text-xs text-white flex items-end justify-center pb-1`,
+                                            style: { height: `${day.played ? Math.max((day.score / maxScore) * 80, 8) : 4}px` }
+                                        }, day.played ? day.score : ''),
+                                        React.createElement('div', {
+                                            className: "text-white/60 text-xs mt-1 text-center"
+                                        }, day.shortDate.split(' ')[0])
+                                    )
+                                )
+                            )
+                        ),
+
+                        // Additional Stats
+                        overallStats.gamesPlayed > 0 && React.createElement('div', {
+                            className: "bg-white/10 rounded-xl p-4"
+                        },
+                            React.createElement('h3', {
+                                className: "text-white font-semibold mb-3 text-center"
+                            }, 'All Time'),
+                            React.createElement('div', {
+                                className: "space-y-2 text-sm"
+                            },
+                                React.createElement('div', {
+                                    className: "flex justify-between text-white"
+                                },
+                                    React.createElement('span', null, 'Total Words Found:'),
+                                    React.createElement('span', { className: "font-semibold" }, overallStats.totalWords)
+                                ),
+                                React.createElement('div', {
+                                    className: "flex justify-between text-white"
+                                },
+                                    React.createElement('span', null, 'Words Per Game:'),
+                                    React.createElement('span', { className: "font-semibold" }, Math.round(overallStats.totalWords / overallStats.gamesPlayed))
+                                )
+                            )
+                        )
+                    )
+                );
+            };
+
             return React.createElement('div', {
                 className: "min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4"
             }, 
+                // Stats Modal
+                showStats && React.createElement(StatsModal),
+                
                 !wordsLoaded ? 
                     React.createElement('div', {
                         className: "max-w-md mx-auto bg-white/10 backdrop-blur-lg rounded-3xl p-6 shadow-2xl border border-white/20 flex items-center justify-center min-h-96"
@@ -460,15 +724,24 @@
                 React.createElement('div', {
                     className: "max-w-md mx-auto bg-white/10 backdrop-blur-lg rounded-3xl p-6 shadow-2xl border border-white/20"
                 },
-                    // Header
+                    // Header with Stats Button
                     React.createElement('div', {
                         className: "text-center mb-6"
                     },
-                        React.createElement('h1', {
-                            className: "text-3xl font-bold text-white mb-2 flex items-center justify-center gap-2"
+                        React.createElement('div', {
+                            className: "flex justify-between items-start mb-2"
                         },
-                            React.createElement(StarIcon, { className: "text-yellow-400" }),
-                            'Word Bank'
+                            React.createElement('div', { className: "w-8" }), // Spacer
+                            React.createElement('h1', {
+                                className: "text-3xl font-bold text-white flex items-center justify-center gap-2"
+                            },
+                                React.createElement(StarIcon, { className: "text-yellow-400" }),
+                                'Word Bank'
+                            ),
+                            React.createElement('button', {
+                                onClick: () => setShowStats(true),
+                                className: "text-white/70 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
+                            }, React.createElement(StatsIcon))
                         ),
                         React.createElement('p', {
                             className: "text-purple-200 text-sm"
