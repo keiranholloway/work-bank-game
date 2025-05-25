@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+    <style>
+        body {
+            background: linear-gradient(45deg, purple, blue);
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .test-box {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>✅ GitHub Pages is Working!</h1>
+        <p>If you can see this, your hosting is fine.</p>
+        <p>The issue is with the main game file.</p>
+        <div id="js-test"></div>
+    </div>
+
+    <script>
+        console.log('JavaScript is working!');
+        document.getElementById('js-test').innerHTML = '<p style="color: lime;">✅ JavaScript is working too!</p>';
+        
+        // Test fetch API
+        fetch('./words.txt')
+            .then(response => {
+                if (response.ok) {
+                    console.log('✅ words.txt file found');
+                    document.getElementById('js-test').innerHTML += '<p style="color: lime;">✅ words.txt file exists</p>';
+                } else {
+                    console.log('❌ words.txt file missing');
+                    document.getElementById('js-test').innerHTML += '<p style="color: red;">❌ words.txt file missing</p>';
+                }
+            })
+            .catch(error => {
+                console.log('❌ Error fetching words.txt:', error);
+                document.getElementById('js-test').innerHTML += '<p style="color: red;">❌ Error fetching words.txt</p>';
+            });
+    </script>
+</body>
+</html>
