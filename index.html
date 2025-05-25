@@ -4,1451 +4,559 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word Bank Game</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="description" content="Create 5-letter words from your daily letter bank">
-    <meta name="theme-color" content="#7c3aed">
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIldvcmQgQmFuayBHYW1lIiwKICAic2hvcnRfbmFtZSI6ICJXb3JkQmFuayIsCiAgImRlc2NyaXB0aW9uIjogIkNyZWF0ZSA1LWxldHRlciB3b3JkcyBmcm9tIHlvdXIgZGFpbHkgbGV0dGVyIGJhbmsiLAogICJzdGFydF91cmwiOiAiLyIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzdjM2FlZCIsCiAgInRoZW1lX2NvbG9yIjogIiM3YzNhZWQiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjNhV1IwYUQwaU1URXlJaUJvWldsbmFIUTlJakV5TWlJZ2RtbGxkMEp2ZUQwaU1DQXdJREV5TWlBeE1qSWlJSGh0Ykc1elBTSm9kSFJ3T2k4dmQzZDNMbmN6TG05eVp5OHlNREF3TDNOMlp5SStQR05wY21Oc1pTQmplRDBpTmpFaUlHTjVQU0kyTVNJZ2NqMGlOREVpSUdacGJHdzlJaU01TWpBMVFVWWlMejQ4Y0dGMGFDQmtQU0p0TkRFc01qRmhNakFzTWpBZ01DQXRNVFFZTVRGME1uWmhNakFzTWpBZ01DQXdMVEUwWXpBdE16TXVNREV5TFRJMkxqazROQzAwT0RsQk1qZGhNekFzTXpBZ01DQXdMVEUyTFRFMmRqbGhNVFlzTVRaZ01DQXdMVEU0TFRFNFZqUmhNekFzTXpBZ01DQXdMVEUyTFRFMmVpSWdabWxzYkQwaUkzWm1abVptWmlJdlBqd3ZjM1puUGc9PSIsCiAgICAgICJzaXplcyI6ICIxMjJ4MTIyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCM2FXUjBhRDBpTlRFeUlpQm9aV2xuYUhROUlqVXhNaUlnZG1sbGQwSnZlRDBpTUNBd0lEVXhNaUExTVRJaUlIaHRiRzV6UFNKb2RIUndPaTh2ZDNkM0xtY3pMbTl5Wnk4eU1EQXdMM04yWnlJK1BHTnBjbU5zWlNCamVEMGlNalUySWlCamVUMGlNalUySWlCeVBTSXhOekVpSUdacGJHdzlJaU01TWpBMVFVWWlMejQ4Y0dGMGFDQmtQU0p0TVRjeExERXdOV0V4TmpBc01UWXdJREFnTUMweE5UUXVPVLLGJE5qVjBPV1poTVRZd0xERTJNQ0F3SURBc0xURXlPQzAwTWpoV05UQmhNVFl3TERFNE1DQXdJREFzTFRFek5DMHhNelJvTlRaa01WUXhORGhoTVRZd0xERTJNQ0F3SURBc0xURXpOQzB4TXpSNklpQm1hV3hzUFNKallUSTVOemNpTHo0OEwzTjJaejQ9IiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQ==">
-    
-    <!-- iOS Specific PWA Meta Tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="WordBank">
-    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIyIiBoZWlnaHQ9IjEyMiIgdmlld0JveD0iMCAwIDEyMiAxMjIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iNjEiIGN5PSI2MSIgcj0iNDEiIGZpbGw9IiM5MjA1QUYiLz48cGF0aCBkPSJtNDEsMjFhMjAsMjAgMCAwLTE0WDE0dDJ2YTIwLDIwIDAgMCwwLTE0YzAtMzMuMDEyLTI2Ljk4NC00OSA0OWEyN2EzMCwzMCAwIDAsLTE2LTE2djlhMTYsMTYgMCAwLC0xOC0xOFY0YTMwLDMwIDAgMCwwLTE2LTE2eiIgZmlsbD0iI2ZmZmZmZiIvPjwvc3ZnPg==">
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
     <style>
-        /* Custom styles for better iOS experience */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-            -webkit-tap-highlight-color: transparent;
-            overscroll-behavior: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .score-display {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            text-align: center;
+        }
+        
+        .score-item {
+            flex: 1;
+        }
+        
+        .score-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .timer {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #90EE90;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .letter-bank {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 30px;
         }
         
         .letter-btn {
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
+            width: 60px;
+            height: 60px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
         }
         
-        /* Hide address bar on iOS */
-        @media screen and (max-height: 600px) {
-            .min-h-screen {
-                min-height: 100vh;
-                min-height: -webkit-fill-available;
-            }
+        .letter-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
         }
         
-        /* Prevent zoom on input focus */
-        input, select, textarea {
-            font-size: 16px;
+        .letter-btn:disabled {
+            background: rgba(128, 0, 128, 0.6);
+            transform: scale(0.95);
+        }
+        
+        .letter-value {
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            font-size: 0.7rem;
+            color: #ffd700;
+        }
+        
+        .current-word {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .word-slot {
+            width: 50px;
+            height: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-clear {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .btn-back {
+            background: #ffa726;
+            color: white;
+        }
+        
+        .btn-submit {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .message {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            min-height: 25px;
+        }
+        
+        .found-words {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .word-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .found-word {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .game-over {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff6b6b;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <div id="app"></div>
-
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
-
-        const WordBankGame = () => {
-            // Letter frequency scoring (lower frequency = higher points)
-            const letterScores = {
-                'A': 1, 'E': 1, 'I': 1, 'O': 1, 'U': 1, 'R': 1, 'T': 1, 'L': 1, 'S': 1, 'N': 1,
-                'C': 2, 'D': 2, 'P': 2, 'M': 2, 'H': 2, 'G': 2, 'B': 2, 'F': 2, 'Y': 2, 'W': 2,
-                'K': 3, 'V': 3, 'X': 4, 'Z': 4, 'J': 4, 'Q': 5
-            };
-
-            // Valid 5-letter words - loaded from external file
-            const [validWords, setValidWords] = useState([]);
-            const [wordsLoaded, setWordsLoaded] = useState(false);
-            const [loadError, setLoadError] = useState(null);
-
-            // Load words from external file or use embedded fallback
-            useEffect(() => {
-                const loadWords = async () => {
-                    try {
-                        const response = await fetch('./words.txt');
-                        
-                        if (!response.ok) {
-                            throw new Error(`Failed to load words.txt: ${response.status} ${response.statusText}`);
-                        }
-                        
-                        const text = await response.text();
-                        
-                        if (!text || text.trim().length === 0) {
-                            throw new Error('words.txt file is empty');
-                        }
-                        
-                        const words = text.split('\n')
-                            .map(word => word.trim().toUpperCase())
-                            .filter(word => word.length === 5);
-                        
-                        if (words.length < 100) {
-                            throw new Error(`words.txt contains too few valid 5-letter words (found ${words.length}, expected at least 100)`);
-                        }
-                        
-                        setValidWords(words);
-                        setWordsLoaded(true);
-                        console.log(`Successfully loaded ${words.length} words from words.txt`);
-                        
-                    } catch (error) {
-                        console.error('Critical error loading words.txt:', error);
-                        setLoadError(error.message);
-                        setWordsLoaded(false);
-                    }
-                };
-                loadWords();
-            }, []);
-
-            // Generate consistent daily letter bank for ALL users
-            const generateDailyBank = () => {
-                // Use a fixed epoch date to ensure consistency across all users
-                const baseDate = new Date('2025-01-01');
-                const today = new Date();
-                today.setHours(0, 0, 0, 0); // Normalize to start of day
-                
-                // Calculate days since base date for seed
-                const daysSinceBase = Math.floor((today - baseDate) / (1000 * 60 * 60 * 24));
-                
-                // Use a more sophisticated random number generator for better distribution
-                const mulberry32 = (seed) => {
-                    return function() {
-                        let t = seed += 0x6D2B79F5;
-                        t = Math.imul(t ^ t >>> 15, t | 1);
-                        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-                        return ((t ^ t >>> 14) >>> 0) / 4294967296;
-                    }
-                };
-                
-                const rng = mulberry32(daysSinceBase);
-                const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                const bank = [];
-                
-                // Generate 15 letters with possibility of duplicates
-                for (let i = 0; i < 15; i++) {
-                    const index = Math.floor(rng() * letters.length);
-                    bank.push(letters[index]);
-                }
-                
-                return bank;
-            };
-
-            // Load saved data from localStorage
-            const loadSavedData = () => {
-                const today = new Date().toDateString();
-                const saved = localStorage.getItem('wordBankGame');
-                if (saved) {
-                    const data = JSON.parse(saved);
-                    if (data.date === today) {
-                        return data;
-                    }
-                }
-                return null;
-            };
-
-            // Save data to localStorage
-            const saveData = (data) => {
-                const today = new Date().toDateString();
-                const existing = localStorage.getItem('wordBankGame');
-                let fullData = existing ? JSON.parse(existing) : {};
-                
-                // Preserve historical stats
-                const dailyStats = fullData.dailyStats || {};
-                const overallStats = fullData.overallStats || {
-                    gamesPlayed: 0,
-                    bestScore: 0,
-                    totalWords: 0,
-                    currentStreak: 0,
-                    lastPlayedDate: null
-                };
-
-                localStorage.setItem('wordBankGame', JSON.stringify({
-                    ...data,
-                    date: today,
-                    dailyStats,
-                    overallStats
-                }));
-            };
-
-            // Save daily stats when game finishes
-            const saveDailyStats = (finalScore, wordsFound, totalPossible, timeTaken, completedEarly) => {
-                const today = new Date().toDateString();
-                const existing = localStorage.getItem('wordBankGame');
-                let fullData = existing ? JSON.parse(existing) : {};
-                
-                const dailyStats = fullData.dailyStats || {};
-                const overallStats = fullData.overallStats || {
-                    gamesPlayed: 0,
-                    bestScore: 0,
-                    totalWords: 0,
-                    currentStreak: 0,
-                    lastPlayedDate: null
-                };
-
-                // Update daily stats
-                dailyStats[today] = {
-                    score: finalScore,
-                    wordsFound,
-                    totalPossible,
-                    timeTaken,
-                    completedEarly,
-                    completionPercentage: Math.round((wordsFound / totalPossible) * 100)
-                };
-
-                // Update overall stats
-                const newStats = {
-                    gamesPlayed: overallStats.gamesPlayed + 1,
-                    bestScore: Math.max(overallStats.bestScore, finalScore),
-                    totalWords: overallStats.totalWords + wordsFound,
-                    currentStreak: calculateStreak(dailyStats, today, overallStats.lastPlayedDate),
-                    lastPlayedDate: today
-                };
-
-                const updatedData = {
-                    ...fullData,
-                    dailyStats,
-                    overallStats: newStats,
-                    date: today
-                };
-
-                localStorage.setItem('wordBankGame', JSON.stringify(updatedData));
-            };
-
-            // Calculate current streak
-            const calculateStreak = (dailyStats, today, lastPlayedDate) => {
-                const dates = Object.keys(dailyStats).sort((a, b) => new Date(b) - new Date(a));
-                let streak = 0;
-                let currentDate = new Date(today);
-                
-                for (let date of dates) {
-                    const gameDate = new Date(date);
-                    const daysDiff = Math.floor((currentDate - gameDate) / (1000 * 60 * 60 * 24));
-                    
-                    if (daysDiff === streak) {
-                        streak++;
-                    } else {
-                        break;
-                    }
-                }
-                
-                return streak;
-            };
-
-            // Achievement definitions
-            const achievementDefinitions = {
-                firstGame: {
-                    id: 'firstGame',
-                    name: 'Getting Started',
-                    description: 'Complete your first game',
-                    icon: '🎯',
-                    condition: (stats, gameData) => stats.overallStats.gamesPlayed >= 1
-                },
-                speedDemon: {
-                    id: 'speedDemon',
-                    name: 'Speed Demon',
-                    description: 'Finish with 2+ minutes remaining',
-                    icon: '⚡',
-                    condition: (stats, gameData) => gameData.completedEarly && gameData.timeTaken <= 60
-                },
-                wordHunter: {
-                    id: 'wordHunter',
-                    name: 'Word Hunter',
-                    description: 'Find 10+ words in a single game',
-                    icon: '🎯',
-                    condition: (stats, gameData) => gameData.wordsFound >= 10
-                },
-                perfectionist: {
-                    id: 'perfectionist',
-                    name: 'Perfectionist',
-                    description: 'Find all possible words',
-                    icon: '💎',
-                    condition: (stats, gameData) => gameData.completionPercentage >= 100
-                },
-                streak3: {
-                    id: 'streak3',
-                    name: 'On Fire',
-                    description: 'Play 3 days in a row',
-                    icon: '🔥',
-                    condition: (stats) => stats.overallStats.currentStreak >= 3
-                },
-                streak7: {
-                    id: 'streak7',
-                    name: 'Dedicated',
-                    description: 'Play 7 days in a row',
-                    icon: '🏆',
-                    condition: (stats) => stats.overallStats.currentStreak >= 7
-                },
-                highScorer: {
-                    id: 'highScorer',
-                    name: 'High Scorer',
-                    description: 'Score 50+ points in a game',
-                    icon: '🌟',
-                    condition: (stats, gameData) => gameData.score >= 50
-                },
-                centurion: {
-                    id: 'centurion',
-                    name: 'Centurion',
-                    description: 'Score 100+ points in a game',
-                    icon: '💯',
-                    condition: (stats, gameData) => gameData.score >= 100
-                },
-                earlyBird: {
-                    id: 'earlyBird',
-                    name: 'Early Bird',
-                    description: 'Play before 9 AM',
-                    icon: '🌅',
-                    condition: (stats, gameData) => {
-                        const hour = new Date().getHours();
-                        return hour < 9;
-                    }
-                },
-                nightOwl: {
-                    id: 'nightOwl',
-                    name: 'Night Owl',
-                    description: 'Play after 10 PM',
-                    icon: '🦉',
-                    condition: (stats, gameData) => {
-                        const hour = new Date().getHours();
-                        return hour >= 22;
-                    }
-                },
-                veteran: {
-                    id: 'veteran',
-                    name: 'Veteran',
-                    description: 'Play 30 games',
-                    icon: '🎖️',
-                    condition: (stats) => stats.overallStats.gamesPlayed >= 30
-                },
-                wordSmith: {
-                    id: 'wordSmith',
-                    name: 'Word Smith',
-                    description: 'Find 500 total words',
-                    icon: '⚒️',
-                    condition: (stats) => stats.overallStats.totalWords >= 500
-                }
-            };
-
-            // Check for new achievements
-            const checkAchievements = (gameData) => {
-                const stats = getStats();
-                const currentAchievements = { ...achievements };
-                const newlyUnlocked = [];
-
-                Object.values(achievementDefinitions).forEach(achievement => {
-                    if (!currentAchievements[achievement.id] && achievement.condition(stats, gameData)) {
-                        currentAchievements[achievement.id] = {
-                            ...achievement,
-                            unlockedAt: new Date().toISOString()
-                        };
-                        newlyUnlocked.push(achievement);
-                    }
-                });
-
-                if (newlyUnlocked.length > 0) {
-                    setAchievements(currentAchievements);
-                    setNewAchievements(newlyUnlocked);
-                    localStorage.setItem('wordBankGameAchievements', JSON.stringify(currentAchievements));
-                    
-                    // Show achievement notification
-                    setTimeout(() => {
-                        setNewAchievements([]);
-                    }, 5000);
-                }
-            };
-            const getStats = () => {
-                const saved = localStorage.getItem('wordBankGame');
-                if (saved) {
-                    const data = JSON.parse(saved);
-                    return {
-                        dailyStats: data.dailyStats || {},
-                        overallStats: data.overallStats || {
-                            gamesPlayed: 0,
-                            bestScore: 0,
-                            totalWords: 0,
-                            currentStreak: 0,
-                            lastPlayedDate: null
-                        }
-                    };
-                }
-                return {
-                    dailyStats: {},
-                    overallStats: {
-                        gamesPlayed: 0,
-                        bestScore: 0,
-                        totalWords: 0,
-                        currentStreak: 0,
-                        lastPlayedDate: null
-                    }
-                };
-            };
-
-            const [letterBank, setLetterBank] = useState(() => {
-                const saved = loadSavedData();
-                return saved ? saved.letterBank : generateDailyBank();
-            });
-            
-            const [currentWord, setCurrentWord] = useState('');
-            const [foundWords, setFoundWords] = useState(() => {
-                const saved = loadSavedData();
-                return saved ? saved.foundWords : [];
-            });
-            
-            const [totalScore, setTotalScore] = useState(() => {
-                const saved = loadSavedData();
-                return saved ? saved.totalScore : 0;
-            });
-            
-            const [message, setMessage] = useState('');
-            const [selectedLetters, setSelectedLetters] = useState([]);
-            const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-            const [gameFinished, setGameFinished] = useState(() => {
-                const saved = loadSavedData();
-                return saved ? saved.gameFinished : false;
-            });
-            const [finalScore, setFinalScore] = useState(() => {
-                const saved = loadSavedData();
-                return saved ? saved.finalScore : 0;
-            });
-            const [timeLeft, setTimeLeft] = useState(() => {
-                const saved = loadSavedData();
-                return saved && saved.timeLeft !== undefined ? saved.timeLeft : 180; // 3 minutes = 180 seconds
-            });
-            const [gameStarted, setGameStarted] = useState(() => {
-                const saved = loadSavedData();
-                return saved ? saved.gameStarted : false;
-            });
-            const [timerActive, setTimerActive] = useState(false);
-            const [showStats, setShowStats] = useState(false);
-            const [showShare, setShowShare] = useState(false);
-            const [achievements, setAchievements] = useState(() => {
-                const saved = localStorage.getItem('wordBankGameAchievements');
-                return saved ? JSON.parse(saved) : {};
-            });
-            const [newAchievements, setNewAchievements] = useState([]);
-
-            // Save game state whenever it changes
-            useEffect(() => {
-                if (wordsLoaded) {
-                    saveData({
-                        letterBank,
-                        foundWords,
-                        totalScore,
-                        gameFinished,
-                        finalScore,
-                        timeLeft,
-                        gameStarted
-                    });
-                }
-            }, [letterBank, foundWords, totalScore, gameFinished, finalScore, timeLeft, gameStarted, wordsLoaded]);
-
-            // Timer effect
-            useEffect(() => {
-                let interval = null;
-                
-                if (timerActive && timeLeft > 0 && !gameFinished) {
-                    interval = setInterval(() => {
-                        setTimeLeft(prevTime => {
-                            if (prevTime <= 1) {
-                                // Time's up! Save stats and check achievements
-                                const timeTaken = 180; // Full time used
-                                const gameData = {
-                                    score: totalScore,
-                                    wordsFound: foundWords.length,
-                                    totalPossible: possibleWords.length,
-                                    timeTaken,
-                                    completedEarly: false,
-                                    completionPercentage: Math.round((foundWords.length / possibleWords.length) * 100)
-                                };
-                                saveDailyStats(gameData.score, gameData.wordsFound, gameData.totalPossible, gameData.timeTaken, gameData.completedEarly);
-                                checkAchievements(gameData);
-                                setGameFinished(true);
-                                setFinalScore(totalScore);
-                                setTimerActive(false);
-                                setMessage(`Time's up! Final score: ${totalScore} points with ${foundWords.length} words found.`);
-                                return 0;
-                            }
-                            return prevTime - 1;
-                        });
-                    }, 1000);
-                }
-                
-                return () => {
-                    if (interval) clearInterval(interval);
-                };
-            }, [timerActive, timeLeft, gameFinished, totalScore, foundWords.length]);
-
-            // Auto-end game when all words are found
-            useEffect(() => {
-                if (wordsLoaded && !gameFinished && foundWords.length > 0 && foundWords.length === possibleWords.length) {
-                    const timeTaken = 180 - timeLeft;
-                    const gameData = {
-                        score: totalScore,
-                        wordsFound: foundWords.length,
-                        totalPossible: possibleWords.length,
-                        timeTaken,
-                        completedEarly: true,
-                        completionPercentage: 100
-                    };
-                    saveDailyStats(gameData.score, gameData.wordsFound, gameData.totalPossible, gameData.timeTaken, gameData.completedEarly);
-                    checkAchievements(gameData);
-                    setGameFinished(true);
-                    setFinalScore(totalScore);
-                    setTimerActive(false);
-                    setMessage(`Amazing! You found all ${foundWords.length} words! Perfect score!`);
-                }
-            }, [foundWords.length, possibleWords.length, wordsLoaded, gameFinished, totalScore, timeLeft]);
-
-            // Start game timer when first word is attempted
-            useEffect(() => {
-                if (gameStarted && !timerActive && !gameFinished && timeLeft > 0) {
-                    setTimerActive(true);
-                }
-            }, [gameStarted, timerActive, gameFinished, timeLeft]);
-
-            // Install prompt for PWA
-            useEffect(() => {
-                let deferredPrompt;
-                
-                const handleBeforeInstallPrompt = (e) => {
-                    e.preventDefault();
-                    deferredPrompt = e;
-                    setShowInstallPrompt(true);
-                };
-
-                window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-                return () => {
-                    window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-                };
-            }, []);
-
-            const calculateWordScore = (word) => {
-                return word.split('').reduce((score, letter) => score + (letterScores[letter] || 1), 0);
-            };
-
-            const canFormWord = (word, bank) => {
-                const bankCopy = [...bank];
-                for (let letter of word) {
-                    const index = bankCopy.indexOf(letter);
-                    if (index === -1) return false;
-                    bankCopy.splice(index, 1);
-                }
-                return true;
-            };
-
-            const handleLetterClick = (letter, index) => {
-                if (gameFinished || timeLeft === 0) return;
-                
-                // Start the game timer on first interaction
-                if (!gameStarted) {
-                    setGameStarted(true);
-                }
-                
-                if (currentWord.length < 5 && !selectedLetters.includes(index)) {
-                    setCurrentWord(prev => prev + letter);
-                    setSelectedLetters(prev => [...prev, index]);
-                }
-            };
-
-            const clearWord = () => {
-                if (gameFinished || timeLeft === 0) return;
-                setCurrentWord('');
-                setSelectedLetters([]);
-            };
-
-            const backspaceWord = () => {
-                if (gameFinished || timeLeft === 0) return;
-                if (currentWord.length === 0) return;
-                
-                setCurrentWord(prev => prev.slice(0, -1));
-                setSelectedLetters(prev => prev.slice(0, -1));
-            };
-
-            const submitWord = () => {
-                if (gameFinished || timeLeft === 0) return;
-                
-                // Start the game timer on first interaction
-                if (!gameStarted) {
-                    setGameStarted(true);
-                }
-                
-                if (currentWord.length !== 5) {
-                    setMessage('Word must be exactly 5 letters!');
-                    setTimeout(() => setMessage(''), 3000);
-                    return;
-                }
-
-                if (foundWords.includes(currentWord)) {
-                    setMessage('Word already found!');
-                    setTimeout(() => setMessage(''), 3000);
-                    return;
-                }
-
-                if (!validWords.includes(currentWord)) {
-                    setMessage('Not a valid word!');
-                    setTimeout(() => setMessage(''), 3000);
-                    return;
-                }
-
-                if (!canFormWord(currentWord, letterBank)) {
-                    setMessage('Cannot form word with available letters!');
-                    setTimeout(() => setMessage(''), 3000);
-                    return;
-                }
-
-                const wordScore = calculateWordScore(currentWord);
-                setFoundWords(prev => [...prev, currentWord]);
-                setTotalScore(prev => prev + wordScore);
-                setMessage(`Great! "${currentWord}" scores ${wordScore} points!`);
-                setCurrentWord('');
-                setSelectedLetters([]);
-                setTimeout(() => setMessage(''), 3000);
-            };
-
-            const finishGame = () => {
-                const timeTaken = 180 - timeLeft; // How much time was used
-                const gameData = {
-                    score: totalScore,
-                    wordsFound: foundWords.length,
-                    totalPossible: possibleWords.length,
-                    timeTaken,
-                    completedEarly: true,
-                    completionPercentage: Math.round((foundWords.length / possibleWords.length) * 100)
-                };
-                saveDailyStats(gameData.score, gameData.wordsFound, gameData.totalPossible, gameData.timeTaken, gameData.completedEarly);
-                checkAchievements(gameData);
-                setGameFinished(true);
-                setFinalScore(totalScore);
-                setTimerActive(false);
-                setMessage(`Game finished! Final score: ${totalScore} points with ${foundWords.length} words found.`);
-            };
-
-            const generateNewBank = () => {
-                const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                const newBank = [];
-                for (let i = 0; i < 15; i++) {
-                    const randomIndex = Math.floor(Math.random() * letters.length);
-                    newBank.push(letters[randomIndex]);
-                }
-                setLetterBank(newBank);
-                setFoundWords([]);
-                setTotalScore(0);
-                setCurrentWord('');
-                setSelectedLetters([]);
-                setGameFinished(false);
-                setFinalScore(0);
-                setTimeLeft(180); // Reset to 3 minutes
-                setGameStarted(false);
-                setTimerActive(false);
-                setMessage('Practice mode - no time limit!');
-                setTimeout(() => setMessage(''), 3000);
-            };
-
-            // Format time as MM:SS
-            const formatTime = (seconds) => {
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                return `${mins}:${secs.toString().padStart(2, '0')}`;
-            };
-
-            // Get timer color based on time remaining
-            const getTimerColor = () => {
-                if (timeLeft > 60) return 'text-green-400';
-                if (timeLeft > 30) return 'text-yellow-400';
-                return 'text-red-400';
-            };
-
-            // Calculate possible words for hints
-            const possibleWords = useMemo(() => {
-                return validWords.filter(word => canFormWord(word, letterBank));
-            }, [letterBank, validWords]);
-
-            const StarIcon = () => (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"></polygon>
-                </svg>
-            );
-
-            const RefreshIcon = () => (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="23,4 23,10 17,10"></polyline>
-                    <polyline points="1,20 1,14 7,14"></polyline>
-                    <path d="M20.49,9A9,9,0,0,0,5.64,5.64L1,10m22,4L18.36,18.36A9,9,0,0,1,3.51,15"></path>
-                </svg>
-            );
-
-            const StatsIcon = () => (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M3 3v18h18"></path>
-                    <path d="M7 16V9"></path>
-                    <path d="M12 16V6"></path>
-                    <path d="M17 16v-3"></path>
-                </svg>
-            );
-
-            const CloseIcon = () => (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            );
-
-            const ShareIcon = () => (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="18" cy="5" r="3"></circle>
-                    <circle cx="6" cy="12" r="3"></circle>
-                    <circle cx="18" cy="19" r="3"></circle>
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                </svg>
-            );
-
-            const TrophyIcon = () => (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                    <path d="M4 22h16"></path>
-                    <path d="M10 14.66V17c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-2.34"></path>
-                    <path d="M2 14a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6v-4a6 6 0 0 0-6-6H8a6 6 0 0 0-6 6v4z"></path>
-                </svg>
-            );
-
-            const BackspaceIcon = () => (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M9 9l6 6m0-6l-6 6M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
-                </svg>
-            );
-
-            // Generate share text
-            const generateShareText = () => {
-                const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                const completionPercentage = Math.round((foundWords.length / possibleWords.length) * 100);
-                const timeUsed = gameFinished && timeLeft > 0 ? formatTime(180 - timeLeft) : '3:00';
-                
-                return `Word Bank ${today}
-🎯 Score: ${finalScore}
-📝 Words: ${foundWords.length}/${possibleWords.length} (${completionPercentage}%)
-⏱️ Time: ${timeUsed}
-
-Play daily at: ${window.location.href}`;
-            };
-
-            // Share Modal Component
-            const ShareModal = () => {
-                const shareText = generateShareText();
-                const completionPercentage = Math.round((foundWords.length / possibleWords.length) * 100);
-                
-                const copyToClipboard = async () => {
-                    try {
-                        await navigator.clipboard.writeText(shareText);
-                        setMessage('Results copied to clipboard! 📋');
-                        setTimeout(() => setMessage(''), 3000);
-                        setShowShare(false);
-                    } catch (err) {
-                        console.error('Failed to copy:', err);
-                        setMessage('Copy failed - try selecting the text manually');
-                        setTimeout(() => setMessage(''), 3000);
-                    }
-                };
-
-                const shareToTwitter = () => {
-                    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
-                    window.open(url, '_blank');
-                };
-
-                const shareToFacebook = () => {
-                    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(shareText)}`;
-                    window.open(url, '_blank');
-                };
-
-                return React.createElement('div', {
-                    className: "fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-                },
-                    React.createElement('div', {
-                        className: "bg-gradient-to-br from-purple-900 to-blue-900 rounded-3xl p-6 max-w-sm w-full border border-white/20"
-                    },
-                        // Header
-                        React.createElement('div', {
-                            className: "flex justify-between items-center mb-6"
-                        },
-                            React.createElement('h2', {
-                                className: "text-2xl font-bold text-white flex items-center gap-2"
-                            },
-                                React.createElement(ShareIcon),
-                                'Share Results'
-                            ),
-                            React.createElement('button', {
-                                onClick: () => setShowShare(false),
-                                className: "text-white/60 hover:text-white transition-colors"
-                            }, React.createElement(CloseIcon))
-                        ),
-
-                        // Results Card
-                        React.createElement('div', {
-                            className: "bg-white/10 rounded-2xl p-6 mb-6 text-center border border-white/20"
-                        },
-                            React.createElement('div', {
-                                className: "text-4xl mb-3"
-                            }, finalScore >= 100 ? '💯' : finalScore >= 50 ? '⭐' : '🎯'),
-                            React.createElement('div', {
-                                className: "text-3xl font-bold text-yellow-400 mb-2"
-                            }, finalScore),
-                            React.createElement('div', {
-                                className: "text-white/80 mb-4"
-                            }, `${foundWords.length}/${possibleWords.length} words (${completionPercentage}%)`),
-                            React.createElement('div', {
-                                className: "text-purple-200 text-sm"
-                            }, `Time: ${gameFinished && timeLeft > 0 ? formatTime(180 - timeLeft) : '3:00'}`)
-                        ),
-
-                        // Share Text Preview
-                        React.createElement('div', {
-                            className: "bg-white/5 rounded-xl p-4 mb-6 text-sm text-white/80 font-mono whitespace-pre-line border border-white/10"
-                        }, shareText),
-
-                        // Share Buttons
-                        React.createElement('div', {
-                            className: "space-y-3"
-                        },
-                            React.createElement('button', {
-                                onClick: copyToClipboard,
-                                className: "w-full bg-gradient-to-r from-green-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:from-green-700 hover:to-teal-700 transition-all duration-200"
-                            }, '📋 Copy to Clipboard'),
-                            React.createElement('div', {
-                                className: "grid grid-cols-2 gap-3"
-                            },
-                                React.createElement('button', {
-                                    onClick: shareToTwitter,
-                                    className: "bg-blue-500 text-white py-2 rounded-xl font-semibold hover:bg-blue-600 transition-colors"
-                                }, '🐦 Twitter'),
-                                React.createElement('button', {
-                                    onClick: shareToFacebook,
-                                    className: "bg-blue-600 text-white py-2 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-                                }, '📘 Facebook')
-                            )
-                        )
-                    )
-                );
-            };
-
-            // Achievement Notification Component
-            const AchievementNotification = ({ achievement }) => {
-                return React.createElement('div', {
-                    className: "fixed top-4 right-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white p-4 rounded-2xl shadow-2xl border border-yellow-400/50 z-50 animate-bounce"
-                },
-                    React.createElement('div', {
-                        className: "flex items-center gap-3"
-                    },
-                        React.createElement('div', {
-                            className: "text-2xl"
-                        }, achievement.icon),
-                        React.createElement('div', null,
-                            React.createElement('div', {
-                                className: "font-bold text-sm"
-                            }, 'Achievement Unlocked!'),
-                            React.createElement('div', {
-                                className: "text-sm"
-                            }, achievement.name)
-                        )
-                    )
-                );
-            };
-
-            // Stats Modal Component
-            const StatsModal = () => {
-                const stats = getStats();
-                const { dailyStats, overallStats } = stats;
-                
-                // Get last 7 days of data
-                const last7Days = [];
-                const today = new Date();
-                for (let i = 6; i >= 0; i--) {
-                    const date = new Date(today);
-                    date.setDate(date.getDate() - i);
-                    const dateStr = date.toDateString();
-                    const dayData = dailyStats[dateStr];
-                    last7Days.push({
-                        date: dateStr,
-                        shortDate: date.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' }),
-                        played: !!dayData,
-                        score: dayData ? dayData.score : 0,
-                        wordsFound: dayData ? dayData.wordsFound : 0,
-                        completionPercentage: dayData ? dayData.completionPercentage : 0
-                    });
-                }
-
-                const maxScore = Math.max(...last7Days.map(d => d.score), 1);
-                const avgScore = overallStats.gamesPlayed > 0 ? Math.round((Object.values(dailyStats).reduce((sum, day) => sum + day.score, 0)) / overallStats.gamesPlayed) : 0;
-
-                return React.createElement('div', {
-                    className: "fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-                },
-                    React.createElement('div', {
-                        className: "bg-gradient-to-br from-purple-900 to-blue-900 rounded-3xl p-6 max-w-md w-full max-h-96 overflow-y-auto border border-white/20"
-                    },
-                        // Header
-                        React.createElement('div', {
-                            className: "flex justify-between items-center mb-6"
-                        },
-                            React.createElement('h2', {
-                                className: "text-2xl font-bold text-white flex items-center gap-2"
-                            },
-                                React.createElement(StatsIcon),
-                                'Your Stats'
-                            ),
-                            React.createElement('button', {
-                                onClick: () => setShowStats(false),
-                                className: "text-white/60 hover:text-white transition-colors"
-                            }, React.createElement(CloseIcon))
-                        ),
-
-                        // Overall Stats Cards
-                        React.createElement('div', {
-                            className: "grid grid-cols-2 gap-3 mb-6"
-                        },
-                            React.createElement('div', {
-                                className: "bg-white/10 rounded-xl p-3 text-center"
-                            },
-                                React.createElement('div', { className: "text-2xl font-bold text-yellow-400" }, overallStats.gamesPlayed),
-                                React.createElement('div', { className: "text-white/80 text-sm" }, 'Games Played')
-                            ),
-                            React.createElement('div', {
-                                className: "bg-white/10 rounded-xl p-3 text-center"
-                            },
-                                React.createElement('div', { className: "text-2xl font-bold text-green-400" }, overallStats.bestScore),
-                                React.createElement('div', { className: "text-white/80 text-sm" }, 'Best Score')
-                            ),
-                            React.createElement('div', {
-                                className: "bg-white/10 rounded-xl p-3 text-center"
-                            },
-                                React.createElement('div', { className: "text-2xl font-bold text-blue-400" }, avgScore),
-                                React.createElement('div', { className: "text-white/80 text-sm" }, 'Avg Score')
-                            ),
-                            React.createElement('div', {
-                                className: "bg-white/10 rounded-xl p-3 text-center"
-                            },
-                                React.createElement('div', { className: "text-2xl font-bold text-purple-400" }, overallStats.currentStreak),
-                                React.createElement('div', { className: "text-white/80 text-sm" }, 'Day Streak')
-                            )
-                        ),
-
-                        // 7-Day Chart
-                        React.createElement('div', {
-                            className: "bg-white/10 rounded-xl p-4 mb-4"
-                        },
-                            React.createElement('h3', {
-                                className: "text-white font-semibold mb-3 text-center"
-                            }, 'Last 7 Days'),
-                            React.createElement('div', {
-                                className: "flex items-end justify-between gap-1 h-24"
-                            },
-                                last7Days.map((day, index) =>
-                                    React.createElement('div', {
-                                        key: index,
-                                        className: "flex flex-col items-center flex-1"
-                                    },
-                                        React.createElement('div', {
-                                            className: `bg-gradient-to-t ${day.played ? 'from-purple-500 to-blue-500' : 'from-gray-600 to-gray-500'} rounded-t text-xs text-white flex items-end justify-center pb-1`,
-                                            style: { height: `${day.played ? Math.max((day.score / maxScore) * 80, 8) : 4}px` }
-                                        }, day.played ? day.score : ''),
-                                        React.createElement('div', {
-                                            className: "text-white/60 text-xs mt-1 text-center"
-                                        }, day.shortDate.split(' ')[0])
-                                    )
-                                )
-                            )
-                        ),
-
-                        // Additional Stats
-                        overallStats.gamesPlayed > 0 && React.createElement('div', {
-                            className: "bg-white/10 rounded-xl p-4 mb-4"
-                        },
-                            React.createElement('h3', {
-                                className: "text-white font-semibold mb-3 text-center"
-                            }, 'All Time'),
-                            React.createElement('div', {
-                                className: "space-y-2 text-sm"
-                            },
-                                React.createElement('div', {
-                                    className: "flex justify-between text-white"
-                                },
-                                    React.createElement('span', null, 'Total Words Found:'),
-                                    React.createElement('span', { className: "font-semibold" }, overallStats.totalWords)
-                                ),
-                                React.createElement('div', {
-                                    className: "flex justify-between text-white"
-                                },
-                                    React.createElement('span', null, 'Words Per Game:'),
-                                    React.createElement('span', { className: "font-semibold" }, Math.round(overallStats.totalWords / overallStats.gamesPlayed))
-                                )
-                            )
-                        ),
-
-                        // Achievements Section
-                        React.createElement('div', {
-                            className: "bg-white/10 rounded-xl p-4"
-                        },
-                            React.createElement('h3', {
-                                className: "text-white font-semibold mb-3 text-center flex items-center justify-center gap-2"
-                            },
-                                React.createElement(TrophyIcon),
-                                'Achievements'
-                            ),
-                            React.createElement('div', {
-                                className: "grid grid-cols-4 gap-2"
-                            },
-                                Object.values(achievementDefinitions).map(achievement => {
-                                    const isUnlocked = !!achievements[achievement.id];
-                                    return React.createElement('div', {
-                                        key: achievement.id,
-                                        className: `text-center p-2 rounded-lg ${isUnlocked ? 'bg-yellow-500/20 border border-yellow-400/50' : 'bg-gray-600/20 border border-gray-500/30'}`,
-                                        title: `${achievement.name}: ${achievement.description}`
-                                    },
-                                        React.createElement('div', {
-                                            className: `text-lg ${isUnlocked ? '' : 'grayscale opacity-50'}`
-                                        }, achievement.icon),
-                                        React.createElement('div', {
-                                            className: `text-xs ${isUnlocked ? 'text-yellow-300' : 'text-gray-400'} mt-1`
-                                        }, achievement.name.split(' ')[0])
-                                    );
-                                })
-                            ),
-                            React.createElement('div', {
-                                className: "text-center mt-3 text-xs text-white/60"
-                            }, `${Object.keys(achievements).length}/${Object.keys(achievementDefinitions).length} unlocked`)
-                        )
-                    )
-                );
-            };
-
-            return React.createElement('div', {
-                className: "min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4"
-            }, 
-                // Modals and Notifications
-                showStats && React.createElement(StatsModal),
-                showShare && React.createElement(ShareModal),
-                newAchievements.map((achievement, index) => 
-                    React.createElement(AchievementNotification, { 
-                        key: achievement.id, 
-                        achievement 
-                    })
-                ),
-                
-                // Error State
-                loadError ? 
-                    React.createElement('div', {
-                        className: "max-w-md mx-auto bg-white/10 backdrop-blur-lg rounded-3xl p-6 shadow-2xl border border-red-500/50 min-h-96 flex items-center"
-                    },
-                        React.createElement('div', { className: "text-center w-full" },
-                            React.createElement('div', { 
-                                className: "text-6xl mb-4" 
-                            }, '❌'),
-                            React.createElement('h2', { 
-                                className: "text-2xl font-bold text-red-400 mb-4" 
-                            }, 'Game Cannot Load'),
-                            React.createElement('div', {
-                                className: "bg-red-900/30 rounded-xl p-4 mb-6 border border-red-500/30"
-                            },
-                                React.createElement('p', { 
-                                    className: "text-red-200 font-semibold mb-2" 
-                                }, 'Missing Required File'),
-                                React.createElement('p', { 
-                                    className: "text-red-300 text-sm mb-3" 
-                                }, loadError),
-                                React.createElement('div', {
-                                    className: "text-left bg-black/20 rounded p-3 font-mono text-xs text-red-200"
-                                },
-                                    React.createElement('div', { className: "text-red-400 font-bold mb-1" }, 'Required file structure:'),
-                                    React.createElement('div', null, 'your-repository/'),
-                                    React.createElement('div', null, '├── index.html'),
-                                    React.createElement('div', { className: "text-yellow-300" }, '├── words.txt ← Missing!'),
-                                    React.createElement('div', null, '└── README.md')
-                                )
-                            ),
-                            React.createElement('div', {
-                                className: "space-y-3 text-sm text-white/80"
-                            },
-                                React.createElement('p', null, 
-                                    React.createElement('strong', { className: "text-white" }, 'To fix this issue:')
-                                ),
-                                React.createElement('ol', {
-                                    className: "list-decimal list-inside space-y-2 text-left"
-                                },
-                                    React.createElement('li', null, 'Download the word list from Stanford:'),
-                                    React.createElement('div', {
-                                        className: "bg-black/20 rounded p-2 font-mono text-xs ml-6 mb-2"
-                                    }, 'https://www-cs-faculty.stanford.edu/~knuth/sgb-words.txt'),
-                                    React.createElement('li', null, 'Save it as "words.txt" in your repository'),
-                                    React.createElement('li', null, 'Commit and push to GitHub'),
-                                    React.createElement('li', null, 'Refresh this page')
-                                )
-                            ),
-                            React.createElement('button', {
-                                onClick: () => window.location.reload(),
-                                className: "mt-6 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
-                            }, '🔄 Retry Loading')
-                        )
-                    )
-                :
-                !wordsLoaded ? 
-                    React.createElement('div', {
-                        className: "max-w-md mx-auto bg-white/10 backdrop-blur-lg rounded-3xl p-6 shadow-2xl border border-white/20 flex items-center justify-center min-h-96"
-                    },
-                        React.createElement('div', { className: "text-center" },
-                            React.createElement('div', { className: "animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4" }),
-                            React.createElement('p', { className: "text-white" }, 'Loading word dictionary...'),
-                            React.createElement('p', { className: "text-white/60 text-sm mt-2" }, 'Fetching words.txt file...')
-                        )
-                    )
-                :
-                React.createElement('div', {
-                    className: "max-w-md mx-auto bg-white/10 backdrop-blur-lg rounded-3xl p-6 shadow-2xl border border-white/20"
-                },
-                    // Header with Stats Button
-                    React.createElement('div', {
-                        className: "text-center mb-6"
-                    },
-                        React.createElement('div', {
-                            className: "flex justify-between items-start mb-2"
-                        },
-                            React.createElement('div', { className: "w-8" }), // Spacer
-                            React.createElement('h1', {
-                                className: "text-3xl font-bold text-white flex items-center justify-center gap-2"
-                            },
-                                React.createElement(StarIcon, { className: "text-yellow-400" }),
-                                'Word Bank'
-                            ),
-                            React.createElement('button', {
-                                onClick: () => setShowStats(true),
-                                className: "text-white/70 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
-                            }, React.createElement(StatsIcon))
-                        ),
-                        React.createElement('p', {
-                            className: "text-purple-200 text-sm"
-                        }, 'Create 5-letter words from your daily bank')
-                    ),
-
-                    // Score Display with Timer
-                    React.createElement('div', {
-                        className: "bg-white/20 rounded-2xl p-4 mb-6 text-center"
-                    },
-                        React.createElement('div', {
-                            className: "flex justify-between items-center mb-3"
-                        },
-                            React.createElement('div', null,
-                                React.createElement('p', { className: "text-white/80 text-sm" }, 'Score'),
-                                React.createElement('p', { className: "text-2xl font-bold text-yellow-400" }, totalScore)
-                            ),
-                            React.createElement('div', null,
-                                React.createElement('p', { className: "text-white/80 text-sm" }, 'Words Found'),
-                                React.createElement('p', { className: "text-2xl font-bold text-green-400" }, foundWords.length)
-                            ),
-                            React.createElement('div', null,
-                                React.createElement('p', { className: "text-white/80 text-sm" }, 'Possible'),
-                                React.createElement('p', { className: "text-2xl font-bold text-blue-400" }, possibleWords.length)
-                            )
-                        ),
-                        
-                        // Timer Display
-                        React.createElement('div', {
-                            className: "border-t border-white/20 pt-3"
-                        },
-                            React.createElement('div', {
-                                className: "flex items-center justify-center gap-2"
-                            },
-                                React.createElement('div', {
-                                    className: "text-white/80 text-sm"
-                                }, timeLeft > 0 && !gameStarted ? 'Time starts when you play' : 'Time Remaining'),
-                                React.createElement('div', {
-                                    className: `text-3xl font-bold ${getTimerColor()}`
-                                }, formatTime(timeLeft))
-                            ),
-                            timeLeft <= 30 && timeLeft > 0 && timerActive && React.createElement('div', {
-                                className: "text-red-300 text-xs mt-1 animate-pulse"
-                            }, '⚠️ Hurry up!')
-                        )
-                    ),
-
-                    // Letter Bank
-                    React.createElement('div', {
-                        className: "mb-6"
-                    },
-                        React.createElement('h3', {
-                            className: "text-white font-semibold mb-3 text-center"
-                        }, 'Your Letter Bank'),
-                        React.createElement('div', {
-                            className: "grid grid-cols-5 gap-2"
-                        },
-                            letterBank.map((letter, index) =>
-                                React.createElement('button', {
-                                    key: index,
-                                    onClick: () => handleLetterClick(letter, index),
-                                    disabled: selectedLetters.includes(index),
-                                    className: `
-                                        letter-btn w-12 h-12 rounded-xl font-bold text-lg transition-all duration-200
-                                        ${selectedLetters.includes(index) 
-                                            ? 'bg-purple-600 text-white scale-95' 
-                                            : 'bg-white/20 text-white hover:bg-white/30 hover:scale-105'
-                                        }
-                                        ${currentWord.length >= 5 && !selectedLetters.includes(index) ? 'opacity-50' : ''}
-                                    `
-                                },
-                                    React.createElement('div', null, letter),
-                                    React.createElement('div', {
-                                        className: "text-xs text-yellow-300"
-                                    }, letterScores[letter])
-                                )
-                            )
-                        )
-                    ),
-
-                    // Game Finished Overlay
-                    gameFinished && React.createElement('div', {
-                        className: "bg-white/20 rounded-2xl p-6 mb-6 text-center border-2 border-yellow-400/50"
-                    },
-                        React.createElement('h2', {
-                            className: "text-2xl font-bold text-yellow-400 mb-3"
-                        }, timeLeft === 0 ? '⏰ Time\'s Up!' : '🎉 Game Complete!'),
-                        React.createElement('div', {
-                            className: "space-y-2 text-white"
-                        },
-                            React.createElement('p', { className: "text-lg" }, `Final Score: ${finalScore} points`),
-                            React.createElement('p', null, `Words Found: ${foundWords.length} / ${possibleWords.length}`),
-                            React.createElement('p', { className: "text-sm text-purple-200" }, 
-                                timeLeft === 0 ? 'Time ran out! Come back tomorrow for a new challenge!' :
-                                foundWords.length === possibleWords.length ? 'Perfect game! You found every word!' :
-                                'Come back tomorrow for a new challenge!'
-                            ),
-                            React.createElement('button', {
-                                onClick: () => setShowShare(true),
-                                className: "mt-3 bg-gradient-to-r from-green-600 to-teal-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-green-700 hover:to-teal-700 transition-all duration-200 flex items-center gap-2 mx-auto"
-                            },
-                                React.createElement(ShareIcon),
-                                'Share Results'
-                            )
-                        )
-                    ),
-
-                    // Current Word
-                    React.createElement('div', {
-                        className: "mb-6"
-                    },
-                        React.createElement('div', {
-                            className: `bg-white/20 rounded-2xl p-4 ${gameFinished || timeLeft === 0 ? 'opacity-50' : ''}`
-                        },
-                            React.createElement('div', {
-                                className: "flex justify-center gap-2 mb-4"
-                            },
-                                [...Array(5)].map((_, i) =>
-                                    React.createElement('div', {
-                                        key: i,
-                                        className: "w-12 h-12 border-2 border-white/30 rounded-xl flex items-center justify-center text-white font-bold text-lg bg-white/10"
-                                    }, currentWord[i] || '')
-                                )
-                            ),
-                            
-                            React.createElement('div', {
-                                className: "flex gap-2 justify-center"
-                            },
-                                React.createElement('button', {
-                                    onClick: clearWord,
-                                    className: `px-4 py-2 bg-red-500/80 text-white rounded-xl hover:bg-red-600/80 transition-colors ${gameFinished || timeLeft === 0 ? 'opacity-50 cursor-not-allowed' : ''}`,
-                                    disabled: currentWord.length === 0 || gameFinished || timeLeft === 0
-                                }, 'Clear'),
-                                React.createElement('button', {
-                                    onClick: backspaceWord,
-                                    className: `px-4 py-2 bg-orange-500/80 text-white rounded-xl hover:bg-orange-600/80 transition-colors flex items-center gap-2 ${gameFinished || timeLeft === 0 ? 'opacity-50 cursor-not-allowed' : ''}`,
-                                    disabled: currentWord.length === 0 || gameFinished || timeLeft === 0
-                                },
-                                    React.createElement(BackspaceIcon),
-                                    'Back'
-                                ),
-                                React.createElement('button', {
-                                    onClick: submitWord,
-                                    className: `px-6 py-2 bg-green-500/80 text-white rounded-xl hover:bg-green-600/80 transition-colors font-semibold ${gameFinished || timeLeft === 0 ? 'opacity-50 cursor-not-allowed' : ''}`,
-                                    disabled: currentWord.length !== 5 || gameFinished || timeLeft === 0
-                                }, 'Submit')
-                            )
-                        ),
-                        
-                        message && React.createElement('p', {
-                            className: `text-center mt-3 font-semibold ${
-                                message.includes('Great!') || message.includes('Game finished!') || message.includes('Time\'s up!') ? 'text-green-300' : 'text-yellow-300'
-                            }`
-                        }, message)
-                    ),
-
-                    // Found Words
-                    foundWords.length > 0 && React.createElement('div', {
-                        className: "mb-6"
-                    },
-                        React.createElement('h3', {
-                            className: "text-white font-semibold mb-3"
-                        }, 'Found Words'),
-                        React.createElement('div', {
-                            className: "bg-white/10 rounded-2xl p-4 max-h-32 overflow-y-auto"
-                        },
-                            React.createElement('div', {
-                                className: "grid grid-cols-2 gap-2"
-                            },
-                                foundWords.map((word, index) =>
-                                    React.createElement('div', {
-                                        key: index,
-                                        className: "bg-white/20 rounded-lg p-2 text-center"
-                                    },
-                                        React.createElement('div', {
-                                            className: "text-white font-semibold"
-                                        }, word),
-                                        React.createElement('div', {
-                                            className: "text-yellow-300 text-xs"
-                                        }, `${calculateWordScore(word)} pts`)
-                                    )
-                                )
-                            )
-                        )
-                    ),
-
-                    // New Bank Button (now "Practice Mode")
-                    React.createElement('button', {
-                        onClick: generateNewBank,
-                        className: "w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-2xl font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2 mb-4"
-                    },
-                        React.createElement(RefreshIcon),
-                        'Practice Mode (Random Bank)'
-                    ),
-
-                    // Install PWA Button (shows on compatible devices)
-                    showInstallPrompt && React.createElement('button', {
-                        onClick: () => {
-                            if (window.deferredPrompt) {
-                                window.deferredPrompt.prompt();
-                                window.deferredPrompt.userChoice.then(() => {
-                                    setShowInstallPrompt(false);
-                                });
-                            }
-                        },
-                        className: "w-full bg-gradient-to-r from-green-600 to-teal-600 text-white py-3 rounded-2xl font-semibold hover:from-green-700 hover:to-teal-700 transition-all duration-200 mb-4"
-                    }, '📱 Install App'),
-
-                    // Letter Scoring Guide
-                    React.createElement('div', {
-                        className: "mt-6 bg-white/10 rounded-2xl p-4"
-                    },
-                        React.createElement('h4', {
-                            className: "text-white font-semibold mb-2 text-center"
-                        }, 'Letter Values'),
-                        React.createElement('div', {
-                            className: "grid grid-cols-3 gap-1 text-xs"
-                        },
-                            React.createElement('div', {
-                                className: "text-center"
-                            },
-                                React.createElement('div', {
-                                    className: "text-green-300 font-semibold"
-                                }, '1 Point'),
-                                React.createElement('div', {
-                                    className: "text-white/80"
-                                }, 'A E I O U R T L S N')
-                            ),
-                            React.createElement('div', {
-                                className: "text-center"
-                            },
-                                React.createElement('div', {
-                                    className: "text-yellow-300 font-semibold"
-                                }, '2-3 Points'),
-                                React.createElement('div', {
-                                    className: "text-white/80"
-                                }, 'C D P M H G B F Y W K V')
-                            ),
-                            React.createElement('div', {
-                                className: "text-center"
-                            },
-                                React.createElement('div', {
-                                    className: "text-red-300 font-semibold"
-                                }, '4-5 Points'),
-                                React.createElement('div', {
-                                    className: "text-white/80"
-                                }, 'X Z J Q')
-                            )
-                        )
-                    )
-                )
-            );
+    <div class="container">
+        <div class="header">
+            <h1>⭐ Word Bank</h1>
+            <p>Create 5-letter words from your daily bank</p>
+        </div>
+        
+        <div id="app">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading game...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            validWords: [],
+            letterBank: [],
+            currentWord: '',
+            selectedLetters: [],
+            foundWords: [],
+            totalScore: 0,
+            timeLeft: 180,
+            gameStarted: false,
+            gameFinished: false,
+            timerActive: false
         };
 
-        ReactDOM.render(React.createElement(WordBankGame), document.getElementById('app'));
-    </script>
+        // Letter scores
+        const letterScores = {
+            'A': 1, 'E': 1, 'I': 1, 'O': 1, 'U': 1, 'R': 1, 'T': 1, 'L': 1, 'S': 1, 'N': 1,
+            'C': 2, 'D': 2, 'P': 2, 'M': 2, 'H': 2, 'G': 2, 'B': 2, 'F': 2, 'Y': 2, 'W': 2,
+            'K': 3, 'V': 3, 'X': 4, 'Z': 4, 'J': 4, 'Q': 5
+        };
 
-    <!-- Service Worker Registration -->
-    <script>
-        // Only register service worker in secure contexts (HTTPS or localhost)
-        if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
-            window.addEventListener('load', function() {
-                try {
-                    // Create service worker inline
-                    const swCode = `
-                        const CACHE_NAME = 'word-bank-game-v2';
-                        const urlsToCache = [
-                            '/',
-                            '/index.html',
-                            '/words.txt'
-                        ];
-
-                        self.addEventListener('install', function(event) {
-                            event.waitUntil(
-                                caches.open(CACHE_NAME)
-                                    .then(function(cache) {
-                                        return cache.addAll(urlsToCache);
-                                    })
-                            );
-                        });
-
-                        self.addEventListener('fetch', function(event) {
-                            event.respondWith(
-                                caches.match(event.request)
-                                    .then(function(response) {
-                                        if (response) {
-                                            return response;
-                                        }
-                                        return fetch(event.request);
-                                    }
-                                )
-                            );
-                        });
-                    `;
-
-                    const blob = new Blob([swCode], { type: 'application/javascript' });
-                    const swUrl = URL.createObjectURL(blob);
-
-                    navigator.serviceWorker.register(swUrl)
-                        .then(function(registration) {
-                            console.log('ServiceWorker registration successful');
-                        })
-                        .catch(function(err) {
-                            console.log('ServiceWorker registration failed: ', err);
-                        });
-                } catch (error) {
-                    console.log('Service Worker not supported in this context:', error);
-                }
-            });
-        } else {
-            console.log('Service Worker not available (requires HTTPS or localhost)');
+        // Generate daily letter bank
+        function generateDailyBank() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const seed = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
+            
+            function random(s) {
+                const x = Math.sin(s) * 10000;
+                return x - Math.floor(x);
+            }
+            
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const bank = [];
+            
+            for (let i = 0; i < 15; i++) {
+                const index = Math.floor(random(seed + i) * letters.length);
+                bank.push(letters[index]);
+            }
+            
+            return bank;
         }
 
-        // Handle install prompt
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            window.deferredPrompt = e;
-        });
+        // Load words from file
+        async function loadWords() {
+            try {
+                const response = await fetch('./words.txt');
+                if (!response.ok) throw new Error('Words file not found');
+                
+                const text = await response.text();
+                const words = text.split('\n')
+                    .map(word => word.trim().toUpperCase())
+                    .filter(word => word.length === 5);
+                
+                if (words.length < 50) throw new Error('Not enough words');
+                
+                gameState.validWords = words;
+                gameState.letterBank = generateDailyBank();
+                console.log(`Loaded ${words.length} words`);
+                
+                renderGame();
+            } catch (error) {
+                console.error('Error loading words:', error);
+                document.getElementById('app').innerHTML = `
+                    <div class="error">
+                        <h2>❌ Error Loading Game</h2>
+                        <p>Could not load words.txt file</p>
+                        <p>${error.message}</p>
+                        <button class="btn btn-submit" onclick="location.reload()">Try Again</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Calculate possible words
+        function getPossibleWords() {
+            return gameState.validWords.filter(word => canFormWord(word, gameState.letterBank));
+        }
+
+        // Check if word can be formed
+        function canFormWord(word, bank) {
+            const bankCopy = [...bank];
+            for (let letter of word) {
+                const index = bankCopy.indexOf(letter);
+                if (index === -1) return false;
+                bankCopy.splice(index, 1);
+            }
+            return true;
+        }
+
+        // Calculate word score
+        function calculateWordScore(word) {
+            return word.split('').reduce((score, letter) => score + (letterScores[letter] || 1), 0);
+        }
+
+        // Format time
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Handle letter click
+        function selectLetter(letter, index) {
+            if (gameState.gameFinished || gameState.timeLeft === 0) return;
+            if (gameState.currentWord.length >= 5 || gameState.selectedLetters.includes(index)) return;
+            
+            if (!gameState.gameStarted) {
+                gameState.gameStarted = true;
+                startTimer();
+            }
+            
+            gameState.currentWord += letter;
+            gameState.selectedLetters.push(index);
+            renderGame();
+        }
+
+        // Clear word
+        function clearWord() {
+            if (gameState.gameFinished || gameState.timeLeft === 0) return;
+            gameState.currentWord = '';
+            gameState.selectedLetters = [];
+            renderGame();
+        }
+
+        // Backspace
+        function backspaceWord() {
+            if (gameState.gameFinished || gameState.timeLeft === 0) return;
+            if (gameState.currentWord.length === 0) return;
+            
+            gameState.currentWord = gameState.currentWord.slice(0, -1);
+            gameState.selectedLetters.pop();
+            renderGame();
+        }
+
+        // Submit word
+        function submitWord() {
+            if (gameState.gameFinished || gameState.timeLeft === 0) return;
+            if (gameState.currentWord.length !== 5) {
+                showMessage('Word must be exactly 5 letters!');
+                return;
+            }
+            
+            if (!gameState.gameStarted) {
+                gameState.gameStarted = true;
+                startTimer();
+            }
+            
+            if (gameState.foundWords.includes(gameState.currentWord)) {
+                showMessage('Word already found!');
+                return;
+            }
+            
+            if (!gameState.validWords.includes(gameState.currentWord)) {
+                showMessage('Not a valid word!');
+                return;
+            }
+            
+            if (!canFormWord(gameState.currentWord, gameState.letterBank)) {
+                showMessage('Cannot form word with available letters!');
+                return;
+            }
+            
+            const wordScore = calculateWordScore(gameState.currentWord);
+            gameState.foundWords.push(gameState.currentWord);
+            gameState.totalScore += wordScore;
+            showMessage(`Great! "${gameState.currentWord}" scores ${wordScore} points!`);
+            
+            gameState.currentWord = '';
+            gameState.selectedLetters = [];
+            
+            // Check if all words found
+            const possibleWords = getPossibleWords();
+            if (gameState.foundWords.length === possibleWords.length) {
+                endGame('Perfect! You found all words!');
+            }
+            
+            renderGame();
+        }
+
+        // Start timer
+        function startTimer() {
+            if (gameState.timerActive) return;
+            gameState.timerActive = true;
+            
+            const interval = setInterval(() => {
+                gameState.timeLeft--;
+                
+                if (gameState.timeLeft <= 0) {
+                    clearInterval(interval);
+                    endGame("Time's up!");
+                }
+                
+                renderGame();
+            }, 1000);
+        }
+
+        // End game
+        function endGame(message) {
+            gameState.gameFinished = true;
+            gameState.timerActive = false;
+            showMessage(message);
+            renderGame();
+        }
+
+        // Show message
+        function showMessage(text) {
+            const messageEl = document.querySelector('.message');
+            if (messageEl) {
+                messageEl.textContent = text;
+                setTimeout(() => {
+                    if (messageEl) messageEl.textContent = '';
+                }, 3000);
+            }
+        }
+
+        // Render game
+        function renderGame() {
+            const possibleWords = getPossibleWords();
+            const timerColor = gameState.timeLeft > 60 ? '#90EE90' : gameState.timeLeft > 30 ? '#ffd700' : '#ff6b6b';
+            
+            document.getElementById('app').innerHTML = `
+                <!-- Score Display -->
+                <div class="score-display">
+                    <div class="score-item">
+                        <div>Score</div>
+                        <div class="score-value">${gameState.totalScore}</div>
+                    </div>
+                    <div class="score-item">
+                        <div>Found</div>
+                        <div class="score-value">${gameState.foundWords.length}</div>
+                    </div>
+                    <div class="score-item">
+                        <div>Possible</div>
+                        <div class="score-value">${possibleWords.length}</div>
+                    </div>
+                </div>
+
+                <!-- Timer -->
+                <div class="timer" style="color: ${timerColor}">
+                    ${gameState.timeLeft > 0 && !gameState.gameStarted ? 'Ready?' : formatTime(gameState.timeLeft)}
+                </div>
+
+                <!-- Letter Bank -->
+                <div class="letter-bank">
+                    ${gameState.letterBank.map((letter, index) => `
+                        <button class="letter-btn" 
+                                onclick="selectLetter('${letter}', ${index})"
+                                ${gameState.selectedLetters.includes(index) || gameState.gameFinished || gameState.timeLeft === 0 ? 'disabled' : ''}>
+                            ${letter}
+                            <div class="letter-value">${letterScores[letter]}</div>
+                        </button>
+                    `).join('')}
+                </div>
+
+                ${gameState.gameFinished ? `
+                    <div class="game-over">
+                        <h2>🎉 Game Complete!</h2>
+                        <p>Final Score: ${gameState.totalScore} points</p>
+                        <p>Words Found: ${gameState.foundWords.length}/${possibleWords.length}</p>
+                    </div>
+                ` : ''}
+
+                <!-- Current Word -->
+                <div class="current-word">
+                    ${[...Array(5)].map((_, i) => `
+                        <div class="word-slot">${gameState.currentWord[i] || ''}</div>
+                    `).join('')}
+                </div>
+
+                <!-- Controls -->
+                <div class="controls">
+                    <button class="btn btn-clear" 
+                            onclick="clearWord()"
+                            ${gameState.currentWord.length === 0 || gameState.gameFinished || gameState.timeLeft === 0 ? 'disabled' : ''}>
+                        Clear
+                    </button>
+                    <button class="btn btn-back"
+                            onclick="backspaceWord()"
+                            ${gameState.currentWord.length === 0 || gameState.gameFinished || gameState.timeLeft === 0 ? 'disabled' : ''}>
+                        ← Back
+                    </button>
+                    <button class="btn btn-submit"
+                            onclick="submitWord()"
+                            ${gameState.currentWord.length !== 5 || gameState.gameFinished || gameState.timeLeft === 0 ? 'disabled' : ''}>
+                        Submit
+                    </button>
+                </div>
+
+                <!-- Message -->
+                <div class="message"></div>
+
+                <!-- Found Words -->
+                ${gameState.foundWords.length > 0 ? `
+                    <div class="found-words">
+                        <h3 style="margin-bottom: 15px;">Found Words</h3>
+                        <div class="word-grid">
+                            ${gameState.foundWords.map(word => `
+                                <div class="found-word">
+                                    <div>${word}</div>
+                                    <div style="color: #ffd700; font-size: 0.8rem;">${calculateWordScore(word)} pts</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        // Initialize game
+        loadWords();
     </script>
 </body>
 </html>
