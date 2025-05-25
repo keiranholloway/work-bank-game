@@ -88,7 +88,7 @@
             position: relative;
         }
         
-        .letter-btn:hover {
+        .letter-btn:hover:not(:disabled) {
             background: rgba(255, 255, 255, 0.3);
             transform: scale(1.05);
         }
@@ -96,6 +96,7 @@
         .letter-btn:disabled {
             background: rgba(128, 0, 128, 0.6);
             transform: scale(0.95);
+            cursor: not-allowed;
         }
         
         .letter-value {
@@ -147,9 +148,17 @@
             cursor: not-allowed;
         }
         
+        .btn:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+        
         .btn-clear {
             background: #ff6b6b;
             color: white;
+        }
+        
+        .btn-clear:hover:not(:disabled) {
+            background: #ff5252;
         }
         
         .btn-back {
@@ -157,9 +166,17 @@
             color: white;
         }
         
+        .btn-back:hover:not(:disabled) {
+            background: #ff9800;
+        }
+        
         .btn-submit {
             background: #4caf50;
             color: white;
+        }
+        
+        .btn-submit:hover:not(:disabled) {
+            background: #45a049;
         }
         
         .message {
@@ -167,6 +184,7 @@
             font-weight: bold;
             margin-bottom: 20px;
             min-height: 25px;
+            color: #ffd700;
         }
         
         .found-words {
@@ -257,7 +275,7 @@
             timeLeft: 180,
             gameStarted: false,
             gameFinished: false,
-            timerActive: false
+            timerInterval: null
         };
 
         // Letter scores
@@ -271,18 +289,25 @@
         function generateDailyBank() {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const seed = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
+            const baseDate = new Date('2025-01-01');
+            const daysSinceBase = Math.floor((today - baseDate) / (1000 * 60 * 60 * 24));
             
-            function random(s) {
-                const x = Math.sin(s) * 10000;
-                return x - Math.floor(x);
+            // Better random number generator
+            function mulberry32(a) {
+                return function() {
+                    let t = a += 0x6D2B79F5;
+                    t = Math.imul(t ^ t >>> 15, t | 1);
+                    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+                    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+                }
             }
             
+            const rng = mulberry32(daysSinceBase);
             const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
             const bank = [];
             
             for (let i = 0; i < 15; i++) {
-                const index = Math.floor(random(seed + i) * letters.length);
+                const index = Math.floor(rng() * letters.length);
                 bank.push(letters[index]);
             }
             
@@ -292,19 +317,31 @@
         // Load words from file
         async function loadWords() {
             try {
+                console.log('Loading words.txt...');
                 const response = await fetch('./words.txt');
-                if (!response.ok) throw new Error('Words file not found');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
                 
                 const text = await response.text();
+                console.log('File loaded, parsing words...');
+                
+                if (!text || text.trim().length === 0) {
+                    throw new Error('words.txt file is empty');
+                }
+                
                 const words = text.split('\n')
                     .map(word => word.trim().toUpperCase())
-                    .filter(word => word.length === 5);
+                    .filter(word => word.length === 5 && /^[A-Z]+$/.test(word));
                 
-                if (words.length < 50) throw new Error('Not enough words');
+                if (words.length < 50) {
+                    throw new Error(`Not enough valid words found (${words.length})`);
+                }
                 
                 gameState.validWords = words;
                 gameState.letterBank = generateDailyBank();
-                console.log(`Loaded ${words.length} words`);
+                console.log(`Successfully loaded ${words.length} words`);
                 
                 renderGame();
             } catch (error) {
@@ -312,8 +349,8 @@
                 document.getElementById('app').innerHTML = `
                     <div class="error">
                         <h2>❌ Error Loading Game</h2>
-                        <p>Could not load words.txt file</p>
-                        <p>${error.message}</p>
+                        <p><strong>Problem:</strong> ${error.message}</p>
+                        <p>Make sure <code>words.txt</code> exists in your repository.</p>
                         <button class="btn btn-submit" onclick="location.reload()">Try Again</button>
                     </div>
                 `;
@@ -322,11 +359,15 @@
 
         // Calculate possible words
         function getPossibleWords() {
+            if (!gameState.validWords || !gameState.letterBank) {
+                return [];
+            }
             return gameState.validWords.filter(word => canFormWord(word, gameState.letterBank));
         }
 
         // Check if word can be formed
         function canFormWord(word, bank) {
+            if (!word || !bank) return false;
             const bankCopy = [...bank];
             for (let letter of word) {
                 const index = bankCopy.indexOf(letter);
@@ -338,6 +379,7 @@
 
         // Calculate word score
         function calculateWordScore(word) {
+            if (!word) return 0;
             return word.split('').reduce((score, letter) => score + (letterScores[letter] || 1), 0);
         }
 
@@ -420,7 +462,7 @@
             // Check if all words found
             const possibleWords = getPossibleWords();
             if (gameState.foundWords.length === possibleWords.length) {
-                endGame('Perfect! You found all words!');
+                endGame('🎉 Perfect! You found all words!');
             }
             
             renderGame();
@@ -428,15 +470,14 @@
 
         // Start timer
         function startTimer() {
-            if (gameState.timerActive) return;
-            gameState.timerActive = true;
+            if (gameState.timerInterval) return;
             
-            const interval = setInterval(() => {
+            gameState.timerInterval = setInterval(() => {
                 gameState.timeLeft--;
                 
                 if (gameState.timeLeft <= 0) {
-                    clearInterval(interval);
-                    endGame("Time's up!");
+                    clearInterval(gameState.timerInterval);
+                    endGame("⏰ Time's up!");
                 }
                 
                 renderGame();
@@ -446,7 +487,10 @@
         // End game
         function endGame(message) {
             gameState.gameFinished = true;
-            gameState.timerActive = false;
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = null;
+            }
             showMessage(message);
             renderGame();
         }
@@ -457,7 +501,9 @@
             if (messageEl) {
                 messageEl.textContent = text;
                 setTimeout(() => {
-                    if (messageEl) messageEl.textContent = '';
+                    if (messageEl && messageEl.textContent === text) {
+                        messageEl.textContent = '';
+                    }
                 }, 3000);
             }
         }
@@ -486,7 +532,7 @@
 
                 <!-- Timer -->
                 <div class="timer" style="color: ${timerColor}">
-                    ${gameState.timeLeft > 0 && !gameState.gameStarted ? 'Ready?' : formatTime(gameState.timeLeft)}
+                    ${gameState.timeLeft > 0 && !gameState.gameStarted ? 'Ready? 🎯' : formatTime(gameState.timeLeft)}
                 </div>
 
                 <!-- Letter Bank -->
@@ -503,9 +549,11 @@
 
                 ${gameState.gameFinished ? `
                     <div class="game-over">
-                        <h2>🎉 Game Complete!</h2>
-                        <p>Final Score: ${gameState.totalScore} points</p>
-                        <p>Words Found: ${gameState.foundWords.length}/${possibleWords.length}</p>
+                        <h2>${gameState.foundWords.length === possibleWords.length ? '🏆 Perfect Game!' : '🎉 Game Complete!'}</h2>
+                        <p><strong>Final Score:</strong> ${gameState.totalScore} points</p>
+                        <p><strong>Words Found:</strong> ${gameState.foundWords.length}/${possibleWords.length}</p>
+                        ${gameState.foundWords.length === possibleWords.length ? 
+                            '<p style="color: #ffd700; margin-top: 10px;">🌟 You found every possible word! 🌟</p>' : ''}
                     </div>
                 ` : ''}
 
@@ -541,11 +589,11 @@
                 <!-- Found Words -->
                 ${gameState.foundWords.length > 0 ? `
                     <div class="found-words">
-                        <h3 style="margin-bottom: 15px;">Found Words</h3>
+                        <h3 style="margin-bottom: 15px;">Found Words (${gameState.foundWords.length})</h3>
                         <div class="word-grid">
                             ${gameState.foundWords.map(word => `
                                 <div class="found-word">
-                                    <div>${word}</div>
+                                    <div style="font-weight: bold;">${word}</div>
                                     <div style="color: #ffd700; font-size: 0.8rem;">${calculateWordScore(word)} pts</div>
                                 </div>
                             `).join('')}
@@ -556,6 +604,7 @@
         }
 
         // Initialize game
+        console.log('Starting Word Bank Game...');
         loadWords();
     </script>
 </body>
