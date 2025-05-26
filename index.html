@@ -1,1119 +1,811 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Bank Game</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <button class="stats-btn" id="stats-btn" onclick="showStats()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 3v18h18"></path>
-                    <path d="M7 16V9"></path>
-                    <path d="M12 16V6"></path>
-                    <path d="M17 16v-3"></path>
-                </svg>
-            </button>
-            <h1>⭐ Word Bank</h1>
-            <p>Create 5-letter words from your daily bank</p>
-        </div>
-        
-        <!-- Score Display -->
-        <div class="score-display">
-            <div class="score-item">
-                <div class="score-label">Score</div>
-                <div class="score-value" id="score-value">0</div>
-            </div>
-            <div class="score-item">
-                <div class="score-label">Found</div>
-                <div class="score-value" id="found-value">0</div>
-            </div>
-            <div class="score-item">
-                <div class="score-label">Possible</div>
-                <div class="score-value" id="possible-value">0</div>
-            </div>
-        </div>
-
-        <!-- Modals -->
-        <div class="modal" id="stats-modal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 class="modal-title">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M3 3v18h18"></path>
-                            <path d="M7 16V9"></path>
-                            <path d="M12 16V6"></path>
-                            <path d="M17 16v-3"></path>
-                        </svg>
-                        Your Stats
-                    </h2>
-                    <button class="close-btn" onclick="hideStats()">×</button>
-                </div>
-                
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" style="color: #ffd700;" id="stat-games">0</div>
-                        <div class="stat-label">Games Played</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" style="color: #4caf50;" id="stat-best">0</div>
-                        <div class="stat-label">Best Score</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" style="color: #2196f3;" id="stat-avg">0</div>
-                        <div class="stat-label">Avg Score</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" style="color: #ff9800;" id="stat-streak">0</div>
-                        <div class="stat-label">Day Streak</div>
-                    </div>
-                </div>
-                
-                <div style="background: rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px;">
-                    <h3 style="margin-bottom: 15px; text-align: center;">🏆 Achievements</h3>
-                    <div class="achievements-grid" id="achievements-grid">
-                        <!-- Achievements populated by JS -->
-                    </div>
-                    <div style="text-align: center; margin-top: 15px; font-size: 0.8rem; opacity: 0.8;" id="achievement-count">
-                        0/12 unlocked
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal" id="share-modal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 class="modal-title">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="18" cy="5" r="3"></circle>
-                            <circle cx="6" cy="12" r="3"></circle>
-                            <circle cx="18" cy="19" r="3"></circle>
-                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                        </svg>
-                        Share Results
-                    </h2>
-                    <button class="close-btn" onclick="hideShareModal()">×</button>
-                </div>
-                
-                <div style="background: rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center;">
-                    <div style="font-size: 3rem; margin-bottom: 15px;" id="share-emoji">🎯</div>
-                    <div style="font-size: 2rem; font-weight: bold; color: #ffd700; margin-bottom: 10px;" id="share-score">0</div>
-                    <div style="opacity: 0.9;" id="share-details">0/0 words found</div>
-                </div>
-                
-                <div style="background: rgba(0, 0, 0, 0.2); border-radius: 8px; padding: 15px; margin-bottom: 20px; font-family: monospace; font-size: 0.8rem; white-space: pre-line;" id="share-text">
-                    Loading...
-                </div>
-                
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-submit" onclick="copyShareText()" style="flex: 1;">📋 Copy</button>
-                    <button class="btn" onclick="shareToTwitter()" style="flex: 1; background: #1da1f2;">🐦 Tweet</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Timer -->
-        <div class="timer" id="timer">Loading...</div>
-
-        <!-- Letter Bank -->
-        <div class="letter-bank" id="letter-bank">
-            <!-- Letters will be populated here in a pyramid -->
-        </div>
-        
-        <!-- Shuffle Button (Added based on provided CSS, functional JS not implemented as per request) -->
-        <!-- <button class="btn btn-shuffle" id="shuffle-btn" onclick="shuffleLetters()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M16 3h5v5"></path>
-                <path d="M18 16v-5"></path>
-                <path d="M14 14l-4 4"></path>
-                <path d="M10 10l-4 4"></path>
-                <circle cx="6" cy="6" r="3"></circle>
-                <circle cx="18" cy="18" r="3"></circle>
-            </svg>
-             Shuffle
-        </button> -->
-
-
-        <!-- Game Over Screen -->
-        <div class="game-over" id="game-over" style="display: none;">
-            <h2 id="game-over-title">🎉 Game Complete!</h2>
-            <p id="game-over-score"><strong>Final Score:</strong> 0 points</p>
-            <p id="game-over-words"><strong>Words Found:</strong> 0/0</p>
-            <p id="game-over-perfect" style="color: #ffd700; margin-top: 10px; display: none;">🌟 You found every possible word! 🌟</p>
-            <button class="share-btn" onclick="showShareModal()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="18" cy="5" r="3"></circle>
-                    <circle cx="6" cy="12" r="3"></circle>
-                    <circle cx="18" cy="19" r="3"></circle>
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                </svg>
-                Share Results
-            </button>
-        </div>
-
-        <!-- Current Word -->
-        <div class="current-word">
-            <div class="word-slot" id="slot-0"></div>
-            <div class="word-slot" id="slot-1"></div>
-            <div class="word-slot" id="slot-2"></div>
-            <div class="word-slot" id="slot-3"></div>
-            <div class="word-slot" id="slot-4"></div>
-        </div>
-
-        <!-- Controls -->
-        <div class="controls">
-            <button class="btn btn-clear" id="clear-btn" onclick="clearWord()">Clear</button>
-            <button class="btn btn-back" id="back-btn" onclick="backspaceWord()">← Back</button>
-            <button class="btn btn-submit" id="submit-btn" onclick="submitWord()">Submit</button>
-        </div>
-
-        <!-- Message -->
-        <div class="message" id="message"></div>
-
-        <!-- Found Words -->
-        <div class="found-words" id="found-words" style="display: none;">
-            <h3 id="found-words-title">Found Words (0)</h3>
-            <div class="word-grid" id="word-grid">
-                <!-- Found words will be populated here -->
-            </div>
-        </div>
-        
-        <!-- Possible Words Section (Added based on provided CSS, functional JS not implemented as per request) -->
-        <!-- <div class="possible-words-section" id="possible-words-section" style="display: none;">
-             <h3>Possible Words (<span id="possible-words-count">0</span>)</h3>
-             <div class="possible-word-grid" id="possible-word-grid">
-                 Words will be listed here after game ends
-             </div>
-         </div> -->
-
-
-        <!-- Loading/Error State -->
-        <div id="app-state">
-            <div class="loading">
-                <div class="spinner"></div>
-                <p>Loading game...</p>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Game state
-        let gameState = {
-            validWords: [],
-            letterBank: [],
-            currentWord: '',
-            selectedLetters: [],
-            foundWords: [],
-            totalScore: 0,
-            timeLeft: 180,
-            gameStarted: false,
-            gameFinished: false,
-            timerInterval: null,
-            countdownInterval: null
-        };
-
-        // Achievement definitions
-        const achievements = {
-            firstGame: { name: 'Getting Started', desc: 'Complete your first game', icon: '🎯' },
-            speedDemon: { name: 'Speed Demon', desc: 'Finish with 2+ minutes left', icon: '⚡' },
-            wordHunter: { name: 'Word Hunter', desc: 'Find 10+ words in a game', icon: '🎯' },
-            perfectionist: { name: 'Perfectionist', desc: 'Find all possible words', icon: '💎' },
-            streak3: { name: 'On Fire', desc: 'Play 3 days in a row', icon: '🔥' },
-            streak7: { name: 'Dedicated', desc: 'Play 7 days in a row', icon: '🏆' },
-            highScorer: { name: 'High Scorer', desc: 'Score 50+ points', icon: '🌟' },
-            centurion: { name: 'Centurion', desc: 'Score 100+ points', icon: '💯' },
-            earlyBird: { name: 'Early Bird', desc: 'Play before 9 AM', icon: '🌅' },
-            nightOwl: { name: 'Night Owl', desc: 'Play after 10 PM', icon: '🦉' },
-            veteran: { name: 'Veteran', desc: 'Play 30 games', icon: '🎖️' },
-            wordSmith: { name: 'Word Smith', desc: 'Find 500 total words', icon: '⚒️' }
-        };
-
-        // Stats and achievements storage
-        let playerStats = {
-            gamesPlayed: 0,
-            bestScore: 0,
-            totalWords: 0,
-            currentStreak: 0,
-            lastPlayedDate: null,
-            unlockedAchievements: [],
-            dailyStats: {},
-            todaysGameCompleted: false,
-            todaysGameData: null
-        };
-
-        // Load stats from localStorage
-        function loadStats() {
-            const saved = localStorage.getItem('wordBankStats');
-            if (saved) {
-                playerStats = { ...playerStats, ...JSON.parse(saved) };
-            }
-            
-            // Check if it's a new day
-            const today = new Date().toDateString();
-            if (playerStats.lastPlayedDate !== today) {
-                playerStats.todaysGameCompleted = false;
-                playerStats.todaysGameData = null;
-                // Don't save here - let the game completion handle it
-            }
-        }
-
-        // Save stats to localStorage
-        function saveStats() {
-            localStorage.setItem('wordBankStats', JSON.stringify(playerStats));
-        }
-
-        // Check and unlock achievements
-        function checkAchievements(gameData) {
-            const newAchievements = [];
-            
-            // Check each achievement
-            if (!playerStats.unlockedAchievements.includes('firstGame') && playerStats.gamesPlayed >= 1) {
-                newAchievements.push('firstGame');
-            }
-            
-            if (!playerStats.unlockedAchievements.includes('speedDemon') && gameData.timeTaken <= 60 && gameData.completedEarly) {
-                newAchievements.push('speedDemon');
-            }
-            
-            if (!playerStats.unlockedAchievements.includes('wordHunter') && gameData.wordsFound >= 10) {
-                newAchievements.push('wordHunter');
-            }
-            
-            if (!playerStats.unlockedAchievements.includes('perfectionist') && gameData.completionPercentage >= 100) {
-                newAchievements.push('perfectionist');
-            }
-            
-            if (!playerStats.unlockedAchievements.includes('highScorer') && gameData.score >= 50) {
-                newAchievements.push('highScorer');
-            }
-            
-            if (!playerStats.unlockedAchievements.includes('centurion') && gameData.score >= 100) {
-                newAchievements.push('centurion');
-            }
-            
-            const hour = new Date().getHours();
-            if (!playerStats.unlockedAchievements.includes('earlyBird') && hour < 9) {
-                newAchievements.push('earlyBird');
-            }
-            
-            if (!playerStats.unlockedAchievements.includes('nightOwl') && hour >= 22) {
-                newAchievements.push('nightOwl');
-            }
-            
-            if (!playerStats.unlockedAchievements.includes('streak3') && playerStats.currentStreak >= 3) {
-                newAchievements.push('streak3');
-            }
-            
-            if (!playerStats.unlockedAchievements.includes('streak7') && playerStats.currentStreak >= 7) {
-                newAchievements.push('streak7');
-            }
-            
-            if (!playerStats.unlockedAchievements.includes('veteran') && playerStats.gamesPlayed >= 30) {
-                newAchievements.push('veteran');
-            }
-            
-            if (!playerStats.unlockedAchievements.includes('wordSmith') && playerStats.totalWords >= 500) {
-                newAchievements.push('wordSmith');
-            }
-            
-            // Show notifications for new achievements
-            newAchievements.forEach(achievementId => {
-                playerStats.unlockedAchievements.push(achievementId);
-                showAchievementNotification(achievements[achievementId]);
-            });
-            
-            if (newAchievements.length > 0) {
-                saveStats();
-            }
-        }
-
-        // Show achievement notification
-        function showAchievementNotification(achievement) {
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="font-size: 1.5rem;">${achievement.icon}</div>
-                    <div>
-                        <div style="font-weight: bold;">Achievement Unlocked!</div>
-                        <div style="font-size: 0.9rem;">${achievement.name}</div>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 5000);
-        }
-
-        // Save game completion stats
-        function saveGameStats(gameData) {
-            const today = new Date().toDateString();
-            
-            // Mark today's game as completed
-            playerStats.todaysGameCompleted = true;
-            playerStats.todaysGameData = gameData;
-            
-            // Update daily stats
-            playerStats.dailyStats[today] = gameData;
-            
-            // Update overall stats
-            playerStats.gamesPlayed++;
-            playerStats.bestScore = Math.max(playerStats.bestScore, gameData.score);
-            playerStats.totalWords += gameData.wordsFound;
-            
-            // Calculate streak
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const yesterdayStr = yesterday.toDateString();
-            
-            if (playerStats.lastPlayedDate === yesterdayStr) {
-                playerStats.currentStreak++;
-            } else if (playerStats.lastPlayedDate !== today) {
-                playerStats.currentStreak = 1;
-            }
-            
-            playerStats.lastPlayedDate = today;
-            
-            saveStats();
-            checkAchievements(gameData);
-        }
-
-        // Show stats modal
-        function showStats() {
-            document.getElementById('stat-games').textContent = playerStats.gamesPlayed;
-            document.getElementById('stat-best').textContent = playerStats.bestScore;
-            document.getElementById('stat-avg').textContent = playerStats.gamesPlayed > 0 ? 
-                Math.round(Object.values(playerStats.dailyStats).reduce((sum, day) => sum + day.score, 0) / playerStats.gamesPlayed) : 0;
-            document.getElementById('stat-streak').textContent = playerStats.currentStreak;
-            
-            // Update achievements
-            const achievementsGrid = document.getElementById('achievements-grid');
-            achievementsGrid.innerHTML = Object.keys(achievements).map(id => {
-                const achievement = achievements[id];
-                const isUnlocked = playerStats.unlockedAchievements.includes(id);
-                return `
-                    <div class="achievement ${isUnlocked ? 'unlocked' : 'locked'}" title="${achievement.desc}">
-                        <div class="achievement-icon">${achievement.icon}</div>
-                        <div class="achievement-name">${achievement.name.split(' ')[0]}</div>
-                    </div>
-                `;
-            }).join('');
-            
-            document.getElementById('achievement-count').textContent = 
-                `${playerStats.unlockedAchievements.length}/${Object.keys(achievements).length} unlocked`;
-            
-            document.getElementById('stats-modal').style.display = 'flex';
-        }
-
-        // Hide stats modal
-        function hideStats() {
-            document.getElementById('stats-modal').style.display = 'none';
-        }
-
-        // Show share modal
-        function showShareModal() {
-            const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            const possibleWords = getPossibleWords();
-            const completionPercentage = Math.round((gameState.foundWords.length / possibleWords.length) * 100);
-            const timeUsed = gameState.timeLeft > 0 ? formatTime(180 - gameState.timeLeft) : '3:00';
-            
-            // Update share display
-            document.getElementById('share-emoji').textContent = 
-                gameState.totalScore >= 100 ? '💯' : gameState.totalScore >= 50 ? '⭐' : '🎯';
-            document.getElementById('share-score').textContent = gameState.totalScore;
-            document.getElementById('share-details').textContent = 
-                `${gameState.foundWords.length}/${possibleWords.length} words (${completionPercentage}%)`;
-            
-            // Generate share text
-            const shareText = `Word Bank ${today}
-🎯 Score: ${gameState.totalScore}
-📝 Words: ${gameState.foundWords.length}/${possibleWords.length} (${completionPercentage}%)
-⏱️ Time: ${timeUsed}
-
-Play daily at: ${window.location.href}`;
-            
-            document.getElementById('share-text').textContent = shareText;
-            document.getElementById('share-modal').style.display = 'flex';
-        }
-
-        // Hide share modal
-        function hideShareModal() {
-            document.getElementById('share-modal').style.display = 'none';
-        }
-
-        // Copy share text
-        async function copyShareText() {
-            const shareText = document.getElementById('share-text').textContent;
-            try {
-                await navigator.clipboard.writeText(shareText);
-                showMessage('Results copied to clipboard! 📋');
-                hideShareModal();
-            } catch (err) {
-                showMessage('Copy failed - try selecting the text manually');
-            }
-        }
-
-        // Share to Twitter
-        function shareToTwitter() {
-            const shareText = document.getElementById('share-text').textContent;
-            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
-            window.open(url, '_blank');
-        }
-
-        // Check if today's game can be played
-        function canPlayToday() {
-            const today = new Date().toDateString();
-            return !playerStats.todaysGameCompleted || playerStats.lastPlayedDate !== today;
-        }
-
-        // Get time until next game
-        function getTimeUntilNextGame() {
-            const now = new Date();
-            const tomorrow = new Date(now);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(0, 0, 0, 0);
-            return Math.max(0, tomorrow - now);
-        }
-
-        // Format countdown time
-        function formatCountdown(milliseconds) {
-            const totalSeconds = Math.floor(milliseconds / 1000);
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-            
-            if (hours > 0) {
-                return `${hours}h ${minutes}m ${seconds}s`;
-            } else if (minutes > 0) {
-                return `${minutes}m ${seconds}s`;
-            } else {
-                return `${seconds}s`;
-            }
-        }
-
-        // Start countdown timer
-        function startCountdown() {
-            if (gameState.countdownInterval) {
-                clearInterval(gameState.countdownInterval);
-            }
-            
-            const countdownElement = document.getElementById('next-game-countdown');
-            if (!countdownElement) return;
-            
-            gameState.countdownInterval = setInterval(() => {
-                const timeLeft = getTimeUntilNextGame();
-                if (timeLeft <= 0) {
-                    clearInterval(gameState.countdownInterval);
-                    location.reload(); // Refresh to allow new game
-                } else {
-                    countdownElement.textContent = formatCountdown(timeLeft);
-                }
-            }, 1000);
-        }
-
-        // Letter scores
-        const letterScores = {
-            'A': 1, 'E': 1, 'I': 1, 'O': 1, 'U': 1, 'R': 1, 'T': 1, 'L': 1, 'S': 1, 'N': 1,
-            'C': 2, 'D': 2, 'P': 2, 'M': 2, 'H': 2, 'G': 2, 'B': 2, 'F': 2, 'Y': 2, 'W': 2,
-            'K': 3, 'V': 3, 'X': 4, 'Z': 4, 'J': 4, 'Q': 5
-        };
-
-        // DOM Elements (cached for performance)
-        let elements = {};
-
-        // Cache DOM elements
-        function cacheElements() {
-            elements = {
-                scoreValue: document.getElementById('score-value'),
-                foundValue: document.getElementById('found-value'),
-                possibleValue: document.getElementById('possible-value'),
-                timer: document.getElementById('timer'),
-                letterBank: document.getElementById('letter-bank'),
-                gameOver: document.getElementById('game-over'),
-                gameOverTitle: document.getElementById('game-over-title'),
-                gameOverScore: document.getElementById('game-over-score'),
-                gameOverWords: document.getElementById('game-over-words'),
-                gameOverPerfect: document.getElementById('game-over-perfect'),
-                slots: [
-                    document.getElementById('slot-0'),
-                    document.getElementById('slot-1'),
-                    document.getElementById('slot-2'),
-                    document.getElementById('slot-3'),
-                    document.getElementById('slot-4')
-                ],
-                clearBtn: document.getElementById('clear-btn'),
-                backBtn: document.getElementById('back-btn'),
-                submitBtn: document.getElementById('submit-btn'),
-                message: document.getElementById('message'),
-                foundWords: document.getElementById('found-words'),
-                foundWordsTitle: document.getElementById('found-words-title'),
-                wordGrid: document.getElementById('word-grid'),
-                appState: document.getElementById('app-state')
-            };
-        }
-
-        // Generate daily letter bank
-        function generateDailyBank() {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const baseDate = new Date('2025-01-01');
-            const daysSinceBase = Math.floor((today - baseDate) / (1000 * 60 * 60 * 24));
-            
-            function mulberry32(a) {
-                return function() {
-                    let t = a += 0x6D2B79F5;
-                    t = Math.imul(t ^ t >>> 15, t | 1);
-                    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-                    return ((t ^ t >>> 14) >>> 0) / 429497296; // Corrected divisor
-                }
-            }
-            
-            const rng = mulberry32(daysSinceBase);
-            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            const bank = [];
-            
-            // Generate 15 letters
-            for (let i = 0; i < 15; i++) {
-                const index = Math.floor(rng() * letters.length);
-                bank.push(letters[index]);
-            }
-            
-            // Optional: Ensure at least one vowel if needed for game viability
-            // This is a simple generation based on the original code,
-            // ensuring game viability might require a more complex algorithm.
-            
-            return bank;
-        }
-
-        // Load words from file
-        async function loadWords() {
-            try {
-                console.log('Loading words.txt...');
-                const response = await fetch('./words.txt');
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const text = await response.text();
-                
-                if (!text || text.trim().length === 0) {
-                    throw new Error('words.txt file is empty');
-                }
-                
-                const words = text.split('\n')
-                    .map(word => word.trim().toUpperCase())
-                    .filter(word => word.length === 5 && /^[A-Z]+$/.test(word));
-                
-                if (words.length < 50) { // Adjusted minimum for potential bank issues
-                    console.warn(`Only found ${words.length} 5-letter words.`);
-                    // Allow loading if there are some words, but maybe show a warning?
-                    // Or throw error if below a critical minimum. Let's stick to the original error logic for now.
-                    if (words.length === 0) {
-                         throw new Error('No 5-letter words found in words.txt');
-                    }
-                   
-                }
-                
-                gameState.validWords = words;
-                gameState.letterBank = generateDailyBank();
-                console.log(`Successfully loaded ${words.length} words. Generated bank: ${gameState.letterBank.join('')}`);
-                
-                // Check if today's game can be played
-                if (!canPlayToday()) {
-                    showCompletedGame();
-                } else {
-                    initializeGame();
-                }
-            } catch (error) {
-                console.error('Error loading words:', error);
-                showError(error.message);
-            }
-        }
-
-        // Show error
-        function showError(message) {
-            elements.appState.innerHTML = `
-                <div class="error">
-                    <h2>❌ Error Loading Game</h2>
-                    <p><strong>Problem:</strong> ${message}</p>
-                    <p>Make sure <code>words.txt</code> exists in your repository and contains 5-letter words.</p>
-                    <button class="btn btn-submit" onclick="location.reload()">Try Again</button>
-                </div>
-            `;
-            elements.appState.style.display = 'flex'; // Ensure error state is visible
-            elements.letterBank.style.display = 'none'; // Hide game elements
-            elements.currentWord.parentElement.style.display = 'none';
-            elements.controls.style.display = 'none';
-            elements.timer.style.display = 'none';
-            elements.scoreValue.parentElement.parentElement.style.display = 'none';
-        }
-
-        // Show completed game screen
-        function showCompletedGame() {
-            elements.appState.style.display = 'none';
-            
-            // Restore today's game data if available
-            if (playerStats.todaysGameData) {
-                gameState.foundWords = playerStats.todaysGameData.foundWords || [];
-                gameState.totalScore = playerStats.todaysGameData.score || 0;
-                gameState.gameFinished = true;
-                gameState.timeLeft = 0;
-            } else {
-                 // Should not happen if todaysGameCompleted is true but data is null, but as a fallback
-                 gameState.gameFinished = true;
-                 gameState.timeLeft = 0;
-            }
-            
-            createLetterBank(); // Still show the letter bank for reference
-            updateUI(); // Update scores, hide controls etc.
-            
-            // Show countdown in game over screen
-            const gameOverElement = elements.gameOver;
-            if (gameOverElement) {
-                gameOverElement.style.display = 'block'; // Ensure game over screen is shown
-                
-                // Add countdown to the game over screen
-                const initialCountdown = formatCountdown(getTimeUntilNextGame());
-                const countdownHtml = `
-                    <div style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
-                        <p style="margin-bottom: 10px; opacity: 0.9;">Next game available in:</p>
-                        <p style="font-size: 1.2rem; font-weight: bold; color: #ffd700;" id="next-game-countdown">
-                            ${initialCountdown}
-                        </p>
-                    </div>
-                `;
-                
-                // Insert countdown before the share button
-                const shareBtn = gameOverElement.querySelector('.share-btn');
-                // Prevent adding multiple countdowns if showCompletedGame is called twice
-                if (shareBtn && !document.getElementById('next-game-countdown')) {
-                    shareBtn.insertAdjacentHTML('beforebegin', countdownHtml);
-                }
-                
-                startCountdown(); // Start the countdown visual
-            }
-             // Hide elements that are not needed in completed state
-            elements.currentWord.parentElement.style.display = 'none';
-            elements.controls.style.display = 'none';
-        }
-
-        // Initialize game UI
-        function initializeGame() {
-            elements.appState.style.display = 'none';
-            createLetterBank();
-            updateUI();
-            // Ensure game elements are visible
-            elements.currentWord.parentElement.style.display = 'flex';
-            elements.controls.style.display = 'flex';
-            elements.timer.style.display = 'block';
-            elements.scoreValue.parentElement.parentElement.style.display = 'flex';
-        }
-
-        // Create letter bank buttons (MODIFIED FOR PYRAMID LAYOUT)
-        function createLetterBank() {
-            const rowSizes = [5, 4, 3, 2, 1]; // Inverted pyramid structure
-            let letterIndex = 0;
-            let bankHtml = '';
-
-            for (const size of rowSizes) {
-                bankHtml += '<div class="pyramid-row">';
-                for (let i = 0; i < size; i++) {
-                    const letter = gameState.letterBank[letterIndex];
-                    // Ensure letter exists before creating button (safety check)
-                    if (letter) {
-                        bankHtml += `
-                            <button class="letter-btn" id="letter-${letterIndex}" onclick="selectLetter('${letter}', ${letterIndex})" ${gameState.gameFinished || gameState.timeLeft === 0 || gameState.selectedLetters.includes(letterIndex) || !canPlayToday() ? 'disabled' : ''}>
-                                ${letter}
-                                <div class="letter-value">${letterScores[letter]}</div>
-                            </button>
-                        `;
-                    }
-                    letterIndex++;
-                }
-                bankHtml += '</div>'; // Close pyramid-row div
-            }
-
-            elements.letterBank.innerHTML = bankHtml;
-            // Initial state disabling is now handled directly in the HTML generation above
-            // based on gameFinished/timeLeft state, and then updateUI handles active game state.
-        }
-
-
-        // Calculate possible words
-        function getPossibleWords() {
-            if (!gameState.validWords || !gameState.letterBank) {
-                return [];
-            }
-            // Filter valid words to find which ones can be formed from the current letter bank
-            return gameState.validWords.filter(word => canFormWord(word, gameState.letterBank));
-        }
-
-        // Check if word can be formed
-        function canFormWord(word, bank) {
-            if (!word || !bank) return false;
-            const bankCopy = [...bank];
-            for (let letter of word) {
-                const index = bankCopy.indexOf(letter);
-                if (index === -1) return false;
-                bankCopy.splice(index, 1);
-            }
-            return true;
-        }
-
-        // Calculate word score
-        function calculateWordScore(word) {
-            if (!word) return 0;
-            return word.split('').reduce((score, letter) => score + (letterScores[letter] || 1), 0); // Default to 1 if score not found (shouldn't happen with A-Z)
-        }
-
-        // Format time
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${mins}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        // Update UI (optimized - only update what changed)
-        function updateUI() {
-            const possibleWords = getPossibleWords();
-            
-            // Update scores
-            elements.scoreValue.textContent = gameState.totalScore;
-            elements.foundValue.textContent = gameState.foundWords.length;
-            elements.possibleValue.textContent = possibleWords.length;
-            
-            // Update timer
-            const timerColor = gameState.timeLeft > 60 ? '#90EE90' : gameState.timeLeft > 30 ? '#ffd700' : '#ff6b6b';
-            elements.timer.style.color = timerColor;
-            
-            // Show different timer text based on game state
-             const gameCompletedToday = !canPlayToday();
-            if (gameCompletedToday && gameState.gameFinished) {
-                 // Timer text is handled by the countdown in showCompletedGame / game over screen
-                 // Hide the main timer element if game is completed and replaced by game over screen countdown
-                 elements.timer.style.display = 'none';
-            } else if (gameState.timeLeft > 0 && !gameState.gameStarted && !gameState.gameFinished) {
-                elements.timer.textContent = 'Ready? 🎯';
-                 elements.timer.style.display = 'block';
-            } else {
-                elements.timer.textContent = formatTime(gameState.timeLeft);
-                elements.timer.style.display = 'block'; // Ensure timer is visible during gameplay
-            }
-            
-            // Update letter bank buttons state
-            gameState.letterBank.forEach((letter, index) => {
-                const btn = document.getElementById(`letter-${index}`);
-                if (btn) {
-                    // Disable if game finished, time is up, letter is selected, or game completed today
-                    btn.disabled = gameState.gameFinished || gameState.timeLeft === 0 || gameState.selectedLetters.includes(index) || gameCompletedToday;
-                }
-            });
-            
-            // Update control buttons state
-            const controlsDisabled = gameState.gameFinished || gameState.timeLeft === 0 || gameCompletedToday;
-            elements.clearBtn.disabled = controlsDisabled || gameState.currentWord.length === 0;
-            elements.backBtn.disabled = controlsDisabled || gameState.currentWord.length === 0;
-            elements.submitBtn.disabled = controlsDisabled || gameState.currentWord.length !== 5;
-             if(controlsDisabled) { // Hide controls if game is over or completed today
-                 elements.controls.style.display = 'none';
-             } else {
-                  elements.controls.style.display = 'flex'; // Show controls during active game
-             }
-            
-            // Update current word slots
-            for (let i = 0; i < 5; i++) {
-                const slot = elements.slots[i];
-                const letter = gameState.currentWord[i] || '';
-                slot.textContent = letter;
-                slot.classList.toggle('filled', !!letter);
-            }
-
-            // Update found words display
-            if (gameState.foundWords.length > 0) {
-                elements.foundWords.style.display = 'block';
-                elements.foundWordsTitle.textContent = `Found Words (${gameState.foundWords.length})`;
-                elements.wordGrid.innerHTML = gameState.foundWords.map(word => 
-                    `<div class="found-word">
-                        <div class="found-word-name">${word}</div>
-                        <div class="found-word-score">${calculateWordScore(word)} pts</div>
-                    </div>`
-                ).join('');
-            } else {
-                elements.foundWords.style.display = 'none';
-            }
-            
-            // Update game over screen state
-            if (gameState.gameFinished) {
-                const isPerfect = gameState.foundWords.length === possibleWords.length && possibleWords.length > 0; // Ensure possibleWords > 0 for perfect
-                elements.gameOver.style.display = 'block';
-                elements.gameOverTitle.textContent = isPerfect ? '🏆 Perfect Game!' : '🎉 Game Complete!';
-                elements.gameOverScore.innerHTML = `<strong>Final Score:</strong> ${gameState.totalScore} points`;
-                elements.gameOverWords.innerHTML = `<strong>Words Found:</strong> ${gameState.foundWords.length}/${possibleWords.length}`;
-                elements.gameOverPerfect.style.display = isPerfect ? 'block' : 'none';
-
-                // Ensure other game elements are hidden when game over screen is shown
-                 elements.currentWord.parentElement.style.display = 'none';
-                 elements.controls.style.display = 'none';
-                 elements.timer.style.display = 'none';
-            } else {
-                elements.gameOver.style.display = 'none';
-                // Ensure other game elements are visible if game is not finished AND not completed today
-                if (!gameCompletedToday) {
-                    elements.currentWord.parentElement.style.display = 'flex';
-                    elements.controls.style.display = 'flex';
-                    elements.timer.style.display = 'block';
-                }
-            }
-
-             // Handle visibility of main game elements based on app state or game completion
-            if (elements.appState.style.display === 'flex') {
-                 // App is in loading/error state, hide game
-                 elements.scoreValue.parentElement.parentElement.style.display = 'none';
-                 elements.timer.style.display = 'none';
-                 elements.letterBank.style.display = 'none';
-                 elements.currentWord.parentElement.style.display = 'none';
-                 elements.controls.style.display = 'none';
-                 elements.foundWords.style.display = 'none';
-                 elements.gameOver.style.display = 'none';
-            } else {
-                 // App is loaded, manage visibility based on game state
-                  elements.scoreValue.parentElement.parentElement.style.display = 'flex';
-                  elements.letterBank.style.display = 'flex'; // Letter bank always visible once loaded
-            }
-        }
-
-        // Handle letter click
-        function selectLetter(letter, index) {
-            if (!canPlayToday()) {
-                 showMessage('Game completed for today. Come back tomorrow!');
-                 return;
-             }
-            if (gameState.gameFinished || gameState.timeLeft <= 0) return;
-            if (gameState.currentWord.length >= 5 || gameState.selectedLetters.includes(index)) return;
-            
-            if (!gameState.gameStarted) {
-                gameState.gameStarted = true;
-                startTimer();
-            }
-            
-            gameState.currentWord += letter;
-            gameState.selectedLetters.push(index);
-            updateUI();
-        }
-
-        // Clear word
-        function clearWord() {
-            if (!canPlayToday() && !gameState.gameFinished) { // Allow clearing if game is over/completed, but not if completed game screen is showing and it's a new day
-                 showMessage('Game completed for today. Cannot clear.');
-                 return;
-            }
-            if (gameState.gameFinished || gameState.timeLeft <= 0) return;
-            if (gameState.currentWord.length === 0) return;
-            
-            gameState.currentWord = '';
-            gameState.selectedLetters = [];
-            updateUI();
-        }
-
-        // Backspace
-        function backspaceWord() {
-             if (!canPlayToday() && !gameState.gameFinished) { // Allow backspace if game is over/completed, but not if completed game screen is showing and it's a new day
-                 showMessage('Game completed for today. Cannot backspace.');
-                 return;
-            }
-            if (gameState.gameFinished || gameState.timeLeft <= 0) return;
-            if (gameState.currentWord.length === 0) return;
-            
-            gameState.currentWord = gameState.currentWord.slice(0, -1);
-            gameState.selectedLetters.pop();
-            updateUI();
-        }
-
-        // Submit word
-        function submitWord() {
-            if (!canPlayToday()) {
-                 showMessage('Game completed for today. Cannot submit.');
-                 return;
-             }
-            if (gameState.gameFinished || gameState.timeLeft <= 0) return;
-            if (gameState.currentWord.length !== 5) {
-                showMessage('Word must be exactly 5 letters!');
-                return;
-            }
-            
-            if (!gameState.gameStarted) {
-                gameState.gameStarted = true;
-                startTimer();
-            }
-            
-            if (gameState.foundWords.includes(gameState.currentWord)) {
-                showMessage('Word already found!');
-                return;
-            }
-            
-            if (!gameState.validWords.includes(gameState.currentWord)) {
-                showMessage('Not a valid word!');
-                return;
-            }
-            
-            if (!canFormWord(gameState.currentWord, gameState.letterBank)) {
-                showMessage('Cannot form word with available letters!');
-                return;
-            }
-            
-            const wordScore = calculateWordScore(gameState.currentWord);
-            gameState.foundWords.push(gameState.currentWord);
-            gameState.totalScore += wordScore;
-            showMessage(`Great! "${gameState.currentWord}" scores ${wordScore} points!`);
-            
-            // Clear current word after successful submission
-            gameState.currentWord = '';
-            gameState.selectedLetters = [];
-            
-            // Check if all words found
-            const possibleWords = getPossibleWords();
-            if (possibleWords.length > 0 && gameState.foundWords.length === possibleWords.length) {
-                endGame('🎉 Perfect! You found all words!');
-            } else {
-                 // Update UI after submission
-                 updateUI();
-            }
-        }
-
-        // Start timer
-        function startTimer() {
-            if (gameState.timerInterval) return;
-            
-            gameState.timerInterval = setInterval(() => {
-                gameState.timeLeft--;
-                
-                if (gameState.timeLeft <= 0) {
-                    clearInterval(gameState.timerInterval);
-                    gameState.timerInterval = null; // Clear interval ID
-                    endGame("⏰ Time's up!");
-                }
-                
-                updateUI();
-            }, 1000);
-        }
-
-        // End game
-        function endGame(message) {
-            if (gameState.gameFinished) return; // Prevent ending multiple times
-
-            gameState.gameFinished = true;
-            if (gameState.timerInterval) {
-                clearInterval(gameState.timerInterval);
-                gameState.timerInterval = null;
-            }
-            
-            // Calculate game data
-            const possibleWords = getPossibleWords();
-            const gameData = {
-                score: gameState.totalScore,
-                wordsFound: gameState.foundWords.length,
-                totalPossible: possibleWords.length,
-                timeTaken: 180 - gameState.timeLeft, // Total time - time left
-                completedEarly: gameState.timeLeft > 0,
-                completionPercentage: possibleWords.length > 0 ? Math.round((gameState.foundWords.length / possibleWords.length) * 100) : 0,
-                foundWords: [...gameState.foundWords] // Save the actual words found
-            };
-            
-            // Save and check achievements
-            saveGameStats(gameData);
-            checkAchievements(gameData); // Ensure achievements are checked BEFORE showing game over UI
-
-            showMessage(message); // Show end game message
-            updateUI(); // Update UI to show game over screen, final scores, etc.
-            
-            // Add countdown timer to game over screen (async to ensure DOM update)
-            setTimeout(() => {
-                const gameOverElement = elements.gameOver;
-                 // Ensure game over screen is actually being displayed before adding countdown
-                 // Check display style AND check if it's the element reference we expect
-                if (gameOverElement && gameOverElement.style.display === 'block') {
-                    const initialCountdown = formatCountdown(getTimeUntilNextGame());
-                    const countdownHtml = `
-                        <div style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
-                            <p style="margin-bottom: 10px; opacity: 0.9;">Next game available in:</p>
-                            <p style="font-size: 1.2rem; font-weight: bold; color: #ffd700;" id="next-game-countdown">
-                                ${initialCountdown}
-                            </p>
-                        </div>
-                    `;
-                    
-                    // Insert countdown before the share button if not already present
-                    const shareBtn = gameOverElement.querySelector('.share-btn');
-                    if (shareBtn && !document.getElementById('next-game-countdown')) {
-                        shareBtn.insertAdjacentHTML('beforebegin', countdownHtml);
-                        startCountdown();
-                    }
-                }
-            }, 50); // Small delay to ensure DOM is updated by updateUI
-
-            // Optional: Populate possible words list in the modal after game ends
-            // This was part of the CSS but not requested functionality, so skipping implementation.
-            // If needed, you would get possibleWords, compare with foundWords, and render.
-        }
-
-        // Show message
-        function showMessage(text) {
-            // Use a queue or clear previous timeout if messages can overlap rapidly
-            if (elements.messageTimeout) {
-                clearTimeout(elements.messageTimeout);
-            }
-            elements.message.textContent = text;
-            elements.messageTimeout = setTimeout(() => {
-                // Only clear if the current message is still the one we set
-                if (elements.message && elements.message.textContent === text) {
-                    elements.message.textContent = '';
-                }
-                 elements.messageTimeout = null; // Clear timeout ID
-            }, 3000);
-        }
-
-        // Initialize on load
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('Starting Word Bank Game...');
-            cacheElements(); // Cache DOM elements first
-             // Hide game elements initially while loading/checking state
-            elements.scoreValue.parentElement.parentElement.style.display = 'none';
-            elements.timer.style.display = 'none';
-            elements.letterBank.style.display = 'none';
-            elements.currentWord.parentElement.style.display = 'none';
-            elements.controls.style.display = 'none';
-            elements.foundWords.style.display = 'none';
-            elements.gameOver.style.display = 'none';
-            elements.appState.style.display = 'flex'; // Show loading state
-
-            loadStats(); // Load player stats
-            loadWords(); // Load words and start game or show completed screen
-        });
-
-        // Prevent default touch/drag behaviors on buttons
-        document.addEventListener('touchstart', (e) => {
-            if (e.target.classList.contains('letter-btn') || e.target.classList.contains('btn')) {
-                 e.preventDefault(); // Prevent default browser behavior (like text selection or scrolling interference)
-             }
-        }, { passive: false });
-
-         document.addEventListener('touchmove', (e) => {
-            if (e.target.classList.contains('letter-btn') || e.target.classList.contains('btn')) {
-                 e.preventDefault(); // Prevent scrolling while touching buttons
-             }
-        }, { passive: false });
-
-    </script>
-</body>
-</html>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    min-height: -webkit-fill-available; /* iOS viewport fix */
+    padding: 10px;
+    overflow-x: hidden;
+    /* -webkit-user-select: none; user-select: none; */ /* Keep user-select enabled for copy in modal */
+    touch-action: pan-y; /* Allow vertical scrolling on body */
+}
+
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center contents */
+}
+
+.container > * { /* Added to ensure main child flex items stretch */
+    width: 100%;
+}
+
+
+.header {
+    text-align: center;
+    margin-bottom: 25px;
+    position: relative;
+    padding-top: 10px;
+    /* width: 100%; Removed - handled by container > * */
+}
+
+.header h1 {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+    font-weight: 700;
+    padding: 0 50px;
+    line-height: 1.2;
+}
+
+.header p {
+    opacity: 0.9;
+    font-size: 0.9rem;
+}
+
+.stats-btn {
+    position: absolute;
+    top: 5px;
+    right: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    padding: 12px;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    width: 44px; /* iOS recommended touch target */
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation; /* Prevent default scroll */
+}
+
+.stats-btn:active {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(0.95);
+}
+
+.score-display {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* width: 100%; Removed - handled by container > * */
+}
+
+.score-item {
+    flex: 1;
+}
+
+.score-label {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-bottom: 4px;
+}
+
+.score-value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.timer {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #90EE90;
+    text-align: center;
+    margin-bottom: 20px;
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    transition: color 0.3s ease;
+    /* width: 100%; Removed - handled by container > * */
+}
+
+/* Letter Bank Container (Pyramid Layout) */
+.letter-bank {
+    display: flex;
+    flex-direction: column; /* Stack rows vertically */
+    align-items: center; /* Center rows horizontally */
+    margin: 20px auto;
+    max-width: 400px; /* Limit overall width */
+    /* width: 100%; Removed - handled by container > * */
+    gap: 8px; /* Space between rows */
+}
+
+.pyramid-row {
+    display: flex;
+    justify-content: center; /* Center buttons within the row */
+    gap: 6px; /* Space between buttons in a row */
+    /* margin-bottom: 8px; */ /* Removed, using gap on .letter-bank instead */
+}
+
+/* Style for individual letter buttons inside the pyramid */
+.pyramid-row .letter-btn {
+    /* Inherits base .letter-btn styles */
+    min-width: 45px; /* Ensure buttons are wide enough */
+    height: 45px;
+    font-size: 1.2rem;
+    border: none; /* Remove border from base style */
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.letter-btn:active:not(:disabled) {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(0.95);
+}
+
+.letter-btn:disabled {
+    background: rgba(128, 0, 128, 0.6); /* Muted/Purple color for disabled */
+    border-color: rgba(128, 0, 128, 0.4);
+    color: rgba(255, 255, 255, 0.8);
+    opacity: 0.7;
+    cursor: default;
+}
+
+
+.letter-value {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 0.6rem;
+    color: #ffd700;
+    font-weight: normal;
+}
+
+/* Added container for current word slots */
+.current-word-container {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 20px;
+    /* width: 100%; Removed - handled by container > * */
+}
+
+
+.word-slot {
+    width: 45px;
+    height: 45px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    font-weight: bold;
+    background: rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+}
+
+.word-slot.filled {
+    border-color: #ffd700;
+    background: rgba(255, 215, 0, 0.2);
+    transform: scale(1.05);
+}
+
+.controls {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 15px;
+    /* width: 100%; Removed - handled by container > * */
+}
+
+.btn {
+    padding: 12px 14px;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 44px; /* iOS touch target */
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.btn:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+.btn-clear {
+    background: #ff6b6b;
+    color: white;
+}
+
+.btn-back {
+    background: #ffa726;
+    color: white;
+}
+
+.btn-submit {
+    background: #4caf50;
+    color: white;
+    padding: 12px 18px;
+}
+
+/* Shuffle Button */
+.btn-shuffle {
+    margin: 10px auto; /* Center below pyramid */
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: rgba(147, 112, 219, 0.8); /* Medium Purple */
+    border: 1px solid rgba(147, 112, 219, 1);
+}
+
+.btn-shuffle:hover:not(:disabled) {
+    background-color: rgba(147, 112, 219, 1);
+}
+
+
+.message {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 15px;
+    min-height: 20px;
+    color: #ffd700;
+    font-size: 0.9rem;
+    /* width: 100%; Removed - handled by container > * */
+}
+
+.found-words {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 15px;
+    max-height: 120px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* width: 100%; Removed - handled by container > * */
+}
+
+.found-words h3 {
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.word-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.found-word {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.8rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.found-word-name {
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.found-word-score {
+    color: #ffd700;
+    font-size: 0.7rem;
+}
+
+.game-over {
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid #ffd700;
+    border-radius: 15px;
+    padding: 15px;
+    text-align: center;
+    margin-bottom: 15px;
+    animation: fadeIn 0.5s ease;
+    /* width: 100%; Removed - handled by container > * */
+}
+
+.share-btn {
+    background: linear-gradient(45deg, #4caf50, #45a049);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-top: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 12px auto 0;
+    font-size: 0.85rem;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+.share-btn:active {
+    background: linear-gradient(45deg, #45a049, #4caf50);
+    transform: scale(0.95);
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    height: -webkit-fill-available; /* iOS fix */
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px 10px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 20px;
+    max-width: 380px;
+    width: 100%;
+    max-height: calc(100vh - 40px);
+    max-height: calc(-webkit-fill-available - 40px); /* iOS fix */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-top: 20px;
+    box-sizing: border-box;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    position: sticky;
+    top: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding-bottom: 10px;
+    z-index: 10;
+}
+
+.modal-title {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+}
+
+.close-btn:active {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(0.95);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-value {
+    font-size: 1.6rem;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Changed from 4 to 3 for mobile */
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.achievement {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.achievement.unlocked {
+    background: rgba(255, 215, 0, 0.2);
+    border: 1px solid rgba(255, 215, 0, 0.5);
+}
+
+.achievement.locked {
+    opacity: 0.4;
+}
+
+.achievement-icon {
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
+.achievement-name {
+    font-size: 0.55rem;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(45deg, #ffd700, #ffed4e);
+    color: #333;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+    z-index: 1001;
+    animation: slideIn 0.5s ease, fadeOut 0.5s ease 4.5s;
+    font-weight: bold;
+}
+
+#app-state {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5); /* Darken slightly */
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 50; /* Below modals */
+     border-radius: 20px; /* Match container */
+     /* Hide by default, shown in JS */
+     display: none;
+}
+
+
+.loading {
+    text-align: center;
+    padding: 50px;
+    color: white;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+.error {
+    background: rgba(255, 0, 0, 0.2);
+    border: 2px solid #ff6b6b;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    color: white;
+    max-width: 90%;
+}
+.error h2 {
+    margin-bottom: 10px;
+    font-size: 1.4rem;
+}
+.error p {
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+.error .btn {
+    background: #ff6b6b;
+    color: white;
+}
+
+
+/* Animations */
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* iOS specific optimizations */
+@media screen and (max-height: 700px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .header h1 {
+        font-size: 2rem;
+    }
+    
+    .modal-content {
+        margin-top: 10px;
+        max-height: calc(100vh - 20px);
+    }
+}
+
+/* iPhone SE and small screens */
+@media screen and (max-width: 375px) {
+    .container {
+        padding: 15px;
+        margin: 0 5px;
+    }
+    
+    .header h1 {
+        font-size: 1.8rem;
+        padding: 0 45px;
+    }
+    
+    /* Letter bank buttons */
+    .pyramid-row .letter-btn {
+         min-width: 40px;
+         height: 40px;
+         font-size: 1.1rem;
+         border-radius: 10px;
+    }
+     .pyramid-row {
+         gap: 5px;
+     }
+    .letter-bank {
+        gap: 6px;
+    }
+
+    .word-slot {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+         border-radius: 10px;
+    }
+    
+    .btn {
+        padding: 10px 12px;
+        font-size: 0.8rem;
+        border-radius: 10px;
+    }
+    
+    .achievements-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+    
+    .achievement {
+        padding: 6px;
+        min-height: 55px;
+    }
+    
+    .achievement-icon {
+        font-size: 1rem;
+    }
+    
+    .achievement-name {
+        font-size: 0.5rem;
+    }
+}
+
+/* Mobile optimizations */
+@media (max-width: 480px) {
+    .container {
+        margin: 10px;
+        padding: 20px;
+    }
+    
+    /* Letter bank buttons */
+     .pyramid-row .letter-btn {
+         min-width: 45px;
+         height: 45px;
+         font-size: 1.2rem;
+     }
+     .pyramid-row {
+         gap: 6px;
+     }
+     .letter-bank {
+         gap: 8px;
+     }
+
+    .word-slot {
+        width: 45px;
+        height: 45px;
+        font-size: 1.3rem;
+    }
+    
+    .controls {
+        gap: 6px;
+    }
+    
+    .btn {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Desktop hover effects */
+@media (hover: hover) {
+    .share-btn:hover {
+        background: linear-gradient(45deg, #4caf50, #45a049);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    }
+
+    .close-btn:hover {
+        color: white;
+    }
+
+    .pyramid-row .letter-btn:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .pyramid-row .letter-btn:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .btn:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn:active:not(:disabled) {
+        transform: translateY(0);
+    }
+    
+    .btn-shuffle:hover:not(:disabled) {
+        background-color: rgba(147, 112, 219, 1);
+    }
+}
+
+/* Add this to your styles.css */
+
+.possible-words-section {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.08); /* Slightly lighter background */
+    border-radius: 12px;
+    max-height: 200px; /* Limit height and make it scrollable */
+    overflow-y: auto;
+     width: 100%; /* Take full width */
+}
+
+.possible-words-section h3 {
+     margin-bottom: 12px;
+     font-size: 0.9rem;
+     opacity: 0.9;
+}
+
+.possible-word-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); /* Responsive grid */
+    gap: 8px; /* Space between words */
+    text-align: center;
+    font-weight: bold;
+}
+
+.possible-word-grid div {
+    padding: 6px 4px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.found-word-possible {
+    color: #4caf50; /* Green */
+    background: rgba(76, 175, 80, 0.1); /* Light green background */
+}
+
+.unfound-word-possible {
+    color: #f44336; /* Red */
+    background: rgba(244, 67, 54, 0.1); /* Light red background */
+    opacity: 0.8; /* Slightly less prominent */
+}
+
+/* Optional: Style the scrollbar for the possible-words-section */
+.possible-words-section::-webkit-scrollbar {
+    width: 8px;
+}
+
+.possible-words-section::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.possible-words-section::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.possible-words-section::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
