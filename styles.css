@@ -1,738 +1,1191 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Arial, sans-serif;
-    min-height: 100vh;
-    min-height: -webkit-fill-available; /* iOS viewport fix */
-    padding: 10px;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    -webkit-user-select: none;
-    user-select: none;
-}
-
-.container {
-    max-width: 400px;
-    margin: 0 auto;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    position: relative;
-    width: 100%;
-    box-sizing: border-box;
-    position: relative; 
-}
-
-.header {
-    text-align: center;
-    margin-bottom: 25px;
-    position: relative;
-    padding-top: 10px;
-}
-
-.header h1 {
-    font-size: 2.2rem;
-    margin-bottom: 8px;
-    font-weight: 700;
-    padding: 0 50px;
-    line-height: 1.2;
-}
-
-.header p {
-    opacity: 0.9;
-    font-size: 0.9rem;
-}
-
-.stats-btn {
-    position: absolute;
-    top: 5px;
-    right: 0;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 12px;
-    color: white;
-    cursor: pointer;
-    padding: 12px;
-    transition: all 0.2s ease;
-    -webkit-tap-highlight-color: transparent;
-    width: 44px; /* iOS recommended touch target */
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.stats-btn:active {
-    background: rgba(255, 255, 255, 0.4);
-    transform: scale(0.95);
-}
-
-.score-display {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 15px;
-    padding: 15px;
-    margin-bottom: 25px;
-    display: flex;
-    justify-content: space-between;
-    text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.score-item {
-    flex: 1;
-}
-
-.score-label {
-    font-size: 0.8rem;
-    opacity: 0.8;
-    margin-bottom: 4px;
-}
-
-.score-value {
-    font-size: 1.3rem;
-    font-weight: bold;
-    color: #ffd700;
-}
-
-.timer {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: #90EE90;
-    text-align: center;
-    margin-bottom: 20px;
-    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-    transition: color 0.3s ease;
-}
-
-.letter-bank {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
-    margin-bottom: 25px;
-}
-
-.letter-btn {
-    width: 100%;
-    height: 55px;
-    border: none;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-}
-
-.letter-btn:active:not(:disabled) {
-    background: rgba(255, 255, 255, 0.4);
-    transform: scale(0.95);
-}
-
-.letter-btn:disabled {
-    background: rgba(128, 0, 128, 0.6);
-    transform: scale(0.95);
-    opacity: 0.7;
-}
-
-.letter-value {
-    position: absolute;
-    bottom: 2px;
-    right: 4px;
-    font-size: 0.6rem;
-    color: #ffd700;
-    font-weight: normal;
-}
-
-.current-word {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 20px;
-}
-
-.word-slot {
-    width: 45px;
-    height: 45px;
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.3rem;
-    font-weight: bold;
-    background: rgba(255, 255, 255, 0.1);
-    transition: all 0.2s ease;
-}
-
-.word-slot.filled {
-    border-color: #ffd700;
-    background: rgba(255, 215, 0, 0.2);
-    transform: scale(1.05);
-}
-
-.controls {
-    display: flex;
-    gap: 6px;
-    justify-content: center;
-    margin-bottom: 15px;
-}
-
-.btn {
-    padding: 12px 14px;
-    border: none;
-    border-radius: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.85rem;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    min-height: 44px; /* iOS touch target */
-}
-
-.btn:disabled {
-    opacity: 0.5;
-}
-
-.btn:active:not(:disabled) {
-    transform: scale(0.95);
-}
-
-.btn-clear {
-    background: #ff6b6b;
-    color: white;
-}
-
-.btn-back {
-    background: #ffa726;
-    color: white;
-}
-
-.btn-submit {
-    background: #4caf50;
-    color: white;
-    padding: 12px 18px;
-}
-
-.message {
-    text-align: center;
-    font-weight: bold;
-    margin-bottom: 15px;
-    min-height: 20px;
-    color: #ffd700;
-    font-size: 0.9rem;
-}
-
-.found-words {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 15px;
-    margin-bottom: 15px;
-    max-height: 120px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.found-words h3 {
-    margin-bottom: 12px;
-    font-size: 0.9rem;
-    opacity: 0.9;
-}
-
-.word-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-}
-
-.found-word {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 6px;
-    border-radius: 8px;
-    text-align: center;
-    font-size: 0.8rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.found-word-name {
-    font-weight: bold;
-    margin-bottom: 2px;
-}
-
-.found-word-score {
-    color: #ffd700;
-    font-size: 0.7rem;
-}
-
-.game-over {
-    background: rgba(255, 255, 255, 0.15);
-    border: 2px solid #ffd700;
-    border-radius: 15px;
-    padding: 15px;
-    text-align: center;
-    margin-bottom: 15px;
-    animation: fadeIn 0.5s ease;
-}
-
-.share-btn {
-    background: linear-gradient(45deg, #4caf50, #45a049);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 10px 14px;
-    margin-top: 12px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: 12px auto 0;
-    font-size: 0.85rem;
-    -webkit-tap-highlight-color: transparent;
-    min-height: 44px;
-}
-
-.share-btn:active {
-    background: linear-gradient(45deg, #45a049, #4caf50);
-    transform: scale(0.95);
-}
-
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    height: -webkit-fill-available; /* iOS fix */
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    z-index: 1000;
-    padding: 20px 10px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-.modal-content {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 20px;
-    padding: 20px;
-    max-width: 380px;
-    width: 100%;
-    max-height: calc(100vh - 40px);
-    max-height: calc(-webkit-fill-available - 40px); /* iOS fix */
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    margin-top: 20px;
-    box-sizing: border-box;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    position: sticky;
-    top: 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding-bottom: 10px;
-    z-index: 10;
-}
-
-.modal-title {
-    font-size: 1.3rem;
-    font-weight: bold;
-    color: white;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.close-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    cursor: pointer;
-    font-size: 1.2rem;
-    padding: 8px 12px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    -webkit-tap-highlight-color: transparent;
-    min-width: 44px;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.close-btn:active {
-    background: rgba(255, 255, 255, 0.4);
-    transform: scale(0.95);
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.stat-card {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    padding: 12px;
-    text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stat-value {
-    font-size: 1.6rem;
-    font-weight: bold;
-    margin-bottom: 4px;
-}
-
-.stat-label {
-    font-size: 0.75rem;
-    opacity: 0.8;
-}
-
-.achievements-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Changed from 4 to 3 for mobile */
-    gap: 8px;
-    margin-top: 12px;
-}
-
-.achievement {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 8px;
-    text-align: center;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    min-height: 60px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.achievement.unlocked {
-    background: rgba(255, 215, 0, 0.2);
-    border: 1px solid rgba(255, 215, 0, 0.5);
-}
-
-.achievement.locked {
-    opacity: 0.4;
-}
-
-.achievement-icon {
-    font-size: 1.1rem;
-    margin-bottom: 4px;
-}
-
-.achievement-name {
-    font-size: 0.55rem;
-    font-weight: bold;
-    line-height: 1.2;
-}
-
-.notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: linear-gradient(45deg, #ffd700, #ffed4e);
-    color: #333;
-    padding: 15px 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
-    z-index: 1001;
-    animation: slideIn 0.5s ease, fadeOut 0.5s ease 4.5s;
-    font-weight: bold;
-}
-
-.loading {
-    text-align: center;
-    padding: 50px;
-}
-
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    border-top: 4px solid white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
-}
-
-.error {
-    background: rgba(255, 0, 0, 0.2);
-    border: 2px solid #ff6b6b;
-    border-radius: 15px;
-    padding: 20px;
-    text-align: center;
-}
-
-/* Animations */
-@keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes fadeOut {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100%); opacity: 0; }
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* iOS specific optimizations */
-@media screen and (max-height: 700px) {
-    .container {
-        padding: 15px;
-    }
-    
-    .header h1 {
-        font-size: 2rem;
-    }
-    
-    .modal-content {
-        margin-top: 10px;
-        max-height: calc(100vh - 20px);
-    }
-}
-
-/* iPhone SE and small screens */
-@media screen and (max-width: 375px) {
-    .container {
-        padding: 15px;
-        margin: 0 5px;
-    }
-    
-    .header h1 {
-        font-size: 1.8rem;
-        padding: 0 45px;
-    }
-    
-    .letter-btn {
-        height: 50px;
-        font-size: 1rem;
-    }
-    
-    .word-slot {
-        width: 40px;
-        height: 40px;
-        font-size: 1.2rem;
-    }
-    
-    .btn {
-        padding: 10px 12px;
-        font-size: 0.8rem;
-    }
-    
-    .achievements-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-    }
-    
-    .achievement {
-        padding: 6px;
-        min-height: 55px;
-    }
-    
-    .achievement-icon {
-        font-size: 1rem;
-    }
-    
-    .achievement-name {
-        font-size: 0.5rem;
-    }
-}
-
-/* Mobile optimizations */
-@media (max-width: 480px) {
-    .container {
-        margin: 10px;
-        padding: 20px;
-    }
-    
-    .letter-btn {
-        height: 55px;
-        font-size: 1.2rem;
-    }
-    
-    .word-slot {
-        width: 45px;
-        height: 45px;
-        font-size: 1.3rem;
-    }
-    
-    .controls {
-        gap: 6px;
-    }
-    
-    .btn {
-        padding: 10px 12px;
-        font-size: 0.85rem;
-    }
-}
-
-/* Desktop hover effects */
-@media (hover: hover) {
-    .share-btn:hover {
-        background: linear-gradient(45deg, #45a049, #4caf50);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-    }
-
-    .close-btn:hover {
-        color: white;
-    }
-
-    .letter-btn:hover:not(:disabled) {
-        background: rgba(255, 255, 255, 0.3);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .letter-btn:active:not(:disabled) {
-        transform: translateY(0);
-    }
-
-    .btn:hover:not(:disabled) {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .btn:active:not(:disabled) {
-        transform: translateY(0);
-    }
-}
-
-/* Add this to your styles.css */
-
-.possible-words-section {
-    margin-top: 20px;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.08); /* Slightly lighter background */
-    border-radius: 12px;
-    max-height: 200px; /* Limit height and make it scrollable */
-    overflow-y: auto;
-}
-
-.possible-word-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); /* Responsive grid */
-    gap: 8px; /* Space between words */
-    text-align: center;
-    font-weight: bold;
-}
-
-.possible-word-grid div {
-    padding: 6px 4px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-}
-
-.found-word-possible {
-    color: #4caf50; /* Green */
-    background: rgba(76, 175, 80, 0.1); /* Light green background */
-}
-
-.unfound-word-possible {
-    color: #f44336; /* Red */
-    background: rgba(244, 67, 54, 0.1); /* Light red background */
-    opacity: 0.8; /* Slightly less prominent */
-}
-
-/* Optional: Style the scrollbar for the possible-words-section */
-.possible-words-section::-webkit-scrollbar {
-    width: 8px;
-}
-
-.possible-words-section::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
-}
-
-.possible-words-section::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-}
-
-.possible-words-section::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
-}
-
-/* Letter Bank Container (Inverted Pyramid Layout) */
-.letter-bank {
-    display: flex;
-    flex-direction: column; /* Stack rows vertically */
-    align-items: center; /* Center rows horizontally */
-    margin: 20px auto;
-    max-width: 300px; /* Adjust max-width for the wider base */
-    padding: 10px; /* Add some padding around the pyramid */
-    /* Removed background/border as it's just a container now */
-}
-/* Shuffle Button - Smaller and positioned absolutely */
-.btn-shuffle {
-    position: absolute; /* Position relative to the .container */
-    bottom: 160px; /* Adjust this based on vertical space below pyramid */
-    right: 40px; /* Adjust this for horizontal position */
-    z-index: 10; /* Ensure it's above other elements if needed */
-
-    width: 50px; /* Smaller size */
-    height: 50px; /* Smaller size */
-    padding: 5px; /* Adjust padding */
-    font-size: 0.8rem; /* Smaller text */
-    flex-direction: column; /* Stack icon and text */
-    justify-content: center;
-    align-items: center;
-    gap: 2px; /* Smaller gap between icon and text */
-
-    background-color: rgba(147, 112, 219, 0.8); /* Medium Purple */
-    border: 1px solid rgba(147, 112, 219, 1);
-    border-radius: 8px; /* Slightly smaller border-radius */
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-.btn-shuffle svg {
-    width: 18px; /* Adjust icon size */
-    height: 18px;
-}
-
-
-.btn-shuffle:hover:not(:disabled) {
-    background-color: rgba(147, 112, 219, 1);
-    transform: scale(1.05); /* Slight hover effect */
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Bank Game</title>
+    <!-- Ensure this links to your styles.css file -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!--
+        The inline <style> block that was here in the previous version
+        has been removed. All styles are now in styles.css.
+    -->
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="stats-btn" id="stats-btn" onclick="showStats()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3v18h18"></path>
+                    <path d="M7 16V9"></path>
+                    <path d="M12 16V6"></path>
+                    <path d="M17 16v-3"></path>
+                </svg>
+            </button>
+            <h1>⭐ Word Bank</h1>
+            <p>Create 5-letter words from your daily bank</p>
+        </div>
+
+        <!-- Score Display -->
+        <div class="score-display">
+            <div class="score-item">
+                <div class="score-label">Score</div>
+                <div class="score-value" id="score-value">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Found</div>
+                <div class="score-value" id="found-value">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Possible</div>
+                <div class="score-value" id="possible-value">0</div>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        <div class="modal" id="stats-modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 3v18h18"></path>
+                            <path d="M7 16V9"></path>
+                            <path d="M12 16V6"></path>
+                            <path d="M17 16v-3"></path>
+                        </svg>
+                        Your Stats
+                    </h2>
+                    <button class="close-btn" onclick="hideStats()">×</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #ffd700;" id="stat-games">0</div>
+                        <div class="stat-label">Games Played</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #4caf50;" id="stat-best">0</div>
+                        <div class="stat-label">Best Score</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #2196f3;" id="stat-avg">0</div>
+                        <div class="stat-label">Avg Score</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #ff9800;" id="stat-streak">0</div>
+                        <div class="stat-label">Day Streak</div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px;">
+                    <h3 style="margin-bottom: 15px; text-align: center;">🏆 Achievements</h3>
+                    <div class="achievements-grid" id="achievements-grid">
+                        <!-- Achievements populated by JS -->
+                    </div>
+                    <div style="text-align: center; margin-top: 15px; font-size: 0.8rem; opacity: 0.8;" id="achievement-count">
+                        0/12 unlocked
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="share-modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                        </svg>
+                        Share Results
+                    </h2>
+                    <button class="close-btn" onclick="hideShareModal()">×</button>
+                </div>
+
+                <div style="background: rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 15px;" id="share-emoji">🎯</div>
+                    <div style="font-size: 2rem; font-weight: bold; color: #ffd700; margin-bottom: 10px;" id="share-score">0</div>
+                    <div style="opacity: 0.9;" id="share-details">0/0 words found</div>
+                </div>
+
+                <div style="background: rgba(0, 0, 0, 0.2); border-radius: 8px; padding: 15px; margin-bottom: 20px; font-family: monospace; font-size: 0.8rem; white-space: pre-line;" id="share-text">
+                    Loading...
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-submit" onclick="copyShareText()" style="flex: 1;">📋 Copy</button>
+                    <button class="btn" onclick="shareToTwitter()" style="flex: 1; background: #1da1f2;">🐦 Tweet</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timer -->
+        <div class="timer" id="timer">Loading...</div>
+
+        <!-- Letter Bank / Pyramid -->
+        <div class="letter-bank" id="letter-bank">
+            <!-- Pyramid rows (5, 4, 3) and letters populated by JS -->
+            <!-- CSS handles the inverted pyramid shape -->
+        </div>
+
+        <!-- Shuffle Button -->
+        <!-- Button is placed *after* letter-bank in HTML, positioned by CSS -->
+        <button class="btn btn-shuffle" id="shuffle-btn" onclick="shuffleBank()">
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path><line x1="17" y1="12" x2="17" y2="10"></line><line x1="19" y1="12" x2="19" y2="6"></line><line x1="21" y1="12" x2="21" y2="3"></line><line x1="12" y1="17" x2="10" y2="17"></line><line x1="12" y1="19" x2="6" y2="19"></line><line x1="12" y1="21" x2="3" y2="21"></line></svg>
+             Shuffle
+        </button>
+        <!-- End Letter Bank / Pyramid -->
+
+        <!-- Game Over Screen -->
+        <div class="game-over" id="game-over" style="display: none;">
+            <h2 id="game-over-title">🎉 Game Complete!</h2>
+            <p id="game-over-score"><strong>Final Score:</strong> <span id="game-over-score-value">0</span> points</p> <!-- Added span for easy JS access -->
+            <p id="game-over-words"><strong>Words Found:</strong> <span id="game-over-words-value">0/0</span></p> <!-- Added span -->
+            <p id="game-over-perfect" style="color: #ffd700; margin-top: 10px; display: none;">🌟 You found every possible word! 🌟</p>
+
+	    <!-- All possible words -->
+	    <div class="possible-words-section" id="possible-words-section" style="display: none;">
+		<h3 style="margin-bottom: 10px; opacity: 0.9;">All Possible Words</h3>
+		<div class="possible-word-grid" id="possible-word-grid">
+		    <!-- Possible words will be populated here -->
+		</div>
+	    </div>
+            <!-- Countdown will be inserted here by JS -->
+
+            <button class="share-btn" onclick="showShareModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+                Share Results
+            </button>
+        </div>
+
+        <!-- Current Word -->
+        <div class="current-word">
+            <div class="word-slot" id="slot-0"></div>
+            <div class="word-slot" id="slot-1"></div>
+            <div class="word-slot" id="slot-2"></div>
+            <div class="word-slot" id="slot-3"></div>
+            <div class="word-slot" id="slot-4"></div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn btn-clear" id="clear-btn" onclick="clearWord()">Clear</button>
+            <button class="btn btn-back" id="back-btn" onclick="backspaceWord()">← Back</button>
+            <button class="btn btn-submit" id="submit-btn" onclick="submitWord()">Submit</button>
+        </div>
+
+        <!-- Message -->
+        <div class="message" id="message"></div>
+
+        <!-- Found Words -->
+        <div class="found-words" id="found-words" style="display: none;">
+            <h3 id="found-words-title">Found Words (0)</h3>
+            <div class="word-grid" id="word-grid">
+                <!-- Found words will be populated here -->
+            </div>
+        </div>
+
+        <!-- Loading/Error State -->
+        <div id="app-state">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading game...</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Game state
+        let gameState = {
+            validWords: [],
+            originalDailyBankLetters: [], // Stores the fixed, unshuffled letters for the day (12 letters)
+            letterBank: [], // Stores the CURRENTLY SHUFFLED sequence of letters for display/interaction (12 letters)
+            currentWord: '',
+            selectedLetters: [], // Stores the indices *within the currently shuffled* letterBank array
+            foundWords: [],
+            totalScore: 0,
+            timeLeft: 180, // Assuming 3 minutes default
+            gameStarted: false,
+            gameFinished: false,
+            timerInterval: null,
+            countdownInterval: null
+        };
+
+        // Achievement definitions (keep the same)
+        const achievements = {
+            firstGame: { name: 'Getting Started', desc: 'Complete your first game', icon: '🎯' },
+            speedDemon: { name: 'Speed Demon', desc: 'Finish with 2+ minutes left', icon: '⚡' },
+            wordHunter: { name: 'Word Hunter', desc: 'Find 10+ words in a game', icon: '🎯' },
+            perfectionist: { name: 'Perfectionist', desc: 'Find all possible words', icon: '💎' },
+            streak3: { name: 'On Fire', desc: 'Play 3 days in a row', icon: '🔥' },
+            streak7: { name: 'Dedicated', desc: 'Play 7 days in a row', icon: '🏆' },
+            highScorer: { name: 'High Scorer', desc: 'Score 50+ points', icon: '🌟' },
+            centurion: { name: 'Centurion', desc: 'Score 100+ points', icon: '💯' },
+            earlyBird: { name: 'Early Bird', desc: 'Play before 9 AM', icon: '🌅' },
+            nightOwl: { name: 'Night Owl', desc: 'Play after 10 PM', icon: '🦉' },
+            veteran: { name: 'Veteran', desc: 'Play 30 games', icon: '🎖️' },
+            wordSmith: { name: 'Word Smith', desc: 'Find 500 total words', icon: '⚒️' }
+        };
+
+        // Stats and achievements storage (keep the same)
+        let playerStats = {
+            gamesPlayed: 0,
+            bestScore: 0,
+            totalWords: 0,
+            currentStreak: 0,
+            lastPlayedDate: null,
+            unlockedAchievements: [],
+            dailyStats: {}, // Stores data like { 'Mon Jan 01 2024': { score: 50, wordsFound: 5, ... } }
+            todaysGameCompleted: false,
+            todaysGameData: null // Stores data for the current day if completed
+        };
+
+        // Load stats from localStorage (keep the same)
+        function loadStats() {
+            const saved = localStorage.getItem('wordBankStats');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    // Merge loaded stats, ensure defaults are present for new properties
+                    playerStats = { ...playerStats, ...parsed };
+                    // Ensure dailyStats is an object if it wasn't saved before
+                    if (typeof playerStats.dailyStats !== 'object' || playerStats.dailyStats === null) {
+                         playerStats.dailyStats = {};
+                    }
+                } catch (e) {
+                     console.error("Failed to parse stats from localStorage", e);
+                     // Optionally clear corrupt stats: localStorage.removeItem('wordBankStats');
+                }
+            }
+
+            // Check if it's a new day
+            const today = new Date().toDateString();
+            // If the last played date is NOT today, reset daily specific stats
+            // If lastPlayedDate is null, it's also treated as a new day for streak purposes
+            if (playerStats.lastPlayedDate !== today) {
+                playerStats.todaysGameCompleted = false;
+                playerStats.todaysGameData = null;
+                 // Streak logic is handled in saveGameStats based on lastPlayedDate vs yesterday
+            }
+        }
+
+        // Save stats to localStorage (keep the same)
+        function saveStats() {
+            localStorage.setItem('wordBankStats', JSON.stringify(playerStats));
+        }
+
+        // Check and unlock achievements (keep the same)
+        function checkAchievements(gameData) {
+            const newAchievements = [];
+
+            // Helper to check and push if not already unlocked
+            const checkAndPush = (id, condition) => {
+                if (!playerStats.unlockedAchievements.includes(id) && condition) {
+                    newAchievements.push(id);
+                }
+            };
+
+            checkAndPush('firstGame', playerStats.gamesPlayed >= 1);
+            checkAndPush('speedDemon', gameData.completedEarly && gameData.timeTaken <= 120); // Speed demon: <= 2 mins used (180 - 120 = 60s left) - corrected condition
+            checkAndPush('wordHunter', gameData.wordsFound >= 10);
+            checkAndPush('perfectionist', gameData.completionPercentage >= 100);
+            checkAndPush('highScorer', gameData.score >= 50);
+            checkAndPush('centurion', gameData.score >= 100);
+
+            const hour = new Date().getHours();
+            checkAndPush('earlyBird', hour >= 5 && hour < 9); // Typically 5 AM to 9 AM
+            checkAndPush('nightOwl', hour >= 22 || hour < 5); // Typically 10 PM to 5 AM
+
+            checkAndPush('streak3', playerStats.currentStreak >= 3);
+            checkAndPush('streak7', playerStats.currentStreak >= 7);
+            checkAndPush('veteran', playerStats.gamesPlayed >= 30);
+            checkAndPush('wordSmith', playerStats.totalWords >= 500);
+
+
+            newAchievements.forEach(achievementId => {
+                playerStats.unlockedAchievements.push(achievementId);
+                showAchievementNotification(achievements[achievementId]);
+            });
+
+            if (newAchievements.length > 0) {
+                saveStats(); // Save if any new achievements unlocked
+            }
+        }
+
+        // Show achievement notification (keep the same)
+        function showAchievementNotification(achievement) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="font-size: 1.5rem;">${achievement.icon}</div>
+                    <div>
+                        <div style="font-weight: bold;">Achievement Unlocked!</div>
+                        <div style="font-size: 0.9rem;">${achievement.name}</div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(notification);
+
+            // Remove notification after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.classList.add('hide'); // Add a class for potential fade-out animation in CSS
+                    // Remove from DOM after animation or a short delay
+                    setTimeout(() => {
+                         if (notification.parentNode) notification.parentNode.removeChild(notification);
+                    }, 500); // Match animation duration
+                }
+            }, 5000); // Show duration
+        }
+
+        // Save game completion stats (keep the same)
+        function saveGameStats(gameData) {
+            const today = new Date().toDateString();
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toDateString();
+
+            // Update streak
+            if (playerStats.lastPlayedDate === yesterdayStr) {
+                playerStats.currentStreak++;
+            } else if (playerStats.lastPlayedDate !== today) {
+                 // If last played wasn't yesterday AND wasn't today, reset streak
+                 playerStats.currentStreak = 1;
+            }
+            // If lastPlayedDate === today, streak is unchanged (already counted)
+
+            playerStats.lastPlayedDate = today; // Always update last played date to today
+
+
+            // Store today's game data
+            playerStats.todaysGameCompleted = true;
+            playerStats.todaysGameData = gameData;
+            playerStats.dailyStats[today] = gameData; // Also store in historical daily stats
+
+            // Update overall stats
+            playerStats.gamesPlayed++;
+            playerStats.bestScore = Math.max(playerStats.bestScore, gameData.score);
+            playerStats.totalWords += gameData.wordsFound;
+
+            saveStats();
+            checkAchievements(gameData); // Check achievements after saving the game data
+        }
+
+        // Show stats modal (keep the same)
+        function showStats() {
+            document.getElementById('stat-games').textContent = playerStats.gamesPlayed;
+            document.getElementById('stat-best').textContent = playerStats.bestScore;
+             const totalScoreSum = Object.values(playerStats.dailyStats).reduce((sum, day) => sum + day.score, 0);
+            document.getElementById('stat-avg').textContent = playerStats.gamesPlayed > 0 ? Math.round(totalScoreSum / playerStats.gamesPlayed) : 0;
+            document.getElementById('stat-streak').textContent = playerStats.currentStreak;
+
+            const achievementsGrid = document.getElementById('achievements-grid');
+            achievementsGrid.innerHTML = Object.keys(achievements).map(id => {
+                const achievement = achievements[id];
+                const isUnlocked = playerStats.unlockedAchievements.includes(id);
+                return `
+                    <div class="achievement ${isUnlocked ? 'unlocked' : 'locked'}" title="${achievement.desc}">
+                        <div class="achievement-icon">${achievement.icon}</div>
+                        <div class="achievement-name">${achievement.name.split(' ')[0]}</div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('achievement-count').textContent =
+                `${playerStats.unlockedAchievements.length}/${Object.keys(achievements).length} unlocked`;
+
+            document.getElementById('stats-modal').style.display = 'flex';
+        }
+
+        // Hide stats modal (keep the same)
+        function hideStats() {
+            document.getElementById('stats-modal').style.display = 'none';
+        }
+
+        // Show share modal (keep the same)
+        function showShareModal() {
+            const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const possibleWords = getPossibleWords(); // Uses originalDailyBankLetters
+            const completionPercentage = possibleWords.length > 0 ? Math.round((gameState.foundWords.length / possibleWords.length) * 100) : 0;
+            const timeUsed = gameState.gameFinished && gameState.timeLeft === 0 ? '3:00' : // Game finished because time ran out
+                             gameState.gameFinished && gameState.timeLeft > 0 ? formatTime(180 - gameState.timeLeft) : // Game finished early
+                             formatTime(180 - gameState.timeLeft); // Game not finished (shouldn't show modal here)
+
+
+            document.getElementById('share-emoji').textContent =
+                gameState.totalScore >= 100 ? '💯' : gameState.totalScore >= 50 ? '⭐' : '🎯'; // Use proper emojis
+            document.getElementById('share-score').textContent = gameState.totalScore;
+            document.getElementById('share-details').textContent =
+                `${gameState.foundWords.length}/${possibleWords.length} words (${completionPercentage}%)`;
+
+            const shareText = `Word Bank ${today}
+🎯 Score: ${gameState.totalScore}
+📝 Words: ${gameState.foundWords.length}/${possibleWords.length} (${completionPercentage}%)
+⏱️ Time: ${timeUsed}
+#WordBankGame
+
+Play daily at: ${window.location.href}`; // Added hashtag
+
+            document.getElementById('share-text').textContent = shareText;
+            document.getElementById('share-modal').style.display = 'flex';
+        }
+
+        // Hide share modal (keep the same)
+        function hideShareModal() {
+            document.getElementById('share-modal').style.display = 'none';
+        }
+
+        // Copy share text (keep the same)
+        async function copyShareText() {
+            const shareText = document.getElementById('share-text').textContent;
+            try {
+                await navigator.clipboard.writeText(shareText);
+                showMessage('Results copied to clipboard! 📋');
+            } catch (err) {
+                console.error('Copy failed:', err);
+                showMessage('Copy failed - try selecting the text manually');
+            }
+        }
+
+        // Share to Twitter (keep the same)
+        function shareToTwitter() {
+            const shareText = document.getElementById('share-text').textContent;
+            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+            window.open(url, '_blank');
+        }
+
+        // Check if today's game can be played (keep the same)
+        function canPlayToday() {
+            const today = new Date().toDateString();
+            return !playerStats.todaysGameCompleted || playerStats.lastPlayedDate !== today;
+        }
+
+        // Get time until next game (keep the same)
+        function getTimeUntilNextGame() {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            return Math.max(0, tomorrow - now);
+        }
+
+        // Format countdown time (keep the same)
+        function formatCountdown(milliseconds) {
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            if (hours > 0) {
+                return `${hours}h ${minutes}m ${seconds}s`;
+            } else if (minutes > 0) {
+                return `${minutes}m ${seconds}s`;
+            } else {
+                return `${seconds}s`;
+            }
+        }
+
+        // Start countdown timer (keep the same)
+        function startCountdown() {
+            if (gameState.countdownInterval) {
+                clearInterval(gameState.countdownInterval);
+            }
+
+            const countdownElement = document.getElementById('next-game-countdown');
+            if (!countdownElement) return;
+
+            gameState.countdownInterval = setInterval(() => {
+                const timeLeft = getTimeUntilNextGame();
+                if (timeLeft <= 0) {
+                    clearInterval(gameState.countdownInterval);
+                    location.reload(); // Refresh to allow new game when time is up
+                } else {
+                    countdownElement.textContent = formatCountdown(timeLeft);
+                }
+            }, 1000);
+        }
+
+
+        // Letter scores (keep the same)
+        const letterScores = {
+            'A': 1, 'E': 1, 'I': 1, 'O': 1, 'U': 1, 'R': 1, 'T': 1, 'L': 1, 'S': 1, 'N': 1,
+            'C': 2, 'D': 2, 'P': 2, 'M': 2, 'H': 2, 'G': 2, 'B': 2, 'F': 2, 'Y': 2, 'W': 2,
+            'K': 3, 'V': 3, 'X': 4, 'Z': 4, 'J': 4, 'Q': 5
+        };
+
+        // DOM Elements (cached for performance)
+        let elements = {};
+
+        // Cache DOM elements (add new elements)
+        function cacheElements() {
+            elements = {
+                scoreValue: document.getElementById('score-value'),
+                foundValue: document.getElementById('found-value'),
+                possibleValue: document.getElementById('possible-value'),
+                timer: document.getElementById('timer'),
+                letterBankContainer: document.getElementById('letter-bank'),
+                gameOver: document.getElementById('game-over'),
+                gameOverTitle: document.getElementById('game-over-title'),
+                gameOverScoreValue: document.getElementById('game-over-score-value'), // Added span ID
+                gameOverWordsValue: document.getElementById('game-over-words-value'), // Added span ID
+                gameOverPerfect: document.getElementById('game-over-perfect'),
+                 possibleWordsSection: document.getElementById('possible-words-section'),
+                 possibleWordGrid: document.getElementById('possible-word-grid'),
+                slots: [
+                    document.getElementById('slot-0'),
+                    document.getElementById('slot-1'),
+                    document.getElementById('slot-2'),
+                    document.getElementById('slot-3'),
+                    document.getElementById('slot-4')
+                ],
+                clearBtn: document.getElementById('clear-btn'),
+                backBtn: document.getElementById('back-btn'),
+                submitBtn: document.getElementById('submit-btn'),
+                shuffleBtn: document.getElementById('shuffle-btn'),
+                message: document.getElementById('message'),
+                foundWords: document.getElementById('found-words'),
+                foundWordsTitle: document.getElementById('found-words-title'),
+                wordGrid: document.getElementById('word-grid'),
+                appState: document.getElementById('app-state')
+            };
+             // Add null checks for elements if any are optional
+             // e.g., if (elements.shuffleBtn) { ... }
+        }
+
+        // Generate daily letter bank (12 letters, UNSHUFFLED and fixed per day)
+        function generateDailyBank() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const baseDate = new Date('2025-01-01'); // Use a fixed base date
+            const daysSinceBase = Math.floor((today - baseDate) / (1000 * 60 * 60 * 24));
+
+            // Deterministic random number generator based on the day
+            function mulberry32(a) {
+                return function() {
+                    let t = a += 0x6D2B79F5;
+                    t = Math.imul(t ^ t >>> 15, t | 1);
+                    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+                    return ((t ^ t >>> 14) >>> 0) / 4294967296; // Standard multiplier/divisor
+                }
+            }
+
+            const rng = mulberry32(daysSinceBase);
+            // Adjust letter distribution slightly for variety if desired, but keeping it simple:
+            const letters = 'AAAAAAAAABBCCDDDEEEEEEEEFFGGHHHIIIIIIJJJKKLLLLMMMNNOOOOOOOOPPPQRRRRRSSSSSSTTTTTTUUUUVVWWXXYYZZZ'; // Example: More common letters
+             if (letters.length < 100) console.warn("Letter distribution string is short, may produce limited banks.");
+
+            const bank = [];
+
+            // Generate 12 letters
+            for (let i = 0; i < 12; i++) {
+                const index = Math.floor(rng() * letters.length);
+                bank.push(letters[index]);
+            }
+
+             // Return the *unshuffled*, fixed daily bank
+             return bank;
+        }
+
+         // Fisher-Yates (aka Knuth) Shuffle (keep the same)
+        function shuffleArray(array) {
+            const shuffledArray = [...array]; // Create a copy
+            let currentIndex = shuffledArray.length, randomIndex;
+
+            while (currentIndex > 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [shuffledArray[currentIndex], shuffledArray[randomIndex]] = [
+                shuffledArray[randomIndex], shuffledArray[currentIndex]];
+            }
+            return shuffledArray;
+        }
+
+
+        // Load words from file
+        async function loadWords() {
+            try {
+                console.log('Loading words.txt...');
+                const response = await fetch('./words.txt');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const text = await response.text();
+
+                if (!text || text.trim().length === 0) {
+                    throw new Error('words.txt file is empty or contains only whitespace');
+                }
+
+                const words = text.split('\n')
+                    .map(word => word.trim().toUpperCase())
+                    .filter(word => word.length === 5 && /^[A-Z]+$/.test(word));
+
+
+                if (words.length < 50) {
+                    console.warn(`Only found ${words.length} valid 5-letter words. Game may be difficult.`);
+                     if (words.length < 10) throw new Error(`Too few valid 5-letter words found (${words.length}). Need at least 10.`); // Minimal requirement
+                }
+
+                gameState.validWords = words;
+                gameState.originalDailyBankLetters = generateDailyBank(); // Store the fixed daily bank
+                gameState.letterBank = shuffleArray([...gameState.originalDailyBankLetters]); // Start with a shuffled version for display
+
+
+                console.log(`Successfully loaded ${words.length} 5-letter words.`);
+                console.log('Original daily bank:', gameState.originalDailyBankLetters);
+                console.log('Initial shuffled bank:', gameState.letterBank);
+
+
+                // Check if today's game can be played
+                if (!canPlayToday()) {
+                    showCompletedGame();
+                } else {
+                    initializeGame();
+                }
+            } catch (error) {
+                console.error('Error loading game data:', error);
+                showError(error.message);
+            }
+        }
+
+        // Show error
+        function showError(message) {
+             if (!elements.appState) return;
+            elements.appState.innerHTML = `
+                <div class="error">
+                    <h2>❌ Error Loading Game</h2>
+                    <p><strong>Problem:</strong> ${message}</p>
+                    <p>Make sure <code>words.txt</code> exists in the correct location and is formatted properly (one 5-letter word per line).</p>
+                    <button class="btn btn-submit" onclick="location.reload()" style="margin-top: 15px;">Try Again</button>
+                </div>
+            `;
+        }
+
+        // Show completed game screen
+        function showCompletedGame() {
+            if (elements.appState) elements.appState.style.display = 'none';
+
+            // Ensure we have a bank even if no game data was saved (e.g., first load after reset)
+            if (gameState.originalDailyBankLetters.length === 0) {
+                 gameState.originalDailyBankLetters = generateDailyBank();
+            }
+            // Always create a fresh shuffled bank for display on the completed screen
+            gameState.letterBank = shuffleArray([...gameState.originalDailyBankLetters]);
+
+
+            if (playerStats.todaysGameData) {
+                // Restore state from saved data
+                gameState.foundWords = playerStats.todaysGameData.foundWords || [];
+                gameState.totalScore = playerStats.todaysGameData.score || 0;
+                gameState.gameFinished = true;
+                gameState.timeLeft = 0;
+            } else {
+                 // If no saved data for today, show default completed state
+                 gameState.foundWords = [];
+                 gameState.totalScore = 0;
+                 gameState.gameFinished = true;
+                 gameState.timeLeft = 0;
+                 // Update game over message for no game data found
+                  if (elements.gameOverTitle) elements.gameOverTitle.textContent = 'Game for today not started.';
+            }
+
+            createLetterBank(); // Use the current gameState.letterBank to create the pyramid layout
+            updateUI(); // Display game over state, including possible words
+
+            // Add countdown if a game was actually completed today AND game over element exists
+            const gameOverElement = elements.gameOver;
+            if (gameOverElement && playerStats.todaysGameCompleted) {
+                 const initialCountdown = formatCountdown(getTimeUntilNextGame());
+                 const countdownHtml = `
+                     <div style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                         <p style="margin-bottom: 10px; opacity: 0.9;">Next game available in:</p>
+                         <p style="font-size: 1.2rem; font-weight: bold; color: #ffd700;" id="next-game-countdown">
+                             ${initialCountdown}
+                         </p>
+                     </div>
+                 `;
+                 const shareBtn = gameOverElement.querySelector('.share-btn');
+                 if (shareBtn && !document.getElementById('next-game-countdown')) {
+                      // Use insertAdjacentHTML for simpler injection
+                     shareBtn.insertAdjacentHTML('beforebegin', countdownHtml);
+                     startCountdown(); // Start the countdown interval
+                 }
+             } else if (gameOverElement) {
+                  // Hide share button if no game data for today
+                  const shareBtn = gameOverElement.querySelector('.share-btn');
+                   if(shareBtn) shareBtn.style.display = 'none';
+             }
+        }
+
+        // Initialize game UI
+        function initializeGame() {
+            if (elements.appState) elements.appState.style.display = 'none';
+            // gameState.originalDailyBankLetters and gameState.letterBank are already set in loadWords
+            createLetterBank(); // Creates the pyramid structure based on gameState.letterBank
+            updateUI();
+        }
+
+        // Create letter bank buttons in INVERTED pyramid shape (5, 4, 3 layout)
+        function createLetterBank() {
+            if (!elements.letterBankContainer || gameState.letterBank.length !== 12) {
+                 console.error("Letter bank not ready or incorrect size to create pyramid.");
+                 // Clear container anyway if it exists
+                 if (elements.letterBankContainer) elements.letterBankContainer.innerHTML = '';
+                 return;
+            }
+
+            elements.letterBankContainer.innerHTML = ''; // Clear existing buttons
+
+            // Define the layout: 5, 4, 3 letters per row (total 12)
+            const layout = [5, 4, 3];
+            let letterIndex = 0; // Index in the gameState.letterBank array (the currently shuffled array)
+
+            layout.forEach(count => {
+                const row = document.createElement('div');
+                row.className = 'pyramid-row';
+
+                for (let i = 0; i < count; i++) {
+                    // Ensure we don't try to add more buttons than letters available
+                    if (letterIndex < gameState.letterBank.length) {
+                        const letter = gameState.letterBank[letterIndex];
+                        const button = document.createElement('button');
+                        button.className = 'letter-btn';
+                        // Use the index in the *current* letterBank array for ID and onclick
+                        button.id = `letter-btn-${letterIndex}`; // Use a distinct ID prefix
+                        button.dataset.index = letterIndex; // Store index as a data attribute
+
+                        button.innerHTML = `${letter}<div class="letter-value">${letterScores[letter] || 0}</div>`;
+                        // Pass the letter and its index in the *current* letterBank array
+                        button.onclick = () => selectLetter(letter, letterIndex);
+                        row.appendChild(button);
+                        letterIndex++;
+                    } else {
+                         // This shouldn't happen with the 5,4,3 layout and 12 letters, but for safety
+                         console.warn("Tried to add more buttons than letters available in bank.");
+                         break; // Exit inner loop
+                    }
+                }
+                 elements.letterBankContainer.appendChild(row);
+            });
+
+            // Update button states immediately after creating them
+             updateUI();
+        }
+
+        // Shuffle the letter bank and update UI
+        function shuffleBank() {
+             // Only allow shuffle if game is not finished, playable today, and has started
+             if (!canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0 || !gameState.gameStarted) {
+                 if (!gameState.gameStarted && !gameState.gameFinished) showMessage('Start playing to shuffle!');
+                 return;
+             }
+
+            // Shuffle the *current* letterBank array (the one used for display)
+            gameState.letterBank = shuffleArray(gameState.letterBank);
+
+            // Clearing current word and selected letters is CRUCIAL after shuffle
+            // because the indices now correspond to different letters.
+            gameState.currentWord = '';
+            gameState.selectedLetters = [];
+
+            showMessage('Letters shuffled!');
+            createLetterBank(); // Re-create buttons with the new shuffled order and updated indices
+            updateUI(); // Update button states and current word display
+        }
+
+        // Calculate possible words from the *original* daily bank
+        function getPossibleWords() {
+            // This should calculate words from the fixed set of letters for the day,
+            // not the currently shuffled arrangement.
+            if (!gameState.validWords || !gameState.originalDailyBankLetters || gameState.originalDailyBankLetters.length !== 12) {
+                 // If original bank isn't set up yet, try generating it (fallback)
+                 if (gameState.originalDailyBankLetters.length !== 12) {
+                     console.warn("originalDailyBankLetters not properly initialized, attempting to generate.");
+                     gameState.originalDailyBankLetters = generateDailyBank();
+                      if (gameState.originalDailyBankLetters.length !== 12) {
+                           console.error("Failed to generate a 12-letter originalDailyBankLetters.");
+                           return []; // Cannot proceed if bank is not 12 letters
+                      }
+                 } else {
+                      // Missing validWords or something else
+                       return [];
+                 }
+             }
+            // Filter valid 5-letter words that can be formed from the *original daily* 12-letter bank
+             return gameState.validWords.filter(word => canFormWord(word, gameState.originalDailyBankLetters));
+        }
+
+        // Check if a word can be formed from a given bank of letters
+        function canFormWord(word, bank) {
+            if (!word || !bank || word.length === 0) return false; // Word must have letters
+            const bankCopy = [...bank]; // Use a copy so we don't modify the original bank
+            for (let i = 0; i < word.length; i++) {
+                 const letter = word[i];
+                const index = bankCopy.indexOf(letter);
+                if (index === -1) return false; // Letter required for the word is not in the bank
+                bankCopy.splice(index, 1); // Remove one instance of the letter from the copy
+            }
+            return true; // All letters found in the bank
+        }
+
+        // Calculate word score (keep the same)
+        function calculateWordScore(word) {
+            if (!word || word.length === 0) return 0;
+            return word.split('').reduce((score, letter) => score + (letterScores[letter] || 0), 0);
+        }
+
+        // Format time (keep the same)
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Update UI (FIXED BUTTON STATE LOGIC)
+        function updateUI() {
+            // getPossibleWords uses originalDailyBankLetters, which is correct for the total possible count
+            const possibleWords = getPossibleWords();
+
+            // Update scores
+            elements.scoreValue.textContent = gameState.totalScore;
+            elements.foundValue.textContent = gameState.foundWords.length;
+             // Update possible count only if possibleWords array is actually populated
+             if (possibleWords.length > 0) {
+                elements.possibleValue.textContent = possibleWords.length;
+             } else {
+                  // Show a placeholder or indicate loading if possible words aren't ready yet
+                  elements.possibleValue.textContent = '--';
+             }
+
+
+            // Update timer
+            const timerColor = gameState.timeLeft > 60 ? '#90EE90' : gameState.timeLeft > 30 ? '#ffd700' : '#ff6b6b';
+            elements.timer.style.color = timerColor;
+
+            // Show different timer text based on game state
+            if (!canPlayToday() && gameState.gameFinished) {
+                elements.timer.textContent = 'Game completed for today! 🎉';
+            } else if (gameState.timeLeft > 0 && !gameState.gameStarted) {
+                elements.timer.textContent = 'Ready? 🎯';
+            } else {
+                elements.timer.textContent = formatTime(gameState.timeLeft);
+            }
+
+            // Update current word slots
+            for (let i = 0; i < 5; i++) {
+                const slot = elements.slots[i];
+                const letter = gameState.currentWord[i] || '';
+                slot.textContent = letter;
+                slot.classList.toggle('filled', !!letter);
+            }
+
+            // Update letter bank buttons - disable if game already completed today, selected, finished, or time is 0
+            const gameDisabled = !canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0;
+
+            // FIX: Iterate through all letter buttons in the DOM and check against selectedLetters using the button's assigned index
+            // This logic correctly handles the shuffled order.
+             elements.letterBankContainer.querySelectorAll('.letter-btn').forEach((button) => {
+                 // Get the index that was assigned to this button when it was created
+                 // This index corresponds to the position in the *currently shuffled* gameState.letterBank array
+                 const buttonIndex = parseInt(button.dataset.index, 10);
+
+                 // Disable the button if the game is disabled or if its index is in the selectedLetters array
+                  const isSelectedInCurrentWord = gameState.selectedLetters.includes(buttonIndex);
+                 button.disabled = gameDisabled || isSelectedInCurrentWord;
+
+                  // Optional: Add a class for selected state if needed for styling
+                  // button.classList.toggle('selected', isSelectedInCurrentWord); // Add this CSS if you want a distinct 'selected' style
+             });
+
+
+            // Update control buttons - disable if game already completed today, finished, or time is 0
+             elements.clearBtn.disabled = gameDisabled || gameState.currentWord.length === 0;
+             elements.backBtn.disabled = gameDisabled || gameState.currentWord.length === 0;
+             elements.submitBtn.disabled = gameDisabled || gameState.currentWord.length !== 5;
+
+             // Disable shuffle button if game is completed, over, or not started yet
+             if(elements.shuffleBtn) {
+                 // Shuffle requires the game to be active AND started
+                elements.shuffleBtn.disabled = gameDisabled || !gameState.gameStarted;
+             }
+
+
+            // Update found words list (the smaller one shown during the game)
+            if (gameState.foundWords.length > 0 && !gameState.gameFinished) {
+                 elements.foundWords.style.display = 'block';
+                 elements.foundWordsTitle.textContent = `Found Words (${gameState.foundWords.length})`;
+                 elements.wordGrid.innerHTML = gameState.foundWords.map(word =>
+                     `<div class="found-word">
+                         <div class="found-word-name">${word}</div>
+                         <div class="found-word-score">${calculateWordScore(word)} pts</div>
+                     </div>`
+                 ).join('');
+             } else {
+                 elements.foundWords.style.display = 'none';
+             }
+
+
+            // Update game over screen and possible words list
+            if (gameState.gameFinished) {
+                elements.gameOver.style.display = 'block';
+                elements.foundWords.style.display = 'none'; // Hide the in-game found words list
+
+                const isPerfect = possibleWords.length > 0 && gameState.foundWords.length === possibleWords.length;
+                elements.gameOverTitle.textContent = isPerfect ? '🏆 Perfect Game!' : '🎉 Game Complete!';
+
+                // Use the new span IDs for updates
+                if (elements.gameOverScoreValue) elements.gameOverScoreValue.textContent = gameState.totalScore;
+                if (elements.gameOverWordsValue) elements.gameOverWordsValue.textContent = `${gameState.foundWords.length}/${possibleWords.length}`;
+
+                if (elements.gameOverPerfect) elements.gameOverPerfect.style.display = isPerfect ? 'block' : 'none';
+
+                // --- LOGIC TO DISPLAY ALL POSSIBLE WORDS ---
+                if (elements.possibleWordsSection && elements.possibleWordGrid) {
+                     elements.possibleWordsSection.style.display = 'block';
+                     // Sort possible words alphabetically for easier viewing
+                     const sortedPossibleWords = [...possibleWords].sort(); // Sorts words from originalDailyBankLetters
+                     elements.possibleWordGrid.innerHTML = sortedPossibleWords.map(word => {
+                         const isFound = gameState.foundWords.includes(word);
+                         const className = isFound ? 'found-word-possible' : 'unfound-word-possible';
+                         return `<div class="${className}">${word}</div>`;
+                     }).join('');
+                }
+                // --- END LOGIC ---
+
+
+            } else {
+                elements.gameOver.style.display = 'none';
+                 // Show in-game found words list if not finished and words found
+                 if (gameState.foundWords.length > 0) {
+                    elements.foundWords.style.display = 'block';
+                 }
+                 // Hide possible words section if game is not finished
+                 if (elements.possibleWordsSection) {
+                     elements.possibleWordsSection.style.display = 'none';
+                 }
+            }
+        }
+
+
+        // Handle letter click
+        function selectLetter(letter, index) {
+            // Index here is the index in the *currently shuffled* gameState.letterBank array
+            if (!canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0) return;
+            if (gameState.currentWord.length >= 5 || gameState.selectedLetters.includes(index)) return;
+
+            // Check if the corresponding button is actually enabled in the DOM
+            // This adds a double check in case UI state is out of sync
+             const button = elements.letterBankContainer.querySelector(`[data-index="${index}"]`);
+             if (button && button.disabled) {
+                 console.warn(`Attempted to select disabled button at index ${index}`);
+                 return; // Prevent selecting if button is visually disabled
+             }
+
+
+            if (!gameState.gameStarted) {
+                gameState.gameStarted = true;
+                startTimer();
+                 // Update UI immediately after starting to reflect timer/button state changes
+                 updateUI();
+            }
+
+            gameState.currentWord += letter;
+            gameState.selectedLetters.push(index); // Store the index in the CURRENT letter bank order
+            updateUI(); // Call updateUI to disable the selected letter button
+        }
+
+        // Clear word
+        function clearWord() {
+            if (!canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0) return;
+             if (gameState.currentWord.length === 0) return;
+
+            gameState.currentWord = '';
+            gameState.selectedLetters = []; // Clear all selected indices
+            updateUI(); // Call updateUI to re-enable cleared letters
+        }
+
+        // Backspace
+        function backspaceWord() {
+            if (!canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0) return;
+            if (gameState.currentWord.length === 0) return;
+
+            gameState.currentWord = gameState.currentWord.slice(0, -1);
+            // Remove the last selected index from the array
+            // This index corresponds to the letter that was just removed from the word string
+            gameState.selectedLetters.pop();
+
+            updateUI(); // Call updateUI to re-enable the letter button corresponding to the removed index
+        }
+
+        // Submit word
+        function submitWord() {
+             if (!canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0) return;
+
+            if (gameState.currentWord.length !== 5) {
+                showMessage('Word must be exactly 5 letters!');
+                return;
+            }
+
+            if (!gameState.gameStarted) {
+                gameState.gameStarted = true;
+                startTimer();
+            }
+
+            // Validation checks:
+            // 1. Is it a valid 5-letter word from the dictionary? (Do this first as it's a quick check)
+            if (!gameState.validWords.includes(gameState.currentWord)) {
+                showMessage('Not a valid word!');
+                 gameState.currentWord = '';
+                 gameState.selectedLetters = []; // Clear selected indices
+                 updateUI();
+                return;
+            }
+
+            // 2. Is it already found?
+            if (gameState.foundWords.includes(gameState.currentWord)) {
+                showMessage('Word already found!');
+                 gameState.currentWord = '';
+                 gameState.selectedLetters = []; // Clear selected indices
+                 updateUI();
+                return;
+            }
+
+             // 3. Can this word be formed from the letters in the ORIGINAL daily bank?
+             // This check ensures players can't form words not possible from the day's letters
+             // (even if selectedLetters logic and `canFormWord` using the *current* bank also pass).
+             // It should use the UNSHUFFLED bank, as shuffling shouldn't change the set of possible words.
+             if (!canFormWord(gameState.currentWord, gameState.originalDailyBankLetters)) {
+                 // This case should theoretically be caught by the canFormWord check earlier,
+                 // but this is a good final safety check using the fixed daily bank.
+                 showMessage(`Word cannot be formed from today's letters!`);
+                 console.error(`Submitted word "${gameState.currentWord}" cannot be formed from the daily bank:`, gameState.originalDailyBankLetters);
+                  gameState.currentWord = '';
+                  gameState.selectedLetters = []; // Clear selected indices
+                  updateUI();
+                 return;
+             }
+
+
+            // If all checks pass: Word is valid, not found, and formable from the daily bank letters.
+            const wordScore = calculateWordScore(gameState.currentWord);
+            gameState.foundWords.push(gameState.currentWord);
+            gameState.totalScore += wordScore;
+            showMessage(`Great! "${gameState.currentWord}" scores ${wordScore} points!`);
+
+            gameState.currentWord = '';
+            gameState.selectedLetters = []; // Clear selected indices after successful submission
+
+            // Check if all words found
+            const possibleWords = getPossibleWords(); // Uses originalDailyBankLetters
+             if (possibleWords.length > 0 && gameState.foundWords.length === possibleWords.length) {
+                endGame('🎉 Perfect! You found all words!');
+            }
+
+            updateUI(); // Call updateUI to clear current word and re-enable buttons
+        }
+
+        // Start timer (keep the same)
+        function startTimer() {
+            if (gameState.timerInterval) return;
+
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeLeft--;
+
+                if (gameState.timeLeft <= 0) {
+                    clearInterval(gameState.timerInterval);
+                    endGame("⏰ Time's up!");
+                }
+
+                updateUI();
+            }, 1000);
+        }
+
+        // End game (keep the same)
+        function endGame(message) {
+            gameState.gameFinished = true;
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = null;
+            }
+
+            // Save game stats
+            const possibleWords = getPossibleWords(); // Uses originalDailyBankLetters
+            const gameData = {
+                score: gameState.totalScore,
+                wordsFound: gameState.foundWords.length,
+                totalPossible: possibleWords.length,
+                timeTaken: 180 - gameState.timeLeft, // Time used
+                completedEarly: gameState.timeLeft > 0, // True if time didn't run out
+                completionPercentage: possibleWords.length > 0 ? Math.round((gameState.foundWords.length / possibleWords.length) * 100) : 0,
+                foundWords: [...gameState.foundWords] // Store found words
+            };
+            saveGameStats(gameData);
+
+            showMessage(message);
+            updateUI(); // This will show the game over screen and possible words
+
+            // Add countdown timer to game over screen
+            setTimeout(() => {
+                const gameOverElement = elements.gameOver;
+                if (gameOverElement && gameOverElement.style.display === 'block') {
+                    const initialCountdown = formatCountdown(getTimeUntilNextGame());
+                    const countdownHtml = `
+                        <div style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                            <p style="margin-bottom: 10px; opacity: 0.9;">Next game available in:</p>
+                            <p style="font-size: 1.2rem; font-weight: bold; color: #ffd700;" id="next-game-countdown">
+                                ${initialCountdown}
+                            </p>
+                        </div>
+                    `;
+                    const shareBtn = gameOverElement.querySelector('.share-btn');
+                    // Find the element *after* which the countdown should be inserted
+                    // In the current HTML, inserting before shareBtn seems appropriate
+                    if (shareBtn && !document.getElementById('next-game-countdown')) {
+                         shareBtn.insertAdjacentHTML('beforebegin', countdownHtml);
+                         startCountdown(); // Start the countdown interval
+                     } else if (gameOverElement && !shareBtn && !document.getElementById('next-game-countdown')) {
+                         // Fallback if shareBtn doesn't exist, append to game over element
+                         gameOverElement.insertAdjacentHTML('beforeend', countdownHtml);
+                         startCountdown();
+                     }
+                }
+            }, 100); // Small delay to ensure game over UI is rendered
+        }
+
+        // Show message
+        function showMessage(text) {
+             if (!elements.message) {
+                 console.warn("Message element not found.");
+                 return;
+             }
+            elements.message.textContent = text;
+            // Clear message after a delay, but only if it's the same message
+            setTimeout(() => {
+                if (elements.message && elements.message.textContent === text) {
+                    elements.message.textContent = '';
+                }
+            }, 3000);
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Starting Word Bank Game...');
+            cacheElements(); // Cache DOM elements first
+            loadStats(); // Load player stats before checking daily game status
+            loadWords(); // Loads dictionary and starts game or shows completed screen
+        });
+    </script>
+</body>
+</html>
