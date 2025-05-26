@@ -637,3 +637,58 @@ body {
         transform: translateY(0);
     }
 }
+
+/* Add this to your styles.css */
+
+.possible-words-section {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.08); /* Slightly lighter background */
+    border-radius: 12px;
+    max-height: 200px; /* Limit height and make it scrollable */
+    overflow-y: auto;
+}
+
+.possible-word-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); /* Responsive grid */
+    gap: 8px; /* Space between words */
+    text-align: center;
+    font-weight: bold;
+}
+
+.possible-word-grid div {
+    padding: 6px 4px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.found-word-possible {
+    color: #4caf50; /* Green */
+    background: rgba(76, 175, 80, 0.1); /* Light green background */
+}
+
+.unfound-word-possible {
+    color: #f44336; /* Red */
+    background: rgba(244, 67, 54, 0.1); /* Light red background */
+    opacity: 0.8; /* Slightly less prominent */
+}
+
+/* Optional: Style the scrollbar for the possible-words-section */
+.possible-words-section::-webkit-scrollbar {
+    width: 8px;
+}
+
+.possible-words-section::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.possible-words-section::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.possible-words-section::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
