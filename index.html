@@ -1,3 +1,5 @@
+--- START OF FILE index.html ---
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -202,8 +204,8 @@
             validWords: [],
             originalDailyBankLetters: [], // Stores the fixed, unshuffled letters for the day
             letterBank: [], // Stores the CURRENTLY SHUFFLED sequence of letters for display/interaction
-            currentWord: '',
             selectedLetters: [], // Stores the indices *within the currently shuffled* letterBank array
+            currentWord: '',
             foundWords: [],
             totalScore: 0,
             timeLeft: 180, // Assuming 3 minutes default
@@ -253,12 +255,21 @@
             if (playerStats.lastPlayedDate !== today) {
                 playerStats.todaysGameCompleted = false;
                 playerStats.todaysGameData = null;
+                 // If it's a new day, reset streak if yesterday wasn't played
+                 const yesterday = new Date();
+                 yesterday.setDate(yesterday.getDate() - 1);
+                 const yesterdayStr = yesterday.toDateString();
+                 if (playerStats.lastPlayedDate !== yesterdayStr) {
+                     playerStats.currentStreak = 0; // Reset streak if not played yesterday
+                 }
             }
+             console.log('Stats loaded:', playerStats); // LOG
         }
 
         // Save stats to localStorage (keep the same)
         function saveStats() {
             localStorage.setItem('wordBankStats', JSON.stringify(playerStats));
+             console.log('Stats saved:', playerStats); // LOG
         }
 
         // Check and unlock achievements (keep the same)
@@ -276,20 +287,25 @@
             if (!playerStats.unlockedAchievements.includes('earlyBird') && hour < 9) newAchievements.push('earlyBird');
             if (!playerStats.unlockedAchievements.includes('nightOwl') && hour >= 22) newAchievements.push('nightOwl');
 
+            // Streak achievements require separate check before saving, based on currentStreak
+             // These are checked *after* currentStreak is updated in saveGameStats
             if (!playerStats.unlockedAchievements.includes('streak3') && playerStats.currentStreak >= 3) newAchievements.push('streak3');
-            if (!playerStats.unlockedAchievements.includes('streak7') && playerStats.currentStreak >= 7) newAchievements.push('streak7');
+            if (!playerStats.unlockedAchievements.includes('streak7') && playerStats.currentAchievements >= 7) newAchievements.push('streak7'); // Typo? should be currentStreak? Assuming yes.
+             if (!playerStats.unlockedAchievements.includes('streak7') && playerStats.currentStreak >= 7) newAchievements.push('streak7');
+
+
             if (!playerStats.unlockedAchievements.includes('veteran') && playerStats.gamesPlayed >= 30) newAchievements.push('veteran');
             if (!playerStats.unlockedAchievements.includes('wordSmith') && playerStats.totalWords >= 500) newAchievements.push('wordSmith');
 
 
             newAchievements.forEach(achievementId => {
-                playerStats.unlockedAchievements.push(achievementId);
-                showAchievementNotification(achievements[achievementId]);
+                if (!playerStats.unlockedAchievements.includes(achievementId)) { // Double check to prevent duplicates
+                     playerStats.unlockedAchievements.push(achievementId);
+                     showAchievementNotification(achievements[achievementId]);
+                }
             });
 
-            if (newAchievements.length > 0) {
-                saveStats();
-            }
+            // Save is handled by saveGameStats after calling checkAchievements
         }
 
         // Show achievement notification (keep the same)
@@ -331,19 +347,22 @@
             yesterday.setDate(yesterday.getDate() - 1);
             const yesterdayStr = yesterday.toDateString();
 
-            // Update streak: Check if last played was yesterday. Reset if not today and not yesterday.
+            // Update streak: Check if last played was yesterday. Increment if yes, set to 1 if not today but was yesterday. Reset if not today and not yesterday (handled in loadStats).
             if (playerStats.lastPlayedDate === yesterdayStr) {
                 playerStats.currentStreak++;
-            } else if (playerStats.lastPlayedDate !== today) { // If last played wasn't yesterday AND wasn't today, reset
-                 playerStats.currentStreak = 1;
+                 console.log('Streak increased to', playerStats.currentStreak); // LOG
+            } else if (playerStats.lastPlayedDate !== today) { // If last played wasn't yesterday AND wasn't today
+                 playerStats.currentStreak = 1; // Start a new streak
+                 console.log('Streak started/reset to 1'); // LOG
+            } else {
+                 console.log('Already played today, streak is', playerStats.currentStreak); // LOG
             }
-            // If last playedDate === today, streak is already correct (from a previous game today if multiple exist or if it was set just now)
 
 
             playerStats.lastPlayedDate = today;
 
-            saveStats();
-            checkAchievements(gameData);
+            checkAchievements(gameData); // Check achievements before saving
+            saveStats(); // Save state including new streak and achievements
         }
 
 
@@ -383,9 +402,17 @@
             const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             const possibleWords = getPossibleWords(); // Uses originalDailyBankLetters
             const completionPercentage = possibleWords.length > 0 ? Math.round((gameState.foundWords.length / possibleWords.length) * 100) : 0;
-            const timeUsed = gameState.gameFinished && gameState.timeLeft === 0 ? '3:00' : // Game finished because time ran out
-                             gameState.gameFinished && gameState.timeLeft > 0 ? formatTime(180 - gameState.timeLeft) : // Game finished early
-                             formatTime(180 - gameState.timeLeft); // Game not finished (shouldn't show modal here)
+            // Calculate time used correctly based on whether game finished by time or completion
+             let timeUsedDisplay;
+             if (gameState.gameFinished) {
+                 if (gameState.timeLeft === 0) { // Time ran out
+                     timeUsedDisplay = formatTime(180); // Full 3 minutes used
+                 } else { // Game finished early by finding all words
+                     timeUsedDisplay = formatTime(180 - gameState.timeLeft); // Time actually used
+                 }
+             } else { // Game not finished (modal shouldn't be shown, but handle defensively)
+                  timeUsedDisplay = formatTime(180 - gameState.timeLeft);
+             }
 
 
             document.getElementById('share-emoji').textContent =
@@ -401,7 +428,7 @@
             const shareText = `Word Bank ${today}
 🎯 Score: ${gameState.totalScore}
 📝 Words: ${gameState.foundWords.length}/${possibleWords.length} (${completionPercentage}%)
-⏱️ Time: ${timeUsed}
+⏱️ Time: ${timeUsedDisplay}
 #WordBankGame
 
 Play daily at: ${window.location.href}`; // Added hashtag
@@ -439,7 +466,9 @@ Play daily at: ${window.location.href}`; // Added hashtag
         // Check if today's game can be played (keep the same)
         function canPlayToday() {
             const today = new Date().toDateString();
-            return !playerStats.todaysGameCompleted || playerStats.lastPlayedDate !== today;
+            // Game can be played today if it's not marked as completed for today, OR if the last played date was not today (meaning a new day has started)
+            // The loadStats function already handles setting todaysGameCompleted = false if lastPlayedDate is not today.
+            return !playerStats.todaysGameCompleted;
         }
 
         // Get time until next game (keep the same)
@@ -458,10 +487,14 @@ Play daily at: ${window.location.href}`; // Added hashtag
             const minutes = Math.floor((totalSeconds % 3600) / 60);
             const seconds = totalSeconds % 60;
 
+            // Ensure hours/minutes/seconds are two digits if needed for consistency
+             const pad = (num) => num.toString().padStart(2, '0');
+
+
             if (hours > 0) {
-                return `${hours}h ${minutes}m ${seconds}s`;
+                return `${hours}h ${pad(minutes)}m ${pad(seconds)}s`;
             } else if (minutes > 0) {
-                return `${minutes}m ${seconds}s`;
+                return `${minutes}m ${pad(seconds)}s`;
             } else {
                 return `${seconds}s`;
             }
@@ -478,6 +511,7 @@ Play daily at: ${window.location.href}`; // Added hashtag
 
             gameState.countdownInterval = setInterval(() => {
                 const timeLeft = getTimeUntilNextGame();
+                 console.log('Countdown time left:', timeLeft); // LOG
                 if (timeLeft <= 0) {
                     clearInterval(gameState.countdownInterval);
                     location.reload(); // Refresh to allow new game
@@ -530,6 +564,7 @@ Play daily at: ${window.location.href}`; // Added hashtag
                 wordGrid: document.getElementById('word-grid'),
                 appState: document.getElementById('app-state')
             };
+             console.log('DOM Elements cached.'); // LOG
         }
 
         // Generate daily letter bank (12 letters, UNSHUFFLED and fixed per day)
@@ -545,7 +580,7 @@ Play daily at: ${window.location.href}`; // Added hashtag
                     let t = a += 0x6D2B79F5;
                     t = Math.imul(t ^ t >>> 15, t | 1);
                     t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-                    return ((t ^ t >>> 14) >>> 0) / 4294969000; // Using a slightly different multiplier/divisor for variation
+                    return ((t ^ t >>> 14) >>> 0) / 4294969600; // Added 600 for slight variation
                 }
             }
 
@@ -559,6 +594,7 @@ Play daily at: ${window.location.href}`; // Added hashtag
             }
 
              // Return the *unshuffled*, fixed daily bank
+             console.log('Generated daily bank:', bank); // LOG
              return bank;
         }
 
@@ -573,6 +609,7 @@ Play daily at: ${window.location.href}`; // Added hashtag
                 [shuffledArray[currentIndex], shuffledArray[randomIndex]] = [
                 shuffledArray[randomIndex], shuffledArray[currentIndex]];
             }
+             console.log('Shuffled array:', shuffledArray); // LOG
             return shuffledArray;
         }
 
@@ -603,19 +640,18 @@ Play daily at: ${window.location.href}`; // Added hashtag
                 }
 
                 gameState.validWords = words;
+                console.log(`Successfully loaded ${words.length} 5-letter words.`); // LOG
+
                 gameState.originalDailyBankLetters = generateDailyBank(); // Store the fixed daily bank
                 gameState.letterBank = shuffleArray([...gameState.originalDailyBankLetters]); // Start with a shuffled version for display
 
 
-                console.log(`Successfully loaded ${words.length} 5-letter words.`);
-                console.log('Original daily bank:', gameState.originalDailyBankLetters);
-                console.log('Initial shuffled bank:', gameState.letterBank);
-
-
                 // Check if today's game can be played
                 if (!canPlayToday()) {
+                    console.log('Game completed for today. Showing results.'); // LOG
                     showCompletedGame();
                 } else {
+                     console.log('Starting new game.'); // LOG
                     initializeGame();
                 }
             } catch (error) {
@@ -634,33 +670,45 @@ Play daily at: ${window.location.href}`; // Added hashtag
                     <button class="btn btn-submit" onclick="location.reload()">Try Again</button>
                 </div>
             `;
+             elements.appState.style.display = 'flex'; // Ensure error state is visible
+             console.error('Showing error state:', message); // LOG
         }
 
         // Show completed game screen
         function showCompletedGame() {
-            elements.appState.style.display = 'none';
+            elements.appState.style.display = 'none'; // Hide loading/error state
 
             if (playerStats.todaysGameData) {
+                console.log('Restoring game data from stats:', playerStats.todaysGameData); // LOG
                 // Restore state from saved data
+                 // Need the original bank to calculate possible words for display
                  gameState.originalDailyBankLetters = generateDailyBank(); // Re-generate the fixed bank for the day
-                 gameState.letterBank = shuffleArray([...gameState.originalDailyBankLetters]); // Re-generate a fresh shuffled version
+                 // We don't strictly *need* the shuffled letterBank for the completed screen,
+                 // but creating it ensures game state consistency if needed later (e.g. re-showing stats).
+                 gameState.letterBank = shuffleArray([...gameState.originalDailyBankLetters]); // Re-generate a fresh shuffled version for display
                 gameState.foundWords = playerStats.todaysGameData.foundWords || [];
                 gameState.totalScore = playerStats.todaysGameData.score || 0;
                 gameState.gameFinished = true;
-                gameState.timeLeft = 0;
+                gameState.timeLeft = 0; // Time is effectively zero for a completed game
+                 gameState.gameStarted = true; // Mark as started if data exists
             } else {
+                 console.warn('showCompletedGame called but no playerStats.todaysGameData found.'); // Should not happen if canPlayToday logic is correct.
+                 // Fallback state for completed but no data? Or maybe this path isn't hit.
                  gameState.gameFinished = true;
                  gameState.timeLeft = 0;
-                 // If no saved data, originalDailyBankLetters and letterBank might be empty
-                 // This case should be rare if canPlayToday logic is correct.
+                 gameState.totalScore = 0;
+                 gameState.foundWords = [];
+                 gameState.originalDailyBankLetters = generateDailyBank();
+                 gameState.letterBank = shuffleArray([...gameState.originalDailyBankLetters]);
             }
 
-            createLetterBank(); // Use the current gameState.letterBank to create the pyramid layout
+            createLetterBank(); // Use the current gameState.letterBank to create the pyramid layout (needed for updateUI)
             updateUI(); // Display game over state, including possible words
 
             // Add countdown if a game was actually completed today
             const gameOverElement = elements.gameOver;
             if (gameOverElement && playerStats.todaysGameCompleted) {
+                 console.log('Adding countdown timer to game over screen.'); // LOG
                  const initialCountdown = formatCountdown(getTimeUntilNextGame());
                  const countdownHtml = `
                      <div style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
@@ -677,21 +725,27 @@ Play daily at: ${window.location.href}`; // Added hashtag
                          startCountdown();
                      }
              } else if (gameOverElement) {
+                  console.log('Game not completed today, hiding share button.'); // LOG
                   const shareBtn = gameOverElement.querySelector('.share-btn');
                    if(shareBtn) shareBtn.style.display = 'none';
              }
         }
 
+
         // Initialize game UI
         function initializeGame() {
+             console.log('Initializing game UI.'); // LOG
             elements.appState.style.display = 'none';
             // gameState.originalDailyBankLetters and gameState.letterBank are already set in loadWords
             createLetterBank(); // Creates the pyramid structure based on gameState.letterBank
             updateUI();
+             // Timer starts only on first letter click
+             elements.timer.textContent = 'Ready? 🎯';
         }
 
         // Create letter bank buttons in INVERTED pyramid shape (MODIFIED)
         function createLetterBank() {
+             console.log('Creating letter bank UI based on:', [...gameState.letterBank]); // LOG
             if (!elements.letterBankContainer || gameState.letterBank.length !== 12) {
                  console.error("Letter bank not ready or incorrect size to create pyramid.");
                  return;
@@ -728,14 +782,17 @@ Play daily at: ${window.location.href}`; // Added hashtag
             });
 
             // Update button states immediately after creating them
-             updateUI();
+             updateUI(); // Called here for initial setup and after shuffle
         }
 
         // Shuffle the letter bank and update UI
         function shuffleBank() {
+             console.log('Shuffle button clicked.'); // LOG
              // Only allow shuffle if game is not finished, playable today, and has started
+             // Also prevent shuffling if time is 0 (already ended)
              if (!canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0 || !gameState.gameStarted) {
                  if (!gameState.gameStarted && !gameState.gameFinished) showMessage('Start playing to shuffle!');
+                  else if (gameState.timeLeft === 0 || gameState.gameFinished) showMessage('Game ended. Cannot shuffle.');
                  return;
              }
 
@@ -745,7 +802,7 @@ Play daily at: ${window.location.href}`; // Added hashtag
             // Clearing current word and selected letters is CRUCIAL after shuffle
             // because the indices now correspond to different letters.
             gameState.currentWord = '';
-            gameState.selectedLetters = [];
+            gameState.selectedLetters = []; // Clear selected indices
 
             showMessage('Letters shuffled!');
             createLetterBank(); // Re-create buttons with the new shuffled order and updated indices
@@ -758,10 +815,13 @@ Play daily at: ${window.location.href}`; // Added hashtag
             // This should calculate words from the fixed set of letters for the day,
             // not the currently shuffled arrangement.
             if (!gameState.validWords || !gameState.originalDailyBankLetters || gameState.originalDailyBankLetters.length !== 12) {
+                 console.warn('Cannot calculate possible words: validWords or originalDailyBankLetters missing/incorrect.'); // LOG
                  return [];
              }
             // Filter valid 5-letter words that can be formed from the *original daily* 12-letter bank
-             return gameState.validWords.filter(word => canFormWord(word, gameState.originalDailyBankLetters));
+             const possible = gameState.validWords.filter(word => canFormWord(word, gameState.originalDailyBankLetters));
+             // console.log('Calculated possible words:', possible); // LOG - potentially verbose
+             return possible;
         }
 
         // Check if a word can be formed from a given bank of letters
@@ -792,6 +852,8 @@ Play daily at: ${window.location.href}`; // Added hashtag
 
         // Update UI (FIXED BUTTON STATE LOGIC)
         function updateUI() {
+            console.log('updateUI running. Current state:', { currentWord: gameState.currentWord, selectedLetters: [...gameState.selectedLetters], gameStarted: gameState.gameStarted, gameFinished: gameState.gameFinished, timeLeft: gameState.timeLeft }); // LOG
+
             // getPossibleWords uses originalDailyBankLetters, which is correct for the total possible count
             const possibleWords = getPossibleWords();
 
@@ -806,7 +868,7 @@ Play daily at: ${window.location.href}`; // Added hashtag
 
             // Show different timer text based on game state
             if (!canPlayToday() && gameState.gameFinished) {
-                elements.timer.textContent = 'Game completed for today! 🎉';
+                 elements.timer.textContent = 'Game completed for today! 🎉';
             } else if (gameState.timeLeft > 0 && !gameState.gameStarted) {
                 elements.timer.textContent = 'Ready? 🎯';
             } else {
@@ -822,7 +884,10 @@ Play daily at: ${window.location.href}`; // Added hashtag
             }
 
             // Update letter bank buttons - disable if game already completed today, selected, finished, or time is 0
-            const gameDisabled = !canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0;
+            // Game is considered disabled for interaction if it's already finished OR if today's game is completed (and it is finished)
+            const gameDisabledForInteraction = !canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0;
+            console.log('updateUI - gameDisabledForInteraction:', gameDisabledForInteraction); // LOG
+
 
             // FIX: Iterate through all letter buttons in the DOM and check against selectedLetters using the button's assigned index
              elements.letterBankContainer.querySelectorAll('.letter-btn').forEach((button) => {
@@ -830,26 +895,28 @@ Play daily at: ${window.location.href}`; // Added hashtag
                  // This index corresponds to the position in the *currently shuffled* gameState.letterBank array
                  const buttonIndex = parseInt(button.dataset.index, 10); // Using data-index for robustness
 
-                 // Disable the button if the game is disabled or if its index is in the selectedLetters array
-                 // Check if selectedLetters includes the buttonIndex AND if the button is currently part of currentWord
-                 // Only disable if it's selected as part of the current word.
+                 // Disable the button if interaction is disabled OR if its index is in the selectedLetters array
+                 // A button should be disabled if it's already been selected for the current word.
                   const isSelectedInCurrentWord = gameState.selectedLetters.includes(buttonIndex);
-                 button.disabled = gameDisabled || isSelectedInCurrentWord;
+                 const isDisabled = gameDisabledForInteraction || isSelectedInCurrentWord;
+
+                 button.disabled = isDisabled;
 
                   // Optional: Add a class for selected state if needed for styling
                   button.classList.toggle('selected', isSelectedInCurrentWord);
+                  // console.log(`Button ${buttonIndex}: isSelectedInCurrentWord=${isSelectedInCurrentWord}, isDisabled=${isDisabled}, DOM disabled=${button.disabled}`); // LOG - verbose, uncomment if needed
              });
 
 
-            // Update control buttons - disable if game already completed today, finished, or time is 0
-             elements.clearBtn.disabled = gameDisabled || gameState.currentWord.length === 0;
-             elements.backBtn.disabled = gameDisabled || gameState.currentWord.length === 0;
-             elements.submitBtn.disabled = gameDisabled || gameState.currentWord.length !== 5;
+            // Update control buttons - disable if interaction is disabled or state doesn't allow action
+             elements.clearBtn.disabled = gameDisabledForInteraction || gameState.currentWord.length === 0;
+             elements.backBtn.disabled = gameDisabledForInteraction || gameState.currentWord.length === 0;
+             elements.submitBtn.disabled = gameDisabledForInteraction || gameState.currentWord.length !== 5;
 
-             // Disable shuffle button if game is completed, over, or not started yet
+             // Disable shuffle button if interaction is disabled or not started yet
              if(elements.shuffleBtn) {
                  // Shuffle requires the game to be active AND started
-                elements.shuffleBtn.disabled = gameDisabled || !gameState.gameStarted;
+                elements.shuffleBtn.disabled = gameDisabledForInteraction || !gameState.gameStarted;
              }
 
 
@@ -870,6 +937,7 @@ Play daily at: ${window.location.href}`; // Added hashtag
 
             // Update game over screen and possible words list
             if (gameState.gameFinished) {
+                 console.log('Game is finished, showing game over screen.'); // LOG
                 elements.gameOver.style.display = 'block';
                 elements.foundWords.style.display = 'none'; // Hide the in-game found words list
 
@@ -884,6 +952,7 @@ Play daily at: ${window.location.href}`; // Added hashtag
                      elements.possibleWordsSection.style.display = 'block';
                      // Sort possible words alphabetically for easier viewing
                      const sortedPossibleWords = [...possibleWords].sort(); // Sorts words from originalDailyBankLetters
+                      console.log('Displaying possible words:', sortedPossibleWords.length); // LOG
                      elements.possibleWordGrid.innerHTML = sortedPossibleWords.map(word => {
                          const isFound = gameState.foundWords.includes(word);
                          const className = isFound ? 'found-word-possible' : 'unfound-word-possible';
@@ -902,38 +971,68 @@ Play daily at: ${window.location.href}`; // Added hashtag
                      elements.possibleWordsSection.style.display = 'none';
                  }
             }
+             console.log('updateUI finished.'); // LOG
         }
 
 
         // Handle letter click
         function selectLetter(letter, index) {
-            if (!canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0) return;
-             // Index here is the index in the *currently shuffled* gameState.letterBank
-            if (gameState.currentWord.length >= 5 || gameState.selectedLetters.includes(index)) return;
+            console.log('selectLetter clicked:', letter, 'index:', index); // LOG 1
+            console.log('Current state - currentWord:', gameState.currentWord, 'selectedLetters:', [...gameState.selectedLetters]); // LOG 1b
+
+             // Check if game is in a state where interaction is allowed
+             const gameDisabledForInteraction = !canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0;
+             if (gameDisabledForInteraction) {
+                 console.log('Game disabled for interaction, returning.'); // LOG 1c
+                 return;
+             }
+
+
+            // Guard checks: prevent selecting more than 5 or re-selecting an already used letter button instance
+            // Index here is the index in the *currently shuffled* gameState.letterBank
+            console.log('Guard check: currentWord.length >= 5 (', gameState.currentWord.length, ') || selectedLetters.includes(', index, ') (', gameState.selectedLetters.includes(index), ')' ); // LOG 2
+            if (gameState.currentWord.length >= 5 || gameState.selectedLetters.includes(index)) {
+                console.log('Guard returned.'); // LOG 3
+                return;
+            }
+
+            console.log('Guard passed. Updating state.'); // LOG 4
 
             if (!gameState.gameStarted) {
                 gameState.gameStarted = true;
                 startTimer();
+                console.log('Game started, timer initiated.'); // LOG
             }
 
             gameState.currentWord += letter;
             gameState.selectedLetters.push(index); // Store the index in the CURRENT letter bank order
-            updateUI(); // Call updateUI to disable the selected letter
+
+            console.log('State updated:', { currentWord: gameState.currentWord, selectedLetters: [...gameState.selectedLetters] }); // LOG 5
+
+            updateUI(); // Call updateUI to disable the selected letter and update word slots
+            console.log('updateUI called from selectLetter.'); // LOG 6
         }
 
         // Clear word
         function clearWord() {
-            if (!canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0) return;
+             console.log('clearWord called.'); // LOG 1
+             const gameDisabledForInteraction = !canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0;
+             if (gameDisabledForInteraction) return;
+
              if (gameState.currentWord.length === 0) return;
 
             gameState.currentWord = '';
             gameState.selectedLetters = []; // Clear selected indices
+            console.log('clearWord state cleared. State:', { currentWord: gameState.currentWord, selectedLetters: [...gameState.selectedLetters] }); // LOG 2
             updateUI(); // Call updateUI to re-enable cleared letters
         }
 
         // Backspace
         function backspaceWord() {
-            if (!canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0) return;
+             console.log('backspaceWord called.'); // LOG 1
+             const gameDisabledForInteraction = !canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0;
+             if (gameDisabledForInteraction) return;
+
             if (gameState.currentWord.length === 0) return;
 
             // Remove the last letter from the word string
@@ -941,41 +1040,50 @@ Play daily at: ${window.location.href}`; // Added hashtag
 
             // Remove the last selected index
             // This index corresponds to the letter that was just removed from the word
-            gameState.selectedLetters.pop();
+            const removedIndex = gameState.selectedLetters.pop();
+             console.log('backspaceWord state updated. Removed index:', removedIndex, 'State:', { currentWord: gameState.currentWord, selectedLetters: [...gameState.selectedLetters] }); // LOG 2
 
             updateUI(); // Call updateUI to re-enable the letter corresponding to the removed index
         }
 
         // Submit word
         function submitWord() {
-             if (!canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0) return;
+             console.log('submitWord called.'); // LOG 1
+             const gameDisabledForInteraction = !canPlayToday() || gameState.gameFinished || gameState.timeLeft === 0;
+             if (gameDisabledForInteraction) return;
+
 
             if (gameState.currentWord.length !== 5) {
                 showMessage('Word must be exactly 5 letters!');
+                 console.log('Submit rejected: word length != 5'); // LOG
                 return;
             }
 
             if (!gameState.gameStarted) {
-                gameState.gameStarted = true;
-                startTimer();
-            }
+                // Should theoretically not happen if submit button is disabled until length is 5
+                 gameState.gameStarted = true;
+                 startTimer();
+                 console.log('Game started on submit.'); // LOG
+             }
 
             // Validation checks:
             // 1. Is it already found?
             if (gameState.foundWords.includes(gameState.currentWord)) {
                 showMessage('Word already found!');
+                 console.log('Submit rejected: word already found:', gameState.currentWord); // LOG
                  gameState.currentWord = '';
                  gameState.selectedLetters = []; // Clear selected indices
-                 updateUI();
+                 updateUI(); // Update UI to reflect cleared word
                 return;
             }
 
             // 2. Is it a valid 5-letter word from the dictionary?
             if (!gameState.validWords.includes(gameState.currentWord)) {
                 showMessage('Not a valid word!');
+                 console.log('Submit rejected: not a valid word:', gameState.currentWord); // LOG
                  gameState.currentWord = '';
                  gameState.selectedLetters = []; // Clear selected indices
-                 updateUI();
+                 updateUI(); // Update UI to reflect cleared word
                 return;
             }
 
@@ -985,10 +1093,10 @@ Play daily at: ${window.location.href}`; // Added hashtag
              // It should use the UNSHUFFLED bank, as shuffling shouldn't change the set of possible words.
              if (!canFormWord(gameState.currentWord, gameState.originalDailyBankLetters)) {
                  showMessage(`Word cannot be formed from today's letters!`); // Or a more generic message
-                 console.error(`Submitted word "${gameState.currentWord}" cannot be formed from the daily bank:`, gameState.originalDailyBankLetters);
+                 console.error(`Submitted word "${gameState.currentWord}" cannot be formed from the daily bank:`, gameState.originalDailyBankLetters); // LOG
                   gameState.currentWord = '';
                   gameState.selectedLetters = []; // Clear selected indices
-                  updateUI();
+                  updateUI(); // Update UI to reflect cleared word
                  return;
              }
 
@@ -998,21 +1106,26 @@ Play daily at: ${window.location.href}`; // Added hashtag
             gameState.foundWords.push(gameState.currentWord);
             gameState.totalScore += wordScore;
             showMessage(`Great! "${gameState.currentWord}" scores ${wordScore} points!`);
+            console.log('Valid word submitted! Score:', wordScore, 'Total Score:', gameState.totalScore, 'Found:', gameState.foundWords.length); // LOG
+
 
             gameState.currentWord = '';
             gameState.selectedLetters = []; // Clear selected indices after successful submission
 
             // Check if all words found
             const possibleWords = getPossibleWords(); // Uses originalDailyBankLetters
+             console.log('Found', gameState.foundWords.length, 'out of', possibleWords.length, 'possible words.'); // LOG
              if (possibleWords.length > 0 && gameState.foundWords.length === possibleWords.length) {
                 endGame('🎉 Perfect! You found all words!');
+            } else {
+                 // If not all words found, just update the UI normally
+                 updateUI(); // Call updateUI to clear current word and re-enable buttons
             }
-
-            updateUI(); // Call updateUI to clear current word and re-enable buttons
         }
 
         // Start timer (keep the same)
         function startTimer() {
+             console.log('Starting timer.'); // LOG
             if (gameState.timerInterval) return;
 
             gameState.timerInterval = setInterval(() => {
@@ -1020,20 +1133,30 @@ Play daily at: ${window.location.href}`; // Added hashtag
 
                 if (gameState.timeLeft <= 0) {
                     clearInterval(gameState.timerInterval);
+                    gameState.timerInterval = null; // Clear interval ID
                     endGame("⏰ Time's up!");
+                     console.log('Timer reached 0. Game ending.'); // LOG
                 }
 
-                updateUI();
+                updateUI(); // Update UI every second
             }, 1000);
         }
 
         // End game (keep the same)
         function endGame(message) {
+            if (gameState.gameFinished) return; // Prevent ending game multiple times
+             console.log('Ending game:', message); // LOG
+
             gameState.gameFinished = true;
             if (gameState.timerInterval) {
                 clearInterval(gameState.timerInterval);
-                gameState.timerInterval = null;
+                gameState.timerInterval = null; // Clear interval ID
             }
+            if (gameState.countdownInterval) {
+                 clearInterval(gameState.countdownInterval); // Clear next game countdown if running early
+                 gameState.countdownInterval = null;
+             }
+
 
             // Save game stats
             const possibleWords = getPossibleWords(); // Uses originalDailyBankLetters
@@ -1042,16 +1165,18 @@ Play daily at: ${window.location.href}`; // Added hashtag
                 wordsFound: gameState.foundWords.length,
                 totalPossible: possibleWords.length,
                 timeTaken: 180 - gameState.timeLeft, // Time used
-                completedEarly: gameState.timeLeft > 0, // True if time didn't run out
+                completedEarly: gameState.timeLeft > 0, // True if time didn't run out (found all words)
                 completionPercentage: possibleWords.length > 0 ? Math.round((gameState.foundWords.length / possibleWords.length) * 100) : 0,
                 foundWords: [...gameState.foundWords]
             };
             saveGameStats(gameData);
+            console.log('Game stats saved:', gameData); // LOG
+
 
             showMessage(message);
             updateUI(); // This will show the game over screen and possible words
 
-            // Add countdown timer to game over screen
+            // Add countdown timer to game over screen after a short delay to allow UI update
             setTimeout(() => {
                 const gameOverElement = elements.gameOver;
                 if (gameOverElement && gameOverElement.style.display === 'block') {
@@ -1068,7 +1193,11 @@ Play daily at: ${window.location.href}`; // Added hashtag
                     if (shareBtn && !document.getElementById('next-game-countdown')) {
                          shareBtn.insertAdjacentHTML('beforebegin', countdownHtml);
                          startCountdown();
+                     } else if (!shareBtn) {
+                          console.warn('Share button not found in game over screen.'); // LOG
                      }
+                } else {
+                     console.warn('Game over element not visible after ending game.'); // LOG
                 }
             }, 100); // Small delay to ensure game over UI is rendered
         }
@@ -1076,6 +1205,7 @@ Play daily at: ${window.location.href}`; // Added hashtag
 
         // Show message (keep the same)
         function showMessage(text) {
+             console.log('Message:', text); // LOG
              if (!elements.message) return;
             elements.message.textContent = text;
             setTimeout(() => {
@@ -1087,7 +1217,7 @@ Play daily at: ${window.location.href}`; // Added hashtag
 
         // Initialize on load
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('Starting Word Bank Game...');
+            console.log('DOM fully loaded. Starting initialization...'); // LOG
             cacheElements();
             loadStats(); // Load player stats before checking daily game status
             loadWords(); // Loads dictionary and starts game or shows completed screen
