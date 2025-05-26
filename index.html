@@ -701,34 +701,54 @@ Play daily at: ${window.location.href}`; // Added hashtag
                  gameState.originalDailyBankLetters = generateDailyBank();
                  gameState.letterBank = shuffleArray([...gameState.originalDailyBankLetters]);
             }
+        // Create letter bank buttons in INVERTED pyramid shape (MODIFIED)
+        function createLetterBank() {
+             console.log('Creating letter bank UI based on:', [...gameState.letterBank]); // LOG
+            if (!elements.letterBankContainer || gameState.letterBank.length !== 12) {
+                 console.error("Letter bank not ready or incorrect size to create pyramid.");
+                 return;
+            }
 
-            createLetterBank(); // Use the current gameState.letterBank to create the pyramid layout (needed for updateUI)
-            updateUI(); // Display game over state, including possible words
+            elements.letterBankContainer.innerHTML = ''; // Clear existing buttons
 
-            // Add countdown if a game was actually completed today
-            const gameOverElement = elements.gameOver;
-            if (gameOverElement && playerStats.todaysGameCompleted) {
-                 console.log('Adding countdown timer to game over screen.'); // LOG
-                 const initialCountdown = formatCountdown(getTimeUntilNextGame());
-                 const countdownHtml = `
-                     <div style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
-                         <p style="margin-bottom: 10px; opacity: 0.9;">Next game available in:</p>
-                         <p style="font-size: 1.2rem; font-weight: bold; color: #ffd700;" id="next-game-countdown">
-                             ${initialCountdown}
-                         </p>
-                     </div>
-                 `;
-                 const shareBtn = gameOverElement.querySelector('.share-btn');
-                 if (shareBtn && !document.getElementById('next-game-countdown')) {
-                      // Use insertAdjacentHTML for simpler injection if shareBtn exists
-                     shareBtn.insertAdjacentHTML('beforebegin', countdownHtml);
-                         startCountdown();
-                     }
-             } else if (gameOverElement) {
-                  console.log('Game not completed today, hiding share button.'); // LOG
-                  const shareBtn = gameOverElement.querySelector('.share-btn');
-                   if(shareBtn) shareBtn.style.display = 'none';
-             }
+            // Define the layout: 5, 4, 3 letters per row (total 12)
+            const layout = [5, 4, 3];
+            let letterIndex = 0; // Index in the gameState.letterBank array (the currently shuffled array)
+
+            layout.forEach(count => {
+                const row = document.createElement('div');
+                row.className = 'pyramid-row';
+
+                for (let i = 0; i < count; i++) {
+                    if (letterIndex < gameState.letterBank.length) {
+                        const letter = gameState.letterBank[letterIndex];
+
+                        // --- FIX STARTS HERE ---
+                        // Capture the current index value for this iteration
+                        const currentIndex = letterIndex;
+
+                        const button = document.createElement('button');
+                        button.className = 'letter-btn';
+                        // Use the captured index for ID and data-index
+                        button.id = `letter-btn-${currentIndex}`;
+                        button.dataset.index = currentIndex; // Store index as a data attribute
+
+                        button.innerHTML = `${letter}<div class="letter-value">${letterScores[letter] || 0}</div>`;
+                        // Pass the letter and the captured index to the onclick handler
+                        button.onclick = () => selectLetter(letter, currentIndex);
+                        // --- FIX ENDS HERE ---
+
+                        row.appendChild(button);
+                        letterIndex++; // Increment the loop index for the *next* button
+                    }
+                }
+                 elements.letterBankContainer.appendChild(row);
+            });
+
+            // Update button states immediately after creating them
+             updateUI();
+        }
+
         }
 
 
