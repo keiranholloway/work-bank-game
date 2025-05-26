@@ -200,16 +200,6 @@
             <h2 id="game-over-title">🎉 Game Complete!</h2>
             <p id="game-over-score"><strong>Final Score:</strong> 0 points</p>
             <p id="game-over-words"><strong>Words Found:</strong> 0/0</p>
-            <p id="game-over-perfect" style="color: #ffd700; margin-top: 10px; display: none;">🌟 You found every possible word! 🌟</p>
-            
-            <!-- All possible words display -->
-            <div id="all-words-section" style="margin-top: 20px;">
-                <h3 style="margin-bottom: 15px; text-align: center;">All Possible Words</h3>
-                <div id="all-words-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; max-height: 300px; overflow-y: auto; background: rgba(0, 0, 0, 0.2); border-radius: 8px; padding: 15px;">
-                    <!-- All possible words will be populated here -->
-                </div>
-            </div>
-            
             <button class="share-btn" onclick="showShareModal()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="18" cy="5" r="3"></circle>
@@ -220,6 +210,16 @@
                 </svg>
                 Share Results
             </button>
+           <p id="game-over-perfect" style="color: #ffd700; margin-top: 10px; display: none;">🌟 You found every possible word! 🌟</p>
+            
+            <!-- All possible words display -->
+            <div id="all-words-section" style="margin-top: 20px;">
+                <h3 style="margin-bottom: 15px; text-align: center;">All Possible Words</h3>
+                <div id="all-words-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; max-height: 300px; overflow-y: auto; background: rgba(0, 0, 0, 0.2); border-radius: 8px; padding: 15px;">
+                    <!-- All possible words will be populated here -->
+                </div>
+            </div>
+            
         </div>
 
         <!-- Current Word -->
