@@ -1201,7 +1201,8 @@ Play daily at: ${window.location.href}`;
             }
             
             if (!gameState.validWords.includes(gameState.currentWord)) {
-                showMessage('Not a valid word!');
+                showMessage(`"${gameState.currentWord}" Not a valid word!`);
+                clearWord();
                 return;
             }
             
