@@ -365,7 +365,8 @@
             letterBank: [],
             displayedLetters: [], // Track the current display order of letters
             currentWord: '',
-            selectedLetters: [],
+            selectedLetters: [], // Now tracks display indices instead of original indices
+            selectedLettersData: [], // Track both letter and display index
             foundWords: [],
             totalScore: 0,
             timeLeft: 180,
@@ -995,6 +996,12 @@ Play daily at: ${window.location.href}`;
             if (!canPlayToday()) return; // Prevent shuffling if game already completed
             if (gameState.gameFinished || gameState.timeLeft === 0) return;
             
+            // Can't shuffle if any letters are currently selected
+            if (gameState.selectedLetters.length > 0) {
+                showMessage('Clear your current word before shuffling!');
+                return;
+            }
+            
             // Fisher-Yates shuffle algorithm
             const shuffled = [...gameState.displayedLetters];
             for (let i = shuffled.length - 1; i > 0; i--) {
@@ -1013,18 +1020,17 @@ Play daily at: ${window.location.href}`;
             const letters = gameState.displayedLetters.slice(0, 12); // Use displayed order
             let html = '';
 
-            let index = 0;
+            let displayIndex = 0;
             for (let rowCount of pyramidStructure) {
-                const rowLetters = letters.slice(index, index + rowCount);
+                const rowLetters = letters.slice(displayIndex, displayIndex + rowCount);
                 html += `<div class="pyramid-row">` + rowLetters.map((letter, i) => {
-                    const realIndex = index + i;
-                    const originalIndex = gameState.letterBank.indexOf(letter); // Find original position
-                    return `<button class="letter-btn" id="letter-${realIndex}" onclick="selectLetter('${letter}', ${originalIndex})">
+                    const currentDisplayIndex = displayIndex + i;
+                    return `<button class="letter-btn" id="letter-${currentDisplayIndex}" onclick="selectLetter('${letter}', ${currentDisplayIndex})">
                             ${letter}
                             <div class="letter-value">${letterScores[letter]}</div>
                         </button>`;
                 }).join('') + `</div>`;
-                index += rowCount;
+                displayIndex += rowCount;
             }
 
             elements.letterBank.innerHTML = html;
@@ -1095,10 +1101,10 @@ Play daily at: ${window.location.href}`;
             
             // Update letter bank buttons - disable if game already completed today
             const gameCompleted = !canPlayToday();
-            gameState.letterBank.forEach((letter, index) => {
-                const btn = document.getElementById(`letter-${index}`);
+            gameState.displayedLetters.forEach((letter, displayIndex) => {
+                const btn = document.getElementById(`letter-${displayIndex}`);
                 if (btn) {
-                    btn.disabled = gameCompleted || gameState.selectedLetters.includes(index) || gameState.gameFinished || gameState.timeLeft === 0;
+                    btn.disabled = gameCompleted || gameState.selectedLetters.includes(displayIndex) || gameState.gameFinished || gameState.timeLeft === 0;
                 }
             });
             
@@ -1138,10 +1144,10 @@ Play daily at: ${window.location.href}`;
         }
 
         // Handle letter click
-        function selectLetter(letter, index) {
+        function selectLetter(letter, displayIndex) {
             if (!canPlayToday()) return; // Prevent playing if game already completed
             if (gameState.gameFinished || gameState.timeLeft === 0) return;
-            if (gameState.currentWord.length >= 5 || gameState.selectedLetters.includes(index)) return;
+            if (gameState.currentWord.length >= 5 || gameState.selectedLetters.includes(displayIndex)) return;
             
             if (!gameState.gameStarted) {
                 gameState.gameStarted = true;
@@ -1149,7 +1155,8 @@ Play daily at: ${window.location.href}`;
             }
             
             gameState.currentWord += letter;
-            gameState.selectedLetters.push(index);
+            gameState.selectedLetters.push(displayIndex);
+            gameState.selectedLettersData.push({ letter, displayIndex });
             updateUI();
         }
 
@@ -1159,6 +1166,8 @@ Play daily at: ${window.location.href}`;
             if (gameState.gameFinished || gameState.timeLeft === 0) return;
             gameState.currentWord = '';
             gameState.selectedLetters = [];
+            gameState.selectedLettersData = [];
+            gameState.selectedLettersData = [];
             updateUI();
         }
 
@@ -1170,6 +1179,7 @@ Play daily at: ${window.location.href}`;
             
             gameState.currentWord = gameState.currentWord.slice(0, -1);
             gameState.selectedLetters.pop();
+            gameState.selectedLettersData.pop();
             updateUI();
         }
 
