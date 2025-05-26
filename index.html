@@ -562,7 +562,7 @@
                 return `
                     <div class="achievement ${isUnlocked ? 'unlocked' : 'locked'}" title="${achievement.desc}">
                         <div class="achievement-icon">${achievement.icon}</div>
-                        <div class="achievement-name">${achievement.name.split(' ')[0]}</div>
+                        <div class="achievement-name">${achievement.name}</div>
                     </div>
                 `;
             }).join('');
@@ -1195,7 +1195,8 @@ Play daily at: ${window.location.href}`;
             }
             
             if (gameState.foundWords.includes(gameState.currentWord)) {
-                showMessage('Word already found!');
+                showMessage(`"${gameState.currentWord}" already found!`);
+                clearWord();
                 return;
             }
             
