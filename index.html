@@ -987,8 +987,9 @@ Play daily at: ${window.location.href}`;
             createLetterBank();
             updateUI();
             
-            // Update timer to show ready state
-            elements.timer.textContent = 'Ready? 🎯';
+            // Start the timer immediately
+            gameState.gameStarted = true;
+            startTimer();
         }
 
         // Shuffle letters function
@@ -1149,11 +1150,7 @@ Play daily at: ${window.location.href}`;
             if (gameState.gameFinished || gameState.timeLeft === 0) return;
             if (gameState.currentWord.length >= 5 || gameState.selectedLetters.includes(displayIndex)) return;
             
-            if (!gameState.gameStarted) {
-                gameState.gameStarted = true;
-                startTimer();
-            }
-            
+            // Timer is already started when game begins, no need to start it here
             gameState.currentWord += letter;
             gameState.selectedLetters.push(displayIndex);
             gameState.selectedLettersData.push({ letter, displayIndex });
