@@ -1,4 +1,91 @@
-<!DOCTYPE html>
+// Show completed game screen
+        function showCompletedGame() {
+            elements.appState.style.display = 'none';
+            
+            // Restore today's game data if available
+            if (playerStats.todaysGameData) {
+                gameState.foundWords = playerStats.todaysGameData.foundWords || [];
+                gameState.totalScore = playerStats.todaysGameData.score || 0;
+                gameState.gameFinished = true;
+                gameState.timeLeft = 0;
+            }
+            
+            createLetterBank();
+            updateUI();
+            
+            // Show countdown in game over screen
+            const gameOverElement = elements.gameOver;
+            if (gameOverElement && playerStats.todaysGameData) {
+                gameOverElement.style.display = 'block';
+                
+                // Add countdown to the game over screen
+                const countdownHtml = `
+                    <div style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                        <p style="margin-bottom: 10px; opacity: 0.9;">Next game available in:</p>
+                        <p style="font-size: 1.2rem; font-weight: bold; color: #ffd700;" id="next-game-countdown">
+                            ${formatCountdown(getTimeUntilNextGame())}
+                        </p>
+                    </div>
+                `;
+                
+                // Insert countdown before the share button
+                const shareBtn = gameOverElement.querySelector('.share-btn');
+                if (shareBtn && !document.getElementById('next-game-countdown')) {
+                    shareBtn.insertAdjacentHTML('beforebegin', countdownHtml);
+                }
+                
+                startCountdown();
+            }
+        }        // Check if today's game can be played
+        function canPlayToday() {
+            const today = new Date().toDateString();
+            return !playerStats.todaysGameCompleted || playerStats.lastPlayedDate !== today;
+        }
+
+        // Get time until next game
+        function getTimeUntilNextGame() {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            return Math.max(0, tomorrow - now);
+        }
+
+        // Format countdown time
+        function formatCountdown(milliseconds) {
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            if (hours > 0) {
+                return `${hours}h ${minutes}m ${seconds}s`;
+            } else if (minutes > 0) {
+                return `${minutes}m ${seconds}s`;
+            } else {
+                return `${seconds}s`;
+            }
+        }
+
+        // Start countdown timer
+        function startCountdown() {
+            if (gameState.countdownInterval) {
+                clearInterval(gameState.countdownInterval);
+            }
+            
+            const countdownElement = document.getElementById('next-game-countdown');
+            if (!countdownElement) return;
+            
+            gameState.countdownInterval = setInterval(() => {
+                const timeLeft = getTimeUntilNextGame();
+                if (timeLeft <= 0) {
+                    clearInterval(gameState.countdownInterval);
+                    location.reload(); // Refresh to allow new game
+                } else {
+                    countdownElement.textContent = formatCountdown(timeLeft);
+                }
+            }, 1000);
+        }<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -191,7 +278,8 @@
             timeLeft: 180,
             gameStarted: false,
             gameFinished: false,
-            timerInterval: null
+            timerInterval: null,
+            countdownInterval: null
         };
 
         // Achievement definitions
@@ -218,7 +306,9 @@
             currentStreak: 0,
             lastPlayedDate: null,
             unlockedAchievements: [],
-            dailyStats: {}
+            dailyStats: {},
+            todaysGameCompleted: false,
+            todaysGameData: null
         };
 
         // Load stats from localStorage
@@ -226,6 +316,14 @@
             const saved = localStorage.getItem('wordBankStats');
             if (saved) {
                 playerStats = { ...playerStats, ...JSON.parse(saved) };
+            }
+            
+            // Check if it's a new day
+            const today = new Date().toDateString();
+            if (playerStats.lastPlayedDate !== today) {
+                playerStats.todaysGameCompleted = false;
+                playerStats.todaysGameData = null;
+                // Don't save here - let the game completion handle it
             }
         }
 
@@ -324,6 +422,10 @@
         // Save game completion stats
         function saveGameStats(gameData) {
             const today = new Date().toDateString();
+            
+            // Mark today's game as completed
+            playerStats.todaysGameCompleted = true;
+            playerStats.todaysGameData = gameData;
             
             // Update daily stats
             playerStats.dailyStats[today] = gameData;
@@ -529,7 +631,12 @@ Play daily at: ${window.location.href}`;
                 gameState.letterBank = generateDailyBank();
                 console.log(`Successfully loaded ${words.length} words`);
                 
-                initializeGame();
+                // Check if today's game can be played
+                if (!canPlayToday()) {
+                    showCompletedGame();
+                } else {
+                    initializeGame();
+                }
             } catch (error) {
                 console.error('Error loading words:', error);
                 showError(error.message);
@@ -662,6 +769,7 @@ Play daily at: ${window.location.href}`;
 
         // Handle letter click
         function selectLetter(letter, index) {
+            if (!canPlayToday()) return; // Prevent playing if game already completed
             if (gameState.gameFinished || gameState.timeLeft === 0) return;
             if (gameState.currentWord.length >= 5 || gameState.selectedLetters.includes(index)) return;
             
@@ -677,6 +785,7 @@ Play daily at: ${window.location.href}`;
 
         // Clear word
         function clearWord() {
+            if (!canPlayToday()) return; // Prevent playing if game already completed
             if (gameState.gameFinished || gameState.timeLeft === 0) return;
             gameState.currentWord = '';
             gameState.selectedLetters = [];
@@ -685,6 +794,7 @@ Play daily at: ${window.location.href}`;
 
         // Backspace
         function backspaceWord() {
+            if (!canPlayToday()) return; // Prevent playing if game already completed
             if (gameState.gameFinished || gameState.timeLeft === 0) return;
             if (gameState.currentWord.length === 0) return;
             
@@ -695,6 +805,7 @@ Play daily at: ${window.location.href}`;
 
         // Submit word
         function submitWord() {
+            if (!canPlayToday()) return; // Prevent playing if game already completed
             if (gameState.gameFinished || gameState.timeLeft === 0) return;
             if (gameState.currentWord.length !== 5) {
                 showMessage('Word must be exactly 5 letters!');
