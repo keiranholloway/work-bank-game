@@ -108,6 +108,51 @@
             color: white;
             transition: transform 0.3s ease;
         }
+        
+        /* Start game button styles */
+        .start-game-container {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0;
+        }
+        
+        .start-game-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 20px;
+            padding: 30px 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            text-align: center;
+            color: white;
+            font-family: inherit;
+        }
+        
+        .start-game-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+        
+        .start-game-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .start-game-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .start-game-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .start-game-subtext {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
     </style>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -225,8 +270,17 @@
         <!-- Timer -->
         <div class="timer" id="timer">Loading...</div>
 
+        <!-- Start Game Button -->
+        <div class="start-game-container" id="start-game-container" style="display: none;">
+            <button class="start-game-btn" id="start-game-btn" onclick="startGame()">
+                <div class="start-game-icon">🎯</div>
+                <div class="start-game-text">Start Today's Game</div>
+                <div class="start-game-subtext">Find words from 12 letters • 3 minutes</div>
+            </button>
+        </div>
+
         <!-- Letter Bank with Shuffle Button -->
-        <div style="display: flex; align-items: center; gap: 20px; justify-content: center;">
+        <div style="display: flex; align-items: center; gap: 20px; justify-content: center;" id="letter-bank-container">
             <div class="letter-bank" id="letter-bank">
                 <!-- Letters will be populated here -->
             </div>
@@ -664,12 +718,15 @@ Play daily at: ${window.location.href}`;
                 foundWords: document.getElementById('found-words'),
                 foundWordsTitle: document.getElementById('found-words-title'),
                 wordGrid: document.getElementById('word-grid'),
+                startGameContainer: document.getElementById('start-game-container'),
+                startGameBtn: document.getElementById('start-game-btn'),
+                letterBankContainer: document.getElementById('letter-bank-container'),
                 shuffleBtn: document.getElementById('shuffle-btn'),
                 appState: document.getElementById('app-state')
             };
         }
 
-        // Generate daily letter bank (reduced to 12 letters)
+        // Generate daily letter bank with better letter distribution
         function generateDailyBank() {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -686,16 +743,82 @@ Play daily at: ${window.location.href}`;
             }
             
             const rng = mulberry32(daysSinceBase);
-            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            const bank = [];
             
-            // Generate only 12 letters instead of 15
-            for (let i = 0; i < 12; i++) {
-                const index = Math.floor(rng() * letters.length);
-                bank.push(letters[index]);
+            // Define letter pools with weights
+            const vowels = ['A', 'E', 'I', 'O', 'U'];
+            const commonConsonants = ['R', 'S', 'T', 'L', 'N', 'D', 'C', 'P', 'M', 'H', 'G', 'B', 'F', 'Y', 'W'];
+            const rareConsonants = ['K', 'V', 'X', 'Z', 'J', 'Q'];
+            
+            const bank = [];
+            const usedRareLetters = new Set(); // Track rare letters to prevent duplicates
+            
+            // Ensure at least 2-3 vowels (allow duplicates, max 2 of each)
+            const vowelCount = Math.floor(rng() * 2) + 2; // 2 or 3 vowels
+            const vowelCounts = {}; // Track how many of each vowel we have
+            
+            for (let i = 0; i < vowelCount; i++) {
+                let vowel;
+                let attempts = 0;
+                do {
+                    vowel = vowels[Math.floor(rng() * vowels.length)];
+                    attempts++;
+                } while (vowelCounts[vowel] >= 2 && attempts < 20); // Allow up to 2 of each vowel
+                
+                bank.push(vowel);
+                vowelCounts[vowel] = (vowelCounts[vowel] || 0) + 1;
             }
             
-            return bank;
+            // Fill remaining slots with consonants
+            const remainingSlots = 12 - bank.length;
+            
+            // Determine how many rare consonants to include (0-2)
+            const rareCount = Math.floor(rng() * 3); // 0, 1, or 2 rare letters
+            
+            // Add rare consonants first (no duplicates for rare letters)
+            for (let i = 0; i < Math.min(rareCount, remainingSlots); i++) {
+                let rareLetter;
+                let attempts = 0;
+                do {
+                    rareLetter = rareConsonants[Math.floor(rng() * rareConsonants.length)];
+                    attempts++;
+                } while (usedRareLetters.has(rareLetter) && attempts < 10);
+                
+                if (!usedRareLetters.has(rareLetter)) {
+                    bank.push(rareLetter);
+                    usedRareLetters.add(rareLetter);
+                }
+            }
+            
+            // Fill remaining with common consonants (allow some duplicates, max 2 each)
+            const commonCounts = {};
+            while (bank.length < 12) {
+                const letter = commonConsonants[Math.floor(rng() * commonConsonants.length)];
+                
+                // Allow duplicates for common letters, but limit to 2 of the same letter
+                const currentCount = commonCounts[letter] || 0;
+                if (currentCount < 2) {
+                    bank.push(letter);
+                    commonCounts[letter] = currentCount + 1;
+                }
+                
+                // Safety check to prevent infinite loop
+                if (bank.length >= 12) break;
+            }
+            
+            // If we still don't have 12 letters, fill with random common letters
+            while (bank.length < 12) {
+                const allCommon = [...vowels, ...commonConsonants];
+                const letter = allCommon[Math.floor(rng() * allCommon.length)];
+                bank.push(letter);
+            }
+            
+            // Shuffle the final bank
+            for (let i = bank.length - 1; i > 0; i--) {
+                const j = Math.floor(rng() * (i + 1));
+                [bank[i], bank[j]] = [bank[j], bank[i]];
+            }
+            
+            return bank.slice(0, 12);
         }
 
         // Load words from file with better error handling
@@ -802,7 +925,7 @@ Play daily at: ${window.location.href}`;
             
             // Hide timer, letter bank, and score display
             elements.timer.style.display = 'none';
-            elements.letterBank.parentElement.style.display = 'none'; // Hide the entire letter bank container
+            elements.letterBankContainer.style.display = 'none';
             elements.scoreDisplay.style.display = 'none';
             
             // Restore today's game data if available
@@ -841,11 +964,30 @@ Play daily at: ${window.location.href}`;
             }
         }
 
-        // Initialize game UI
+        // Initialize game UI with start button
         function initializeGame() {
             elements.appState.style.display = 'none';
+            
+            // Show start button, hide game elements
+            elements.startGameContainer.style.display = 'block';
+            elements.letterBankContainer.style.display = 'none';
+            elements.timer.textContent = 'Ready to play? 🎯';
+        }
+
+        // Start the actual game
+        function startGame() {
+            if (!canPlayToday()) return;
+            
+            // Hide start button, show game elements
+            elements.startGameContainer.style.display = 'none';
+            elements.letterBankContainer.style.display = 'flex';
+            
+            // Initialize the letter bank display
             createLetterBank();
             updateUI();
+            
+            // Update timer to show ready state
+            elements.timer.textContent = 'Ready? 🎯';
         }
 
         // Shuffle letters function
@@ -1103,7 +1245,7 @@ Play daily at: ${window.location.href}`;
             
             // Hide timer, letter bank, and score display after game ends
             elements.timer.style.display = 'none';
-            elements.letterBank.parentElement.style.display = 'none'; // Hide the entire letter bank container
+            elements.letterBankContainer.style.display = 'none';
             elements.scoreDisplay.style.display = 'none';
             
             // Save game stats
