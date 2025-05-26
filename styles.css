@@ -692,3 +692,41 @@ body {
 .possible-words-section::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
 }
+
+/* Letter Bank Container (Pyramid Layout) */
+.letter-bank {
+    display: flex;
+    flex-direction: column; /* Stack rows vertically */
+    align-items: center; /* Center rows horizontally */
+    margin: 20px auto;
+    max-width: 400px; /* Limit overall width */
+}
+
+.pyramid-row {
+    display: flex;
+    justify-content: center; /* Center buttons within the row */
+    gap: 8px; /* Space between buttons in a row */
+    margin-bottom: 8px; /* Space between rows */
+}
+
+/* Style for individual letter buttons inside the pyramid */
+.pyramid-row .letter-btn {
+    /* Inherits base .letter-btn styles */
+    min-width: 45px; /* Ensure buttons are wide enough */
+    height: 45px;
+    font-size: 1.2rem;
+}
+
+/* Shuffle Button */
+.btn-shuffle {
+    margin: 10px auto; /* Center below pyramid */
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: rgba(147, 112, 219, 0.8); /* Medium Purple */
+    border: 1px solid rgba(147, 112, 219, 1);
+}
+
+.btn-shuffle:hover:not(:disabled) {
+    background-color: rgba(147, 112, 219, 1);
+}
