@@ -131,6 +131,15 @@
             <p id="game-over-score"><strong>Final Score:</strong> 0 points</p>
             <p id="game-over-words"><strong>Words Found:</strong> 0/0</p>
             <p id="game-over-perfect" style="color: #ffd700; margin-top: 10px; display: none;">🌟 You found every possible word! 🌟</p>
+            
+	    <!-- All possible words -->
+	    <div class="possible-words-section" id="possible-words-section" style="display: none;">
+		<h3 style="margin-bottom: 10px; opacity: 0.9;">All Possible Words</h3>
+		<div class="possible-word-grid" id="possible-word-grid">
+		    <!-- Possible words will be populated here -->
+		</div>
+	    </div>
+
             <button class="share-btn" onclick="showShareModal()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="18" cy="5" r="3"></circle>
@@ -711,18 +720,19 @@ Play daily at: ${window.location.href}`;
         }
 
         // Update UI (optimized - only update what changed)
+        // Update UI (optimized - only update what changed)
         function updateUI() {
             const possibleWords = getPossibleWords();
-            
+
             // Update scores
             elements.scoreValue.textContent = gameState.totalScore;
             elements.foundValue.textContent = gameState.foundWords.length;
             elements.possibleValue.textContent = possibleWords.length;
-            
+
             // Update timer
             const timerColor = gameState.timeLeft > 60 ? '#90EE90' : gameState.timeLeft > 30 ? '#ffd700' : '#ff6b6b';
             elements.timer.style.color = timerColor;
-            
+
             // Show different timer text based on game state
             if (!canPlayToday() && gameState.gameFinished) {
                 elements.timer.textContent = 'Game completed for today! 🎉';
@@ -731,7 +741,7 @@ Play daily at: ${window.location.href}`;
             } else {
                 elements.timer.textContent = formatTime(gameState.timeLeft);
             }
-            
+
             // Update current word slots
             for (let i = 0; i < 5; i++) {
                 const slot = elements.slots[i];
@@ -739,7 +749,7 @@ Play daily at: ${window.location.href}`;
                 slot.textContent = letter;
                 slot.classList.toggle('filled', !!letter);
             }
-            
+
             // Update letter bank buttons - disable if game already completed today
             const gameCompleted = !canPlayToday();
             gameState.letterBank.forEach((letter, index) => {
@@ -748,39 +758,60 @@ Play daily at: ${window.location.href}`;
                     btn.disabled = gameCompleted || gameState.selectedLetters.includes(index) || gameState.gameFinished || gameState.timeLeft === 0;
                 }
             });
-            
+
             // Update control buttons - disable if game already completed today
             elements.clearBtn.disabled = gameCompleted || gameState.currentWord.length === 0 || gameState.gameFinished || gameState.timeLeft === 0;
             elements.backBtn.disabled = gameCompleted || gameState.currentWord.length === 0 || gameState.gameFinished || gameState.timeLeft === 0;
             elements.submitBtn.disabled = gameCompleted || gameState.currentWord.length !== 5 || gameState.gameFinished || gameState.timeLeft === 0;
-            
-            // Update found words
-            if (gameState.foundWords.length > 0) {
-                elements.foundWords.style.display = 'block';
-                elements.foundWordsTitle.textContent = `Found Words (${gameState.foundWords.length})`;
-                elements.wordGrid.innerHTML = gameState.foundWords.map(word => 
-                    `<div class="found-word">
-                        <div class="found-word-name">${word}</div>
-                        <div class="found-word-score">${calculateWordScore(word)} pts</div>
-                    </div>`
-                ).join('');
-            } else {
-                elements.foundWords.style.display = 'none';
-            }
-            
+
+            // Update found words list (the smaller one shown during the game)
+            if (gameState.foundWords.length > 0 && !gameState.gameFinished) { // Only show during game, not on game over screen
+                 elements.foundWords.style.display = 'block';
+                 elements.foundWordsTitle.textContent = `Found Words (${gameState.foundWords.length})`;
+                 elements.wordGrid.innerHTML = gameState.foundWords.map(word =>
+                     `<div class="found-word">
+                         <div class="found-word-name">${word}</div>
+                         <div class="found-word-score">${calculateWordScore(word)} pts</div>
+                     </div>`
+                 ).join('');
+             } else {
+                 elements.foundWords.style.display = 'none';
+             }
+
+
             // Update game over screen
             if (gameState.gameFinished) {
-                const isPerfect = gameState.foundWords.length === possibleWords.length;
                 elements.gameOver.style.display = 'block';
+                elements.foundWords.style.display = 'none'; // Hide the in-game found words list
+
+                const isPerfect = gameState.foundWords.length === possibleWords.length;
                 elements.gameOverTitle.textContent = isPerfect ? '🏆 Perfect Game!' : '🎉 Game Complete!';
                 elements.gameOverScore.innerHTML = `<strong>Final Score:</strong> ${gameState.totalScore} points`;
                 elements.gameOverWords.innerHTML = `<strong>Words Found:</strong> ${gameState.foundWords.length}/${possibleWords.length}`;
                 elements.gameOverPerfect.style.display = isPerfect ? 'block' : 'none';
+
+                // --- NEW LOGIC TO DISPLAY ALL POSSIBLE WORDS ---
+                const possibleWordsSection = document.getElementById('possible-words-section');
+                const possibleWordGrid = document.getElementById('possible-word-grid');
+
+                if (possibleWordsSection && possibleWordGrid) {
+                     possibleWordsSection.style.display = 'block';
+                     possibleWordGrid.innerHTML = possibleWords.map(word => {
+                         const isFound = gameState.foundWords.includes(word);
+                         const className = isFound ? 'found-word-possible' : 'unfound-word-possible';
+                         return `<div class="${className}">${word}</div>`;
+                     }).join('');
+                }
+                // --- END NEW LOGIC ---
+
+
             } else {
                 elements.gameOver.style.display = 'none';
+                 if (gameState.foundWords.length > 0) { // Make sure in-game list is shown if game is not finished and words are found
+                    elements.foundWords.style.display = 'block';
+                 }
             }
         }
-
         // Handle letter click
         function selectLetter(letter, index) {
             if (!canPlayToday()) return; // Prevent playing if game already completed
