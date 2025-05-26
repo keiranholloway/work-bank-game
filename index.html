@@ -1,91 +1,4 @@
-// Show completed game screen
-        function showCompletedGame() {
-            elements.appState.style.display = 'none';
-            
-            // Restore today's game data if available
-            if (playerStats.todaysGameData) {
-                gameState.foundWords = playerStats.todaysGameData.foundWords || [];
-                gameState.totalScore = playerStats.todaysGameData.score || 0;
-                gameState.gameFinished = true;
-                gameState.timeLeft = 0;
-            }
-            
-            createLetterBank();
-            updateUI();
-            
-            // Show countdown in game over screen
-            const gameOverElement = elements.gameOver;
-            if (gameOverElement && playerStats.todaysGameData) {
-                gameOverElement.style.display = 'block';
-                
-                // Add countdown to the game over screen
-                const countdownHtml = `
-                    <div style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
-                        <p style="margin-bottom: 10px; opacity: 0.9;">Next game available in:</p>
-                        <p style="font-size: 1.2rem; font-weight: bold; color: #ffd700;" id="next-game-countdown">
-                            ${formatCountdown(getTimeUntilNextGame())}
-                        </p>
-                    </div>
-                `;
-                
-                // Insert countdown before the share button
-                const shareBtn = gameOverElement.querySelector('.share-btn');
-                if (shareBtn && !document.getElementById('next-game-countdown')) {
-                    shareBtn.insertAdjacentHTML('beforebegin', countdownHtml);
-                }
-                
-                startCountdown();
-            }
-        }        // Check if today's game can be played
-        function canPlayToday() {
-            const today = new Date().toDateString();
-            return !playerStats.todaysGameCompleted || playerStats.lastPlayedDate !== today;
-        }
-
-        // Get time until next game
-        function getTimeUntilNextGame() {
-            const now = new Date();
-            const tomorrow = new Date(now);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(0, 0, 0, 0);
-            return Math.max(0, tomorrow - now);
-        }
-
-        // Format countdown time
-        function formatCountdown(milliseconds) {
-            const totalSeconds = Math.floor(milliseconds / 1000);
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-            
-            if (hours > 0) {
-                return `${hours}h ${minutes}m ${seconds}s`;
-            } else if (minutes > 0) {
-                return `${minutes}m ${seconds}s`;
-            } else {
-                return `${seconds}s`;
-            }
-        }
-
-        // Start countdown timer
-        function startCountdown() {
-            if (gameState.countdownInterval) {
-                clearInterval(gameState.countdownInterval);
-            }
-            
-            const countdownElement = document.getElementById('next-game-countdown');
-            if (!countdownElement) return;
-            
-            gameState.countdownInterval = setInterval(() => {
-                const timeLeft = getTimeUntilNextGame();
-                if (timeLeft <= 0) {
-                    clearInterval(gameState.countdownInterval);
-                    location.reload(); // Refresh to allow new game
-                } else {
-                    countdownElement.textContent = formatCountdown(timeLeft);
-                }
-            }, 1000);
-        }<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -534,6 +447,57 @@ Play daily at: ${window.location.href}`;
             window.open(url, '_blank');
         }
 
+        // Check if today's game can be played
+        function canPlayToday() {
+            const today = new Date().toDateString();
+            return !playerStats.todaysGameCompleted || playerStats.lastPlayedDate !== today;
+        }
+
+        // Get time until next game
+        function getTimeUntilNextGame() {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            return Math.max(0, tomorrow - now);
+        }
+
+        // Format countdown time
+        function formatCountdown(milliseconds) {
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            if (hours > 0) {
+                return `${hours}h ${minutes}m ${seconds}s`;
+            } else if (minutes > 0) {
+                return `${minutes}m ${seconds}s`;
+            } else {
+                return `${seconds}s`;
+            }
+        }
+
+        // Start countdown timer
+        function startCountdown() {
+            if (gameState.countdownInterval) {
+                clearInterval(gameState.countdownInterval);
+            }
+            
+            const countdownElement = document.getElementById('next-game-countdown');
+            if (!countdownElement) return;
+            
+            gameState.countdownInterval = setInterval(() => {
+                const timeLeft = getTimeUntilNextGame();
+                if (timeLeft <= 0) {
+                    clearInterval(gameState.countdownInterval);
+                    location.reload(); // Refresh to allow new game
+                } else {
+                    countdownElement.textContent = formatCountdown(timeLeft);
+                }
+            }, 1000);
+        }
+
         // Letter scores
         const letterScores = {
             'A': 1, 'E': 1, 'I': 1, 'O': 1, 'U': 1, 'R': 1, 'T': 1, 'L': 1, 'S': 1, 'N': 1,
@@ -655,6 +619,47 @@ Play daily at: ${window.location.href}`;
             `;
         }
 
+        // Show completed game screen
+        function showCompletedGame() {
+            elements.appState.style.display = 'none';
+            
+            // Restore today's game data if available
+            if (playerStats.todaysGameData) {
+                gameState.foundWords = playerStats.todaysGameData.foundWords || [];
+                gameState.totalScore = playerStats.todaysGameData.score || 0;
+                gameState.gameFinished = true;
+                gameState.timeLeft = 0;
+            }
+            
+            createLetterBank();
+            updateUI();
+            
+            // Show countdown in game over screen
+            const gameOverElement = elements.gameOver;
+            if (gameOverElement && playerStats.todaysGameData) {
+                gameOverElement.style.display = 'block';
+                
+                // Add countdown to the game over screen
+                const initialCountdown = formatCountdown(getTimeUntilNextGame());
+                const countdownHtml = `
+                    <div style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                        <p style="margin-bottom: 10px; opacity: 0.9;">Next game available in:</p>
+                        <p style="font-size: 1.2rem; font-weight: bold; color: #ffd700;" id="next-game-countdown">
+                            ${initialCountdown}
+                        </p>
+                    </div>
+                `;
+                
+                // Insert countdown before the share button
+                const shareBtn = gameOverElement.querySelector('.share-btn');
+                if (shareBtn && !document.getElementById('next-game-countdown')) {
+                    shareBtn.insertAdjacentHTML('beforebegin', countdownHtml);
+                }
+                
+                startCountdown();
+            }
+        }
+
         // Initialize game UI
         function initializeGame() {
             elements.appState.style.display = 'none';
@@ -717,7 +722,15 @@ Play daily at: ${window.location.href}`;
             // Update timer
             const timerColor = gameState.timeLeft > 60 ? '#90EE90' : gameState.timeLeft > 30 ? '#ffd700' : '#ff6b6b';
             elements.timer.style.color = timerColor;
-            elements.timer.textContent = gameState.timeLeft > 0 && !gameState.gameStarted ? 'Ready? 🎯' : formatTime(gameState.timeLeft);
+            
+            // Show different timer text based on game state
+            if (!canPlayToday() && gameState.gameFinished) {
+                elements.timer.textContent = 'Game completed for today! 🎉';
+            } else if (gameState.timeLeft > 0 && !gameState.gameStarted) {
+                elements.timer.textContent = 'Ready? 🎯';
+            } else {
+                elements.timer.textContent = formatTime(gameState.timeLeft);
+            }
             
             // Update current word slots
             for (let i = 0; i < 5; i++) {
@@ -727,18 +740,19 @@ Play daily at: ${window.location.href}`;
                 slot.classList.toggle('filled', !!letter);
             }
             
-            // Update letter bank buttons
+            // Update letter bank buttons - disable if game already completed today
+            const gameCompleted = !canPlayToday();
             gameState.letterBank.forEach((letter, index) => {
                 const btn = document.getElementById(`letter-${index}`);
                 if (btn) {
-                    btn.disabled = gameState.selectedLetters.includes(index) || gameState.gameFinished || gameState.timeLeft === 0;
+                    btn.disabled = gameCompleted || gameState.selectedLetters.includes(index) || gameState.gameFinished || gameState.timeLeft === 0;
                 }
             });
             
-            // Update control buttons
-            elements.clearBtn.disabled = gameState.currentWord.length === 0 || gameState.gameFinished || gameState.timeLeft === 0;
-            elements.backBtn.disabled = gameState.currentWord.length === 0 || gameState.gameFinished || gameState.timeLeft === 0;
-            elements.submitBtn.disabled = gameState.currentWord.length !== 5 || gameState.gameFinished || gameState.timeLeft === 0;
+            // Update control buttons - disable if game already completed today
+            elements.clearBtn.disabled = gameCompleted || gameState.currentWord.length === 0 || gameState.gameFinished || gameState.timeLeft === 0;
+            elements.backBtn.disabled = gameCompleted || gameState.currentWord.length === 0 || gameState.gameFinished || gameState.timeLeft === 0;
+            elements.submitBtn.disabled = gameCompleted || gameState.currentWord.length !== 5 || gameState.gameFinished || gameState.timeLeft === 0;
             
             // Update found words
             if (gameState.foundWords.length > 0) {
@@ -881,12 +895,36 @@ Play daily at: ${window.location.href}`;
                 totalPossible: possibleWords.length,
                 timeTaken: 180 - gameState.timeLeft,
                 completedEarly: gameState.timeLeft > 0,
-                completionPercentage: Math.round((gameState.foundWords.length / possibleWords.length) * 100)
+                completionPercentage: Math.round((gameState.foundWords.length / possibleWords.length) * 100),
+                foundWords: [...gameState.foundWords] // Save the actual words found
             };
             saveGameStats(gameData);
             
             showMessage(message);
             updateUI();
+            
+            // Add countdown timer to game over screen
+            setTimeout(() => {
+                const gameOverElement = elements.gameOver;
+                if (gameOverElement && gameOverElement.style.display === 'block') {
+                    const initialCountdown = formatCountdown(getTimeUntilNextGame());
+                    const countdownHtml = `
+                        <div style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                            <p style="margin-bottom: 10px; opacity: 0.9;">Next game available in:</p>
+                            <p style="font-size: 1.2rem; font-weight: bold; color: #ffd700;" id="next-game-countdown">
+                                ${initialCountdown}
+                            </p>
+                        </div>
+                    `;
+                    
+                    // Insert countdown before the share button if not already present
+                    const shareBtn = gameOverElement.querySelector('.share-btn');
+                    if (shareBtn && !document.getElementById('next-game-countdown')) {
+                        shareBtn.insertAdjacentHTML('beforebegin', countdownHtml);
+                        startCountdown();
+                    }
+                }
+            }, 100);
         }
 
         // Show message
