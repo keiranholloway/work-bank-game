@@ -9,14 +9,6 @@
 <body>
   <div class="container">
     <div class="header">
-      <button class="stats-btn" id="stats-btn" onclick="showStats()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 3v18h18"></path>
-          <path d="M7 16V9"></path>
-          <path d="M12 16V6"></path>
-          <path d="M17 16v-3"></path>
-        </svg>
-      </button>
       <h1>⭐ Word Bank</h1>
       <p>Create 5-letter words from your daily bank</p>
     </div>
@@ -32,12 +24,19 @@
     <div class="letter-bank" id="letter-bank"></div>
 
     <div class="controls">
-      <button class="btn btn-clear" id="clear-btn" onclick="clearWord()">Clear</button>
-      <button class="btn btn-back" id="back-btn" onclick="backspaceWord()">← Back</button>
-      <button class="btn btn-submit" id="submit-btn" onclick="submitWord()">Submit</button>
+      <button class="btn" id="clear-btn" onclick="clearWord()">Clear</button>
+      <button class="btn" id="back-btn" onclick="backspaceWord()">← Back</button>
+      <button class="btn" id="submit-btn" onclick="submitWord()">Submit</button>
     </div>
 
     <div class="message" id="message"></div>
+    <div class="found-words" id="found-words"></div>
+    <div id="app-state">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Loading game...</p>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -47,10 +46,20 @@
       'W': 2, 'X': 4, 'Y': 2, 'Z': 4
     };
 
-    const gameState = {
+    let gameState = {
       currentWord: '',
       selectedLetters: [],
-      letterBank: []
+      letterBank: [],
+      originalDailyBankLetters: [],
+      foundWords: [],
+      validWords: [],
+      totalScore: 0,
+      gameFinished: false
+    };
+
+    let playerStats = {
+      todaysGameCompleted: false,
+      todaysGameData: null
     };
 
     let elements = {};
@@ -68,18 +77,53 @@
         clearBtn: document.getElementById('clear-btn'),
         backBtn: document.getElementById('back-btn'),
         submitBtn: document.getElementById('submit-btn'),
-        message: document.getElementById('message')
+        message: document.getElementById('message'),
+        foundWords: document.getElementById('found-words'),
+        appState: document.getElementById('app-state')
       };
     }
 
-    function generateLetterBank() {
+    function loadStats() {
+      const saved = localStorage.getItem('wordBankStats');
+      if (saved) {
+        playerStats = { ...playerStats, ...JSON.parse(saved) };
+      }
+    }
+
+    function generateDailyBank() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const baseDate = new Date('2025-01-01');
+      const daysSinceBase = Math.floor((today - baseDate) / (1000 * 60 * 60 * 24));
+
+      function mulberry32(a) {
+        return function () {
+          let t = a += 0x6D2B79F5;
+          t = Math.imul(t ^ t >>> 15, t | 1);
+          t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+          return ((t ^ t >>> 14) >>> 0) / 4294969600;
+        }
+      }
+
+      const rng = mulberry32(daysSinceBase);
       const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       const bank = [];
+
       for (let i = 0; i < 12; i++) {
-        const index = Math.floor(Math.random() * letters.length);
+        const index = Math.floor(rng() * letters.length);
         bank.push(letters[index]);
       }
+
       return bank;
+    }
+
+    function shuffleArray(array) {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
     }
 
     function createLetterBank() {
@@ -119,6 +163,8 @@
         const index = parseInt(button.dataset.index, 10);
         button.disabled = gameState.selectedLetters.includes(index);
       });
+
+      elements.appState.style.display = 'none';
     }
 
     function selectLetter(letter, index) {
@@ -145,7 +191,20 @@
         showMessage('Word must be 5 letters!');
         return;
       }
-      showMessage(`Submitted: ${gameState.currentWord}`);
+      if (!gameState.validWords.includes(gameState.currentWord)) {
+        showMessage('Not a valid word!');
+        clearWord();
+        return;
+      }
+      if (gameState.foundWords.includes(gameState.currentWord)) {
+        showMessage('Word already found!');
+        clearWord();
+        return;
+      }
+
+      gameState.foundWords.push(gameState.currentWord);
+      gameState.totalScore += calculateWordScore(gameState.currentWord);
+      showMessage(`+${calculateWordScore(gameState.currentWord)} pts`);
       clearWord();
     }
 
@@ -156,11 +215,55 @@
       }, 2000);
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      cacheElements();
-      gameState.letterBank = generateLetterBank();
+    function calculateWordScore(word) {
+      return word.split('').reduce((score, letter) => score + (letterScores[letter] || 0), 0);
+    }
+
+    function showCompletedGame() {
+      if (!playerStats.todaysGameData) {
+        console.warn("No saved data found. Starting fresh.");
+        playerStats.todaysGameCompleted = false;
+        initializeGame();
+        return;
+      }
+      gameState.letterBank = shuffleArray([...gameState.originalDailyBankLetters]);
+      gameState.foundWords = playerStats.todaysGameData.foundWords || [];
+      gameState.totalScore = playerStats.todaysGameData.score || 0;
+      gameState.gameFinished = true;
       createLetterBank();
       updateUI();
+    }
+
+    function initializeGame() {
+      gameState.originalDailyBankLetters = generateDailyBank();
+      gameState.letterBank = shuffleArray([...gameState.originalDailyBankLetters]);
+      createLetterBank();
+      updateUI();
+    }
+
+    async function loadWords() {
+      try {
+        const response = await fetch('./words.txt');
+        const text = await response.text();
+        gameState.validWords = text.split('\n').map(w => w.trim().toUpperCase()).filter(w => w.length === 5);
+
+        gameState.originalDailyBankLetters = generateDailyBank();
+
+        if (playerStats.todaysGameCompleted) {
+          showCompletedGame();
+        } else {
+          initializeGame();
+        }
+      } catch (e) {
+        elements.appState.innerHTML = '<p>Error loading word list.</p>';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM fully loaded. Starting initialization...');
+      cacheElements();
+      loadStats();
+      loadWords();
     });
   </script>
 </body>
