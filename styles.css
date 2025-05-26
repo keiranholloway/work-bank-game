@@ -30,6 +30,7 @@ body {
     position: relative;
     width: 100%;
     box-sizing: border-box;
+    position: relative; 
 }
 
 .header {
@@ -693,40 +694,45 @@ body {
     background: rgba(255, 255, 255, 0.5);
 }
 
-/* Letter Bank Container (Pyramid Layout) */
+/* Letter Bank Container (Inverted Pyramid Layout) */
 .letter-bank {
     display: flex;
     flex-direction: column; /* Stack rows vertically */
     align-items: center; /* Center rows horizontally */
     margin: 20px auto;
-    max-width: 400px; /* Limit overall width */
+    max-width: 300px; /* Adjust max-width for the wider base */
+    padding: 10px; /* Add some padding around the pyramid */
+    /* Removed background/border as it's just a container now */
 }
-
-.pyramid-row {
-    display: flex;
-    justify-content: center; /* Center buttons within the row */
-    gap: 8px; /* Space between buttons in a row */
-    margin-bottom: 8px; /* Space between rows */
-}
-
-/* Style for individual letter buttons inside the pyramid */
-.pyramid-row .letter-btn {
-    /* Inherits base .letter-btn styles */
-    min-width: 45px; /* Ensure buttons are wide enough */
-    height: 45px;
-    font-size: 1.2rem;
-}
-
-/* Shuffle Button */
+/* Shuffle Button - Smaller and positioned absolutely */
 .btn-shuffle {
-    margin: 10px auto; /* Center below pyramid */
-    display: flex;
+    position: absolute; /* Position relative to the .container */
+    bottom: 160px; /* Adjust this based on vertical space below pyramid */
+    right: 40px; /* Adjust this for horizontal position */
+    z-index: 10; /* Ensure it's above other elements if needed */
+
+    width: 50px; /* Smaller size */
+    height: 50px; /* Smaller size */
+    padding: 5px; /* Adjust padding */
+    font-size: 0.8rem; /* Smaller text */
+    flex-direction: column; /* Stack icon and text */
+    justify-content: center;
     align-items: center;
-    gap: 5px;
+    gap: 2px; /* Smaller gap between icon and text */
+
     background-color: rgba(147, 112, 219, 0.8); /* Medium Purple */
     border: 1px solid rgba(147, 112, 219, 1);
+    border-radius: 8px; /* Slightly smaller border-radius */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
 }
+
+.btn-shuffle svg {
+    width: 18px; /* Adjust icon size */
+    height: 18px;
+}
+
 
 .btn-shuffle:hover:not(:disabled) {
     background-color: rgba(147, 112, 219, 1);
+    transform: scale(1.05); /* Slight hover effect */
 }
