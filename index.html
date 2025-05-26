@@ -73,6 +73,41 @@
             border-radius: 4px;
             font-family: 'Courier New', monospace;
         }
+        
+        /* Shuffle button styles */
+        .shuffle-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .shuffle-btn:hover {
+            transform: translateY(-2px) rotate(180deg);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .shuffle-btn:active {
+            transform: translateY(0) rotate(180deg);
+        }
+        
+        .shuffle-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none;
+        }
+        
+        .shuffle-btn svg {
+            color: white;
+            transition: transform 0.3s ease;
+        }
     </style>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -190,9 +225,20 @@
         <!-- Timer -->
         <div class="timer" id="timer">Loading...</div>
 
-        <!-- Letter Bank -->
-        <div class="letter-bank" id="letter-bank">
-            <!-- Letters will be populated here -->
+        <!-- Letter Bank with Shuffle Button -->
+        <div style="display: flex; align-items: center; gap: 20px; justify-content: center;">
+            <div class="letter-bank" id="letter-bank">
+                <!-- Letters will be populated here -->
+            </div>
+            <button class="shuffle-btn" id="shuffle-btn" onclick="shuffleLetters()" title="Shuffle letters">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="16,3 21,3 21,8"></polyline>
+                    <line x1="4" y1="20" x2="21" y2="3"></line>
+                    <polyline points="21,16 21,21 16,21"></polyline>
+                    <line x1="15" y1="15" x2="21" y2="21"></line>
+                    <line x1="4" y1="4" x2="9" y2="9"></line>
+                </svg>
+            </button>
         </div>
 
         <!-- Game Over Screen -->
@@ -200,6 +246,16 @@
             <h2 id="game-over-title">🎉 Game Complete!</h2>
             <p id="game-over-score"><strong>Final Score:</strong> 0 points</p>
             <p id="game-over-words"><strong>Words Found:</strong> 0/0</p>
+            <p id="game-over-perfect" style="color: #ffd700; margin-top: 10px; display: none;">🌟 You found every possible word! 🌟</p>
+            
+            <!-- All possible words display -->
+            <div id="all-words-section" style="margin-top: 20px;">
+                <h3 style="margin-bottom: 15px; text-align: center;">All Possible Words</h3>
+                <div id="all-words-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; max-height: 300px; overflow-y: auto; background: rgba(0, 0, 0, 0.2); border-radius: 8px; padding: 15px;">
+                    <!-- All possible words will be populated here -->
+                </div>
+            </div>
+            
             <button class="share-btn" onclick="showShareModal()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="18" cy="5" r="3"></circle>
@@ -210,16 +266,6 @@
                 </svg>
                 Share Results
             </button>
-           <p id="game-over-perfect" style="color: #ffd700; margin-top: 10px; display: none;">🌟 You found every possible word! 🌟</p>
-            
-            <!-- All possible words display -->
-            <div id="all-words-section" style="margin-top: 20px;">
-                <h3 style="margin-bottom: 15px; text-align: center;">All Possible Words</h3>
-                <div id="all-words-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; max-height: 300px; overflow-y: auto; background: rgba(0, 0, 0, 0.2); border-radius: 8px; padding: 15px;">
-                    <!-- All possible words will be populated here -->
-                </div>
-            </div>
-            
         </div>
 
         <!-- Current Word -->
@@ -263,6 +309,7 @@
         let gameState = {
             validWords: [],
             letterBank: [],
+            displayedLetters: [], // Track the current display order of letters
             currentWord: '',
             selectedLetters: [],
             foundWords: [],
@@ -617,6 +664,7 @@ Play daily at: ${window.location.href}`;
                 foundWords: document.getElementById('found-words'),
                 foundWordsTitle: document.getElementById('found-words-title'),
                 wordGrid: document.getElementById('word-grid'),
+                shuffleBtn: document.getElementById('shuffle-btn'),
                 appState: document.getElementById('app-state')
             };
         }
@@ -700,6 +748,7 @@ Play daily at: ${window.location.href}`;
                 
                 gameState.validWords = wordList;
                 gameState.letterBank = generateDailyBank();
+                gameState.displayedLetters = [...gameState.letterBank]; // Initialize display order
                 console.log(`Successfully loaded ${wordList.length} words from ${loadedFrom}`);
                 
                 // Check if today's game can be played
@@ -753,7 +802,7 @@ Play daily at: ${window.location.href}`;
             
             // Hide timer, letter bank, and score display
             elements.timer.style.display = 'none';
-            elements.letterBank.style.display = 'none';
+            elements.letterBank.parentElement.style.display = 'none'; // Hide the entire letter bank container
             elements.scoreDisplay.style.display = 'none';
             
             // Restore today's game data if available
@@ -799,10 +848,27 @@ Play daily at: ${window.location.href}`;
             updateUI();
         }
 
+        // Shuffle letters function
+        function shuffleLetters() {
+            if (!canPlayToday()) return; // Prevent shuffling if game already completed
+            if (gameState.gameFinished || gameState.timeLeft === 0) return;
+            
+            // Fisher-Yates shuffle algorithm
+            const shuffled = [...gameState.displayedLetters];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            
+            gameState.displayedLetters = shuffled;
+            createLetterBank();
+            updateUI();
+        }
+
         // Create letter bank buttons
         function createLetterBank() {
             const pyramidStructure = [5, 4, 3]; // Total 12 letters: 5 + 4 + 3
-            const letters = gameState.letterBank.slice(0, 12); // Copy the bank
+            const letters = gameState.displayedLetters.slice(0, 12); // Use displayed order
             let html = '';
 
             let index = 0;
@@ -810,7 +876,8 @@ Play daily at: ${window.location.href}`;
                 const rowLetters = letters.slice(index, index + rowCount);
                 html += `<div class="pyramid-row">` + rowLetters.map((letter, i) => {
                     const realIndex = index + i;
-                    return `<button class="letter-btn" id="letter-${realIndex}" onclick="selectLetter('${letter}', ${realIndex})">
+                    const originalIndex = gameState.letterBank.indexOf(letter); // Find original position
+                    return `<button class="letter-btn" id="letter-${realIndex}" onclick="selectLetter('${letter}', ${originalIndex})">
                             ${letter}
                             <div class="letter-value">${letterScores[letter]}</div>
                         </button>`;
@@ -892,6 +959,9 @@ Play daily at: ${window.location.href}`;
                     btn.disabled = gameCompleted || gameState.selectedLetters.includes(index) || gameState.gameFinished || gameState.timeLeft === 0;
                 }
             });
+            
+            // Update shuffle button - disable if game already completed today
+            elements.shuffleBtn.disabled = gameCompleted || gameState.gameFinished || gameState.timeLeft === 0;
             
             // Update control buttons - disable if game already completed today
             elements.clearBtn.disabled = gameCompleted || gameState.currentWord.length === 0 || gameState.gameFinished || gameState.timeLeft === 0;
@@ -1033,7 +1103,7 @@ Play daily at: ${window.location.href}`;
             
             // Hide timer, letter bank, and score display after game ends
             elements.timer.style.display = 'none';
-            elements.letterBank.style.display = 'none';
+            elements.letterBank.parentElement.style.display = 'none'; // Hide the entire letter bank container
             elements.scoreDisplay.style.display = 'none';
             
             // Save game stats
