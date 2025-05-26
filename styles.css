@@ -13,8 +13,8 @@ body {
     padding: 10px;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    -webkit-user-select: none;
-    user-select: none;
+    /* -webkit-user-select: none; user-select: none; */ /* Keep user-select enabled for copy in modal */
+    touch-action: pan-y; /* Allow vertical scrolling on body */
 }
 
 .container {
@@ -30,6 +30,9 @@ body {
     position: relative;
     width: 100%;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center contents */
 }
 
 .header {
@@ -37,6 +40,7 @@ body {
     margin-bottom: 25px;
     position: relative;
     padding-top: 10px;
+    width: 100%; /* Take full width within container */
 }
 
 .header h1 {
@@ -69,6 +73,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    touch-action: manipulation; /* Prevent default scroll */
 }
 
 .stats-btn:active {
@@ -85,6 +90,7 @@ body {
     justify-content: space-between;
     text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%; /* Take full width */
 }
 
 .score-item {
@@ -111,23 +117,37 @@ body {
     margin-bottom: 20px;
     font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
     transition: color 0.3s ease;
+    width: 100%; /* Center text correctly */
 }
 
+/* Letter Bank Container (Pyramid Layout) */
 .letter-bank {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
-    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column; /* Stack rows vertically */
+    align-items: center; /* Center rows horizontally */
+    margin: 20px auto;
+    max-width: 400px; /* Limit overall width */
+    width: 100%; /* Allow it to shrink on smaller screens */
+    gap: 8px; /* Space between rows */
 }
 
-.letter-btn {
-    width: 100%;
-    height: 55px;
-    border: none;
+.pyramid-row {
+    display: flex;
+    justify-content: center; /* Center buttons within the row */
+    gap: 6px; /* Space between buttons in a row */
+    /* margin-bottom: 8px; */ /* Removed, using gap on .letter-bank instead */
+}
+
+/* Style for individual letter buttons inside the pyramid */
+.pyramid-row .letter-btn {
+    /* Inherits base .letter-btn styles */
+    min-width: 45px; /* Ensure buttons are wide enough */
+    height: 45px;
+    font-size: 1.2rem;
+    border: none; /* Remove border from base style */
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.2);
     color: white;
-    font-size: 1.1rem;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -143,10 +163,13 @@ body {
 }
 
 .letter-btn:disabled {
-    background: rgba(128, 0, 128, 0.6);
-    transform: scale(0.95);
+    background: rgba(128, 0, 128, 0.6); /* Muted/Purple color for disabled */
+    border-color: rgba(128, 0, 128, 0.4);
+    color: rgba(255, 255, 255, 0.8);
     opacity: 0.7;
+    cursor: default;
 }
+
 
 .letter-value {
     position: absolute;
@@ -162,6 +185,7 @@ body {
     justify-content: center;
     gap: 6px;
     margin-bottom: 20px;
+    width: 100%; /* Allow centering the flex container */
 }
 
 .word-slot {
@@ -189,6 +213,7 @@ body {
     gap: 6px;
     justify-content: center;
     margin-bottom: 15px;
+    width: 100%; /* Allow centering the flex container */
 }
 
 .btn {
@@ -206,6 +231,7 @@ body {
 
 .btn:disabled {
     opacity: 0.5;
+    cursor: default;
 }
 
 .btn:active:not(:disabled) {
@@ -228,6 +254,21 @@ body {
     padding: 12px 18px;
 }
 
+/* Shuffle Button */
+.btn-shuffle {
+    margin: 10px auto; /* Center below pyramid */
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: rgba(147, 112, 219, 0.8); /* Medium Purple */
+    border: 1px solid rgba(147, 112, 219, 1);
+}
+
+.btn-shuffle:hover:not(:disabled) {
+    background-color: rgba(147, 112, 219, 1);
+}
+
+
 .message {
     text-align: center;
     font-weight: bold;
@@ -235,6 +276,7 @@ body {
     min-height: 20px;
     color: #ffd700;
     font-size: 0.9rem;
+    width: 100%; /* Center text correctly */
 }
 
 .found-words {
@@ -246,6 +288,7 @@ body {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%; /* Take full width */
 }
 
 .found-words h3 {
@@ -287,6 +330,7 @@ body {
     text-align: center;
     margin-bottom: 15px;
     animation: fadeIn 0.5s ease;
+    width: 100%; /* Take full width */
 }
 
 .share-btn {
@@ -306,6 +350,7 @@ body {
     font-size: 0.85rem;
     -webkit-tap-highlight-color: transparent;
     min-height: 44px;
+    touch-action: manipulation;
 }
 
 .share-btn:active {
@@ -383,6 +428,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    touch-action: manipulation;
 }
 
 .close-btn:active {
@@ -471,9 +517,27 @@ body {
     font-weight: bold;
 }
 
+#app-state {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5); /* Darken slightly */
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 50; /* Below modals */
+     border-radius: 20px; /* Match container */
+}
+
+
 .loading {
     text-align: center;
     padding: 50px;
+    color: white;
 }
 
 .spinner {
@@ -492,7 +556,22 @@ body {
     border-radius: 15px;
     padding: 20px;
     text-align: center;
+    color: white;
+    max-width: 90%;
 }
+.error h2 {
+    margin-bottom: 10px;
+    font-size: 1.4rem;
+}
+.error p {
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+.error .btn {
+    background: #ff6b6b;
+    color: white;
+}
+
 
 /* Animations */
 @keyframes slideIn {
@@ -543,20 +622,31 @@ body {
         padding: 0 45px;
     }
     
-    .letter-btn {
-        height: 50px;
-        font-size: 1rem;
+    /* Letter bank buttons */
+    .pyramid-row .letter-btn {
+         min-width: 40px;
+         height: 40px;
+         font-size: 1.1rem;
+         border-radius: 10px;
     }
-    
+     .pyramid-row {
+         gap: 5px;
+     }
+    .letter-bank {
+        gap: 6px;
+    }
+
     .word-slot {
         width: 40px;
         height: 40px;
         font-size: 1.2rem;
+         border-radius: 10px;
     }
     
     .btn {
         padding: 10px 12px;
         font-size: 0.8rem;
+        border-radius: 10px;
     }
     
     .achievements-grid {
@@ -585,11 +675,19 @@ body {
         padding: 20px;
     }
     
-    .letter-btn {
-        height: 55px;
-        font-size: 1.2rem;
-    }
-    
+    /* Letter bank buttons */
+     .pyramid-row .letter-btn {
+         min-width: 45px;
+         height: 45px;
+         font-size: 1.2rem;
+     }
+     .pyramid-row {
+         gap: 6px;
+     }
+     .letter-bank {
+         gap: 8px;
+     }
+
     .word-slot {
         width: 45px;
         height: 45px;
@@ -618,13 +716,13 @@ body {
         color: white;
     }
 
-    .letter-btn:hover:not(:disabled) {
+    .pyramid-row .letter-btn:hover:not(:disabled) {
         background: rgba(255, 255, 255, 0.3);
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
-    .letter-btn:active:not(:disabled) {
+    .pyramid-row .letter-btn:active:not(:disabled) {
         transform: translateY(0);
     }
 
@@ -635,6 +733,10 @@ body {
 
     .btn:active:not(:disabled) {
         transform: translateY(0);
+    }
+    
+    .btn-shuffle:hover:not(:disabled) {
+        background-color: rgba(147, 112, 219, 1);
     }
 }
 
@@ -647,6 +749,13 @@ body {
     border-radius: 12px;
     max-height: 200px; /* Limit height and make it scrollable */
     overflow-y: auto;
+     width: 100%; /* Take full width */
+}
+
+.possible-words-section h3 {
+     margin-bottom: 12px;
+     font-size: 0.9rem;
+     opacity: 0.9;
 }
 
 .possible-word-grid {
@@ -691,42 +800,4 @@ body {
 
 .possible-words-section::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
-}
-
-/* Letter Bank Container (Pyramid Layout) */
-.letter-bank {
-    display: flex;
-    flex-direction: column; /* Stack rows vertically */
-    align-items: center; /* Center rows horizontally */
-    margin: 20px auto;
-    max-width: 400px; /* Limit overall width */
-}
-
-.pyramid-row {
-    display: flex;
-    justify-content: center; /* Center buttons within the row */
-    gap: 8px; /* Space between buttons in a row */
-    margin-bottom: 8px; /* Space between rows */
-}
-
-/* Style for individual letter buttons inside the pyramid */
-.pyramid-row .letter-btn {
-    /* Inherits base .letter-btn styles */
-    min-width: 45px; /* Ensure buttons are wide enough */
-    height: 45px;
-    font-size: 1.2rem;
-}
-
-/* Shuffle Button */
-.btn-shuffle {
-    margin: 10px auto; /* Center below pyramid */
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    background-color: rgba(147, 112, 219, 0.8); /* Medium Purple */
-    border: 1px solid rgba(147, 112, 219, 1);
-}
-
-.btn-shuffle:hover:not(:disabled) {
-    background-color: rgba(147, 112, 219, 1);
 }
