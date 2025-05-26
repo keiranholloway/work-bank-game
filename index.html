@@ -669,8 +669,8 @@ Play daily at: ${window.location.href}`;
 
         // Create letter bank buttons
         function createLetterBank() {
-          const pyramidStructure = [1, 2, 3, 4, 5]; // Adjust based on how many letters you want and their layout
-          const letters = gameState.letterBank.slice(); // Copy the bank
+          const pyramidStructure = [5, 4, 3]; // Total 12 letters: 5 + 4 + 3
+          const letters = gameState.letterBank.slice(0, 12); // Copy the bank
           let html = '';
 
           let index = 0;
