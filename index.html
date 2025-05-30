@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Word Bank Game</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -173,7 +173,7 @@
         </div>
 
         <!-- Current Word -->
-        <div class="current-word">
+        <div class="current-word" id="current-word">
             <div class="word-slot" id="slot-0"></div>
             <div class="word-slot" id="slot-1"></div>
             <div class="word-slot" id="slot-2"></div>
@@ -555,6 +555,7 @@ Play daily at: ${window.location.href}`;
                 gameOverPerfect: document.getElementById('game-over-perfect'),
                 allWordsSection: document.getElementById('all-words-section'),
                 allWordsGrid: document.getElementById('all-words-grid'),
+                currentWord: document.getElementById('current-word'),
                 slots: [
                     document.getElementById('slot-0'),
                     document.getElementById('slot-1'),
@@ -633,6 +634,18 @@ Play daily at: ${window.location.href}`;
                     rareLetter = rareConsonants[Math.floor(rng() * rareConsonants.length)];
                     attempts++;
                 } while (usedRareLetters.has(rareLetter) && attempts < 10);
+                
+                // Special rule: If Q is selected, ensure U is in the bank
+                if (rareLetter === 'Q' && !bank.includes('U') && !vowelCounts['U']) {
+                    // Replace Q with another rare letter
+                    const availableRare = rareConsonants.filter(letter => !usedRareLetters.has(letter) && letter !== 'Q');
+                    if (availableRare.length > 0) {
+                        rareLetter = availableRare[Math.floor(rng() * availableRare.length)];
+                    } else {
+                        // Skip this rare letter if no alternatives
+                        continue;
+                    }
+                }
                 
                 if (!usedRareLetters.has(rareLetter)) {
                     bank.push(rareLetter);
@@ -1030,7 +1043,10 @@ Play daily at: ${window.location.href}`;
             gameState.currentWord = '';
             gameState.selectedLetters = [];
             gameState.selectedLettersData = [];
-            gameState.selectedLettersData = [];
+            
+            // Reset word color to normal
+            elements.currentWord.style.color = '';
+            
             updateUI();
         }
 
@@ -1043,6 +1059,10 @@ Play daily at: ${window.location.href}`;
             gameState.currentWord = gameState.currentWord.slice(0, -1);
             gameState.selectedLetters.pop();
             gameState.selectedLettersData.pop();
+            
+            // Reset word color to normal when backspacing
+            elements.currentWord.style.color = '';
+            
             updateUI();
         }
 
@@ -1062,18 +1082,34 @@ Play daily at: ${window.location.href}`;
             
             if (gameState.foundWords.includes(gameState.currentWord)) {
                 showMessage(`"${gameState.currentWord}" already found!`);
-                clearWord();
+                // Change word color to red for invalid word
+                elements.currentWord.style.color = '#ff6b6b';
+                // Clear word after a delay
+                setTimeout(() => {
+                    clearWord();
+                }, 500);
                 return;
             }
             
             if (!gameState.validWords.includes(gameState.currentWord)) {
                 showMessage(`"${gameState.currentWord}" Not a valid word!`);
-                clearWord();
+                // Change word color to red for invalid word
+                elements.currentWord.style.color = '#ff6b6b';
+                // Clear word after a delay
+                setTimeout(() => {
+                    clearWord();
+                }, 1500);
                 return;
             }
             
             if (!canFormWord(gameState.currentWord, gameState.letterBank)) {
                 showMessage('Cannot form word with available letters!');
+                // Change word color to red for invalid word
+                elements.currentWord.style.color = '#ff6b6b';
+                // Clear word after a delay
+                setTimeout(() => {
+                    clearWord();
+                }, 1500);
                 return;
             }
             
@@ -1084,6 +1120,10 @@ Play daily at: ${window.location.href}`;
             
             gameState.currentWord = '';
             gameState.selectedLetters = [];
+            gameState.selectedLettersData = [];
+            
+            // Reset word color to normal
+            elements.currentWord.style.color = '';
             
             // Check if all words found
             const possibleWords = getPossibleWords();
