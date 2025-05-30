@@ -1,3 +1,33 @@
+/* Prevent zoom on iOS Safari */
+* {
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Allow text selection for specific elements that need it */
+input, textarea, .message, #share-text {
+    -webkit-user-select: text;
+    -khtml-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/* Prevent double-tap zoom specifically */
+body {
+    touch-action: manipulation;
+    -ms-touch-action: manipulation;
+}
+
+/* Prevent zoom on button/clickable elements */
+button, .letter-btn, .btn {
+    touch-action: manipulation;
+}
 /* Add styles for possible words display */
 .possible-word {
     padding: 8px 12px;
