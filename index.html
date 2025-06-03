@@ -1270,6 +1270,42 @@ Play daily at: ${window.location.href}`;
                 event.preventDefault();
             }, { passive: false });
             
+            // Comprehensive pinch-to-zoom prevention
+            let lastTouchDistance = 0;
+            
+            document.addEventListener('touchstart', function(event) {
+                if (event.touches.length > 1) {
+                    // Multi-touch detected - could be pinch
+                    const touch1 = event.touches[0];
+                    const touch2 = event.touches[1];
+                    lastTouchDistance = Math.sqrt(
+                        Math.pow(touch2.pageX - touch1.pageX, 2) + 
+                        Math.pow(touch2.pageY - touch1.pageY, 2)
+                    );
+                }
+            }, { passive: false });
+            
+            document.addEventListener('touchmove', function(event) {
+                if (event.touches.length > 1) {
+                    // Prevent pinch zoom
+                    event.preventDefault();
+                    
+                    const touch1 = event.touches[0];
+                    const touch2 = event.touches[1];
+                    const currentDistance = Math.sqrt(
+                        Math.pow(touch2.pageX - touch1.pageX, 2) + 
+                        Math.pow(touch2.pageY - touch1.pageY, 2)
+                    );
+                    
+                    // If distance is changing significantly, it's a pinch gesture
+                    if (Math.abs(currentDistance - lastTouchDistance) > 10) {
+                        event.preventDefault();
+                    }
+                    
+                    lastTouchDistance = currentDistance;
+                }
+            }, { passive: false });
+            
             // Additional zoom prevention
             document.addEventListener('gesturestart', function(event) {
                 event.preventDefault();
@@ -1281,6 +1317,21 @@ Play daily at: ${window.location.href}`;
             
             document.addEventListener('gestureend', function(event) {
                 event.preventDefault();
+            }, { passive: false });
+            
+            // Prevent wheel zoom (for desktop/trackpad)
+            document.addEventListener('wheel', function(event) {
+                if (event.ctrlKey) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Prevent keyboard zoom shortcuts
+            document.addEventListener('keydown', function(event) {
+                if ((event.ctrlKey || event.metaKey) && 
+                    (event.key === '+' || event.key === '-' || event.key === '=' || event.key === '0')) {
+                    event.preventDefault();
+                }
             }, { passive: false });
         });
     </script>
