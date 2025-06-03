@@ -655,23 +655,23 @@ Play daily at: ${window.location.href}`;
             
             // Fill remaining with common consonants (allow some duplicates, max 2 each)
             const commonCounts = {};
-           while (bank.length < 12) {
-               const letter = commonConsonants[Math.floor(rng() * commonConsonants.length)];
+            while (bank.length < 12) {
+                const letter = commonConsonants[Math.floor(rng() * commonConsonants.length)];
     
-               // 40% chance to proceed with this letter, 60% chance to regenerate
-               if (rng() < 0.4) {
-                  // Allow duplicates for common letters, but limit to 2 of the same letter
-                  const currentCount = commonCounts[letter] || 0;
-                  if (currentCount < 2) {
-                      bank.push(letter);
-                      commonCounts[letter] = currentCount + 1;
-                  }
-              }        
-              // If rng() >= 0.4, we skip this iteration and try again
+                // 40% chance to proceed with this letter, 60% chance to regenerate
+                if (rng() < 0.4) {
+                    // Allow duplicates for common letters, but limit to 2 of the same letter
+                    const currentCount = commonCounts[letter] || 0;
+                    if (currentCount < 2) {
+                        bank.push(letter);
+                        commonCounts[letter] = currentCount + 1;
+                    }
+                }        
+                // If rng() >= 0.4, we skip this iteration and try again
 
-              // Safety check to prevent infinite loop
-              if (bank.length >= 12) break;
-           } 
+                // Safety check to prevent infinite loop
+                if (bank.length >= 12) break;
+            } 
             while (bank.length < 12) {
                 const letter = commonConsonants[Math.floor(rng() * commonConsonants.length)];
                 
@@ -895,32 +895,59 @@ Play daily at: ${window.location.href}`;
         }
 
         // Create letter bank buttons
-	function createLetterBank() {
-	    const pyramidStructure = [5, 4, 3]; // Total 12 letters: 5 + 4 + 3
-	    const letters = gameState.displayedLetters.slice(0, 12); // Use displayed order
-	    let html = '';
+        function createLetterBank() {
+            const pyramidStructure = [5, 4, 3]; // Total 12 letters: 5 + 4 + 3
+            const letters = gameState.displayedLetters.slice(0, 12); // Use displayed order
+            let html = '';
 
-	    let displayIndex = 0;
-	    for (let rowCount of pyramidStructure) {
-		const rowLetters = letters.slice(displayIndex, displayIndex + rowCount);
-		html += `<div class="pyramid-row">` + rowLetters.map((letter, i) => {
-		    const currentDisplayIndex = displayIndex + i;
-		    return `<button class="letter-btn" 
-				id="letter-${currentDisplayIndex}" 
-				onclick="selectLetter('${letter}', ${currentDisplayIndex})"
-				ontouchstart="return false;" 
-				ondblclick="return false;" 
-				oncontextmenu="return false;"
-				style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
-			    ${letter}
-			    <div class="letter-value">${letterScores[letter]}</div>
-			</button>`;
-		}).join('') + `</div>`;
-		displayIndex += rowCount;
-	    }
+            let displayIndex = 0;
+            for (let rowCount of pyramidStructure) {
+                const rowLetters = letters.slice(displayIndex, displayIndex + rowCount);
+                html += `<div class="pyramid-row">` + rowLetters.map((letter, i) => {
+                    const currentDisplayIndex = displayIndex + i;
+                    return `<button class="letter-btn" 
+                            id="letter-${currentDisplayIndex}" 
+                            data-letter="${letter}" 
+                            data-index="${currentDisplayIndex}"
+                            style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
+                        ${letter}
+                        <div class="letter-value">${letterScores[letter]}</div>
+                    </button>`;
+                }).join('') + `</div>`;
+                displayIndex += rowCount;
+            }
 
-	    elements.letterBank.innerHTML = html;
-	}
+            elements.letterBank.innerHTML = html;
+            
+            // Add event listeners to prevent zoom and handle clicks
+            const letterButtons = elements.letterBank.querySelectorAll('.letter-btn');
+            letterButtons.forEach(button => {
+                // Prevent double-tap zoom
+                let lastTouchEnd = 0;
+                
+                button.addEventListener('touchend', function(e) {
+                    const now = (new Date()).getTime();
+                    if (now - lastTouchEnd <= 300) {
+                        e.preventDefault(); // Prevent double-tap zoom
+                    }
+                    lastTouchEnd = now;
+                }, { passive: false });
+                
+                // Handle click/touch
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const letter = this.getAttribute('data-letter');
+                    const index = parseInt(this.getAttribute('data-index'));
+                    selectLetter(letter, index);
+                });
+                
+                // Prevent context menu
+                button.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                });
+            });
+        }
+
         // Calculate possible words
         function getPossibleWords() {
             if (!gameState.validWords || !gameState.letterBank) {
