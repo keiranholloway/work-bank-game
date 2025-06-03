@@ -1,4 +1,4 @@
-i/* Comprehensive zoom prevention for iOS Safari */
+/* Comprehensive zoom prevention for iOS Safari */
 html {
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
@@ -6,7 +6,7 @@ html {
 }
 
 /* Prevent zoom on iOS Safari - comprehensive approach */
-* {
+*, *::before, *::after {
     touch-action: manipulation;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -41,6 +41,29 @@ button, .letter-btn, .btn, .share-btn, .close-btn, .stats-btn, .shuffle-btn, .st
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
+    -webkit-text-size-adjust: none;
+    -ms-text-size-adjust: none;
+    text-size-adjust: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Additional specific targeting for letter buttons */
+.letter-bank button,
+.pyramid-row button,
+button[id^="letter-"] {
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    -webkit-text-size-adjust: none !important;
+    -ms-text-size-adjust: none !important;
+    text-size-adjust: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    user-select: none !important;
 }
 
 /* Prevent zoom on all interactive elements */
@@ -371,6 +394,20 @@ body {
     border: 2px solid rgba(255, 255, 255, 0.1);
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Additional zoom prevention */
+    -webkit-text-size-adjust: none;
+    -ms-text-size-adjust: none;
+    text-size-adjust: none;
+    /* Prevent any default actions */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
 .letter-btn:active:not(:disabled) {
@@ -393,6 +430,15 @@ body {
     font-size: 0.6rem;
     color: #ffd700;
     font-weight: normal;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    pointer-events: none; /* Prevent this element from receiving touch events */
 }
 
 .current-word {
