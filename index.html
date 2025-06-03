@@ -1254,6 +1254,34 @@ Play daily at: ${window.location.href}`;
             cacheElements();
             loadStats();
             loadWords();
+            
+            // Global double-tap zoom prevention
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, { passive: false });
+            
+            // Prevent zoom on double-click for desktop browsers
+            document.addEventListener('dblclick', function(event) {
+                event.preventDefault();
+            }, { passive: false });
+            
+            // Additional zoom prevention
+            document.addEventListener('gesturestart', function(event) {
+                event.preventDefault();
+            }, { passive: false });
+            
+            document.addEventListener('gesturechange', function(event) {
+                event.preventDefault();
+            }, { passive: false });
+            
+            document.addEventListener('gestureend', function(event) {
+                event.preventDefault();
+            }, { passive: false });
         });
     </script>
 </body>
