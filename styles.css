@@ -1,4 +1,11 @@
-/* Prevent zoom on iOS Safari */
+i/* Comprehensive zoom prevention for iOS Safari */
+html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    touch-action: manipulation;
+}
+
+/* Prevent zoom on iOS Safari - comprehensive approach */
 * {
     touch-action: manipulation;
     -webkit-touch-callout: none;
@@ -7,6 +14,7 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Allow text selection for specific elements that need it */
@@ -22,12 +30,25 @@ input, textarea, .message, #share-text {
 body {
     touch-action: manipulation;
     -ms-touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Prevent zoom on button/clickable elements */
-button, .letter-btn, .btn {
+button, .letter-btn, .btn, .share-btn, .close-btn, .stats-btn, .shuffle-btn, .start-game-btn {
     touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
 }
+
+/* Prevent zoom on all interactive elements */
+.container, .header, .letter-bank, .current-word, .controls, .word-slot, .pyramid-row {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
 /* Add styles for possible words display */
 .possible-word {
     padding: 8px 12px;
@@ -38,6 +59,8 @@ button, .letter-btn, .btn {
     text-align: center;
     cursor: default;
     transition: all 0.2s ease;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .possible-word.found {
@@ -74,7 +97,8 @@ button, .letter-btn, .btn {
 
 .loading, .error {
     text-align: center;
-    padding: 40px 20px;
+    padding: 40px;
+    touch-action: manipulation;
 }
 
 .error {
@@ -109,6 +133,8 @@ button, .letter-btn, .btn {
     display: flex;
     align-items: center;
     justify-content: center;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .shuffle-btn:hover {
@@ -137,6 +163,7 @@ button, .letter-btn, .btn {
     display: flex;
     justify-content: center;
     margin: 40px 0;
+    touch-action: manipulation;
 }
 
 .start-game-btn {
@@ -150,6 +177,8 @@ button, .letter-btn, .btn {
     text-align: center;
     color: white;
     font-family: inherit;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .start-game-btn:hover {
@@ -176,11 +205,6 @@ button, .letter-btn, .btn {
     font-size: 1rem;
     opacity: 0.9;
 }
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 
 body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -191,8 +215,9 @@ body {
     padding: 10px;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    /* -webkit-user-select: none; user-select: none; */ /* Keep user-select enabled for copy in modal */
-    touch-action: pan-y; /* Allow vertical scrolling on body */
+    touch-action: pan-y manipulation; /* Allow vertical scrolling but prevent zoom */
+    -webkit-tap-highlight-color: transparent;
+    margin: 0;
 }
 
 .container {
@@ -211,6 +236,8 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center; /* Center contents */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .header {
@@ -219,6 +246,7 @@ body {
     position: relative;
     padding-top: 10px;
     width: 100%; /* Take full width within container */
+    touch-action: manipulation;
 }
 
 .header h1 {
@@ -227,11 +255,14 @@ body {
     font-weight: 700;
     padding: 0 50px;
     line-height: 1.2;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .header p {
     opacity: 0.9;
     font-size: 0.9rem;
+    touch-action: manipulation;
 }
 
 .stats-btn {
@@ -269,10 +300,12 @@ body {
     text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.1);
     width: 100%; /* Take full width */
+    touch-action: manipulation;
 }
 
 .score-item {
     flex: 1;
+    touch-action: manipulation;
 }
 
 .score-label {
@@ -296,6 +329,8 @@ body {
     font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
     transition: color 0.3s ease;
     width: 100%; /* Center text correctly */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Letter Bank Container (Pyramid Layout) */
@@ -307,13 +342,16 @@ body {
     max-width: 400px; /* Limit overall width */
     width: 100%; /* Allow it to shrink on smaller screens */
     gap: 8px; /* Space between rows */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .pyramid-row {
     display: flex;
     justify-content: center; /* Center buttons within the row */
     gap: 6px; /* Space between buttons in a row */
-    /* margin-bottom: 8px; */ /* Removed, using gap on .letter-bank instead */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Style for individual letter buttons inside the pyramid */
@@ -348,7 +386,6 @@ body {
     cursor: default;
 }
 
-
 .letter-value {
     position: absolute;
     bottom: 2px;
@@ -364,6 +401,8 @@ body {
     gap: 6px;
     margin-bottom: 20px;
     width: 100%; /* Allow centering the flex container */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .word-slot {
@@ -378,6 +417,8 @@ body {
     font-weight: bold;
     background: rgba(255, 255, 255, 0.1);
     transition: all 0.2s ease;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .word-slot.filled {
@@ -392,6 +433,7 @@ body {
     justify-content: center;
     margin-bottom: 15px;
     width: 100%; /* Allow centering the flex container */
+    touch-action: manipulation;
 }
 
 .btn {
@@ -440,12 +482,12 @@ body {
     gap: 5px;
     background-color: rgba(147, 112, 219, 0.8); /* Medium Purple */
     border: 1px solid rgba(147, 112, 219, 1);
+    touch-action: manipulation;
 }
 
 .btn-shuffle:hover:not(:disabled) {
     background-color: rgba(147, 112, 219, 1);
 }
-
 
 .message {
     text-align: center;
@@ -455,6 +497,8 @@ body {
     color: #ffd700;
     font-size: 0.9rem;
     width: 100%; /* Center text correctly */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .found-words {
@@ -467,18 +511,21 @@ body {
     -webkit-overflow-scrolling: touch;
     border: 1px solid rgba(255, 255, 255, 0.1);
     width: 100%; /* Take full width */
+    touch-action: pan-y;
 }
 
 .found-words h3 {
     margin-bottom: 12px;
     font-size: 0.9rem;
     opacity: 0.9;
+    touch-action: manipulation;
 }
 
 .word-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 6px;
+    touch-action: manipulation;
 }
 
 .found-word {
@@ -488,6 +535,8 @@ body {
     text-align: center;
     font-size: 0.8rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .found-word-name {
@@ -509,6 +558,8 @@ body {
     margin-bottom: 15px;
     animation: fadeIn 0.5s ease;
     width: 100%; /* Take full width */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .share-btn {
@@ -553,6 +604,7 @@ body {
     padding: 20px 10px;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
 }
 
 .modal-content {
@@ -568,6 +620,7 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.2);
     margin-top: 20px;
     box-sizing: border-box;
+    touch-action: pan-y;
 }
 
 .modal-header {
@@ -580,6 +633,7 @@ body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding-bottom: 10px;
     z-index: 10;
+    touch-action: manipulation;
 }
 
 .modal-title {
@@ -589,6 +643,8 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .close-btn {
@@ -619,6 +675,7 @@ body {
     grid-template-columns: 1fr 1fr;
     gap: 12px;
     margin-bottom: 20px;
+    touch-action: manipulation;
 }
 
 .stat-card {
@@ -627,6 +684,8 @@ body {
     padding: 12px;
     text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .stat-value {
@@ -645,6 +704,7 @@ body {
     grid-template-columns: repeat(3, 1fr); /* Changed from 4 to 3 for mobile */
     gap: 8px;
     margin-top: 12px;
+    touch-action: manipulation;
 }
 
 .achievement {
@@ -659,6 +719,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    touch-action: manipulation;
 }
 
 .achievement.unlocked {
@@ -693,6 +754,8 @@ body {
     z-index: 1001;
     animation: slideIn 0.5s ease, fadeOut 0.5s ease 4.5s;
     font-weight: bold;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 #app-state {
@@ -708,14 +771,15 @@ body {
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     z-index: 50; /* Below modals */
-     border-radius: 20px; /* Match container */
+    border-radius: 20px; /* Match container */
+    touch-action: manipulation;
 }
-
 
 .loading {
     text-align: center;
     padding: 50px;
     color: white;
+    touch-action: manipulation;
 }
 
 .spinner {
@@ -736,6 +800,7 @@ body {
     text-align: center;
     color: white;
     max-width: 90%;
+    touch-action: manipulation;
 }
 .error h2 {
     margin-bottom: 10px;
@@ -749,7 +814,6 @@ body {
     background: #ff6b6b;
     color: white;
 }
-
 
 /* Animations */
 @keyframes slideIn {
@@ -927,13 +991,16 @@ body {
     border-radius: 12px;
     max-height: 200px; /* Limit height and make it scrollable */
     overflow-y: auto;
-     width: 100%; /* Take full width */
+    width: 100%; /* Take full width */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
 }
 
 .possible-words-section h3 {
-     margin-bottom: 12px;
-     font-size: 0.9rem;
-     opacity: 0.9;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    touch-action: manipulation;
 }
 
 .possible-word-grid {
@@ -942,12 +1009,15 @@ body {
     gap: 8px; /* Space between words */
     text-align: center;
     font-weight: bold;
+    touch-action: manipulation;
 }
 
 .possible-word-grid div {
     padding: 6px 4px;
     border-radius: 6px;
     font-size: 0.9rem;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .found-word-possible {
