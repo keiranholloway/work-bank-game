@@ -658,7 +658,7 @@ Play daily at: ${window.location.href}`;
             while (bank.length < 12) {
                 const letter = commonConsonants[Math.floor(rng() * commonConsonants.length)];
     
-                // 40% chance to proceed with this letter, 60% chance to regenerate
+                // 20% chance to proceed with this letter, 80% chance to regenerate
                 if (rng() < 0.4) {
                     // Allow duplicates for common letters, but limit to 2 of the same letter
                     const currentCount = commonCounts[letter] || 0;
@@ -667,7 +667,7 @@ Play daily at: ${window.location.href}`;
                         commonCounts[letter] = currentCount + 1;
                     }
                 }        
-                // If rng() >= 0.4, we skip this iteration and try again
+                // If rng() >= 0.2, we skip this iteration and try again
 
                 // Safety check to prevent infinite loop
                 if (bank.length >= 12) break;
