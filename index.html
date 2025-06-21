@@ -578,7 +578,7 @@ Play daily at: ${window.location.href}`;
             };
         }
 
-        // Generate daily letter bank with better letter distribution
+        // Generate daily letter bank with improved distribution for better gameplay
         function generateDailyBank() {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -596,100 +596,126 @@ Play daily at: ${window.location.href}`;
             
             const rng = mulberry32(daysSinceBase);
             
-            // Define letter pools with weights
+            // Strategic letter categorization for balanced gameplay
             const vowels = ['A', 'E', 'I', 'O', 'U'];
-            const commonConsonants = ['R', 'S', 'T', 'L', 'N', 'D', 'C', 'P', 'M', 'H', 'G', 'B', 'F', 'Y', 'W'];
-            const rareConsonants = ['K', 'V', 'X', 'Z', 'J', 'Q'];
+            const powerConsonants = ['R', 'S', 'T']; // Very strong for word formation
+            const solidConsonants = ['L', 'N', 'D', 'C']; // Reliable consonants
+            const mixConsonants = ['P', 'M', 'H', 'G', 'B', 'F', 'W', 'Y']; // Moderate utility
+            const challengeConsonants = ['K', 'V', 'J']; // Add controlled difficulty
+            const rareConsonants = ['X', 'Z', 'Q']; // Use very sparingly
             
             const bank = [];
-            const usedRareLetters = new Set(); // Track rare letters to prevent duplicates
+            const letterCounts = {};
             
-            // Ensure at least 2-3 vowels (allow duplicates, max 2 of each)
-            const vowelCount = Math.floor(rng() * 2) + 2; // 2 or 3 vowels
-            const vowelCounts = {}; // Track how many of each vowel we have
-            
-            for (let i = 0; i < vowelCount; i++) {
-                let vowel;
-                let attempts = 0;
-                do {
-                    vowel = vowels[Math.floor(rng() * vowels.length)];
-                    attempts++;
-                } while (vowelCounts[vowel] >= 2 && attempts < 20); // Allow up to 2 of each vowel
-                
-                bank.push(vowel);
-                vowelCounts[vowel] = (vowelCounts[vowel] || 0) + 1;
-            }
-            
-            // Fill remaining slots with consonants
-            const remainingSlots = 12 - bank.length;
-            
-            // Determine how many rare consonants to include (0-2)
-            const rareCount = Math.floor(rng() * 3); // 0, 1, or 2 rare letters
-            
-            // Add rare consonants first (no duplicates for rare letters)
-            for (let i = 0; i < Math.min(rareCount, remainingSlots); i++) {
-                let rareLetter;
-                let attempts = 0;
-                do {
-                    rareLetter = rareConsonants[Math.floor(rng() * rareConsonants.length)];
-                    attempts++;
-                } while (usedRareLetters.has(rareLetter) && attempts < 10);
-                
-                // Special rule: If Q is selected, ensure U is in the bank
-                if (rareLetter === 'Q' && !bank.includes('U') && !vowelCounts['U']) {
-                    // Replace Q with another rare letter
-                    const availableRare = rareConsonants.filter(letter => !usedRareLetters.has(letter) && letter !== 'Q');
-                    if (availableRare.length > 0) {
-                        rareLetter = availableRare[Math.floor(rng() * availableRare.length)];
-                    } else {
-                        // Skip this rare letter if no alternatives
-                        continue;
-                    }
-                }
-                
-                if (!usedRareLetters.has(rareLetter)) {
-                    bank.push(rareLetter);
-                    usedRareLetters.add(rareLetter);
-                }
-            }
-            
-            // Fill remaining with common consonants (allow some duplicates, max 2 each)
-            const commonCounts = {};
-            while (bank.length < 12) {
-                const letter = commonConsonants[Math.floor(rng() * commonConsonants.length)];
-    
-                // 20% chance to proceed with this letter, 80% chance to regenerate
-                if (rng() < 0.4) {
-                    // Allow duplicates for common letters, but limit to 2 of the same letter
-                    const currentCount = commonCounts[letter] || 0;
-                    if (currentCount < 2) {
-                        bank.push(letter);
-                        commonCounts[letter] = currentCount + 1;
-                    }
-                }        
-                // If rng() >= 0.2, we skip this iteration and try again
-
-                // Safety check to prevent infinite loop
-                if (bank.length >= 12) break;
-            } 
-            while (bank.length < 12) {
-                const letter = commonConsonants[Math.floor(rng() * commonConsonants.length)];
-                
-                // Allow duplicates for common letters, but limit to 2 of the same letter
-                const currentCount = commonCounts[letter] || 0;
-                if (currentCount < 2) {
+            function addLetter(letter, maxCount = 1) {
+                const currentCount = letterCounts[letter] || 0;
+                if (currentCount < maxCount) {
                     bank.push(letter);
-                    commonCounts[letter] = currentCount + 1;
+                    letterCounts[letter] = currentCount + 1;
+                    return true;
+                }
+                return false;
+            }
+            
+            // 1. Add exactly 3 vowels to control word count
+            const vowelsByUtility = ['E', 'A', 'I', 'O', 'U'];
+            let vowelsAdded = 0;
+            
+            // Favor high-utility vowels
+            if (rng() < 0.8) {
+                addLetter('E', 1);
+                vowelsAdded++;
+            }
+            if (vowelsAdded < 3 && rng() < 0.7) {
+                addLetter('A', 1);
+                vowelsAdded++;
+            }
+            
+            // Fill remaining vowel slots
+            while (vowelsAdded < 3) {
+                const vowel = vowels[Math.floor(rng() * vowels.length)];
+                if (addLetter(vowel, 1)) {
+                    vowelsAdded++;
+                }
+            }
+            
+            // 2. Add at most 1 power consonant to prevent too many easy words
+            if (rng() < 0.7) {
+                const power = powerConsonants[Math.floor(rng() * powerConsonants.length)];
+                addLetter(power, 1);
+            }
+            
+            // 3. Add 2-3 solid consonants for word backbone
+            const solidTarget = Math.floor(rng() * 2) + 2;
+            let solidAdded = 0;
+            
+            const shuffledSolid = [...solidConsonants].sort(() => rng() - 0.5);
+            for (const consonant of shuffledSolid) {
+                if (solidAdded < solidTarget && rng() < 0.8) {
+                    addLetter(consonant, 1);
+                    solidAdded++;
+                }
+            }
+            
+            // 4. Add mix consonants to fill most remaining slots
+            const mixTarget = Math.min(4, 12 - bank.length - 1);
+            let mixAdded = 0;
+            
+            const shuffledMix = [...mixConsonants].sort(() => rng() - 0.5);
+            for (const consonant of shuffledMix) {
+                if (mixAdded < mixTarget && rng() < 0.6) {
+                    addLetter(consonant, 1);
+                    mixAdded++;
+                }
+            }
+            
+            // 5. Occasionally add challenge consonants for difficulty balance
+            if (rng() < 0.3) {
+                const challengeCount = rng() < 0.15 ? 2 : 1;
+                let challengeAdded = 0;
+                
+                const shuffledChallenge = [...challengeConsonants].sort(() => rng() - 0.5);
+                for (const consonant of shuffledChallenge) {
+                    if (challengeAdded < challengeCount && bank.length < 12) {
+                        addLetter(consonant, 1);
+                        challengeAdded++;
+                    }
+                }
+            }
+            
+            // 6. Very rarely add rare consonants (reduce from previous version)
+            if (bank.length < 12 && rng() < 0.02) {
+                let rare = rareConsonants[Math.floor(rng() * rareConsonants.length)];
+                
+                // Skip Q without U
+                if (rare === 'Q' && !bank.includes('U')) {
+                    rare = null;
                 }
                 
-                // Safety check to prevent infinite loop
-                if (bank.length >= 12) break;
+                if (rare) {
+                    addLetter(rare, 1);
+                }
             }
-            // If we still don't have 12 letters, fill with random common letters
+            
+            // 7. Fill remaining slots, avoid duplicates
+            const safeLetters = [...vowels, ...solidConsonants, ...mixConsonants];
+            let attempts = 0;
+            
+            while (bank.length < 12 && attempts < 100) {
+                const letter = safeLetters[Math.floor(rng() * safeLetters.length)];
+                
+                // Strict duplicate avoidance - max 1 of each letter
+                if (addLetter(letter, 1)) {
+                    // Success
+                }
+                attempts++;
+            }
+            
+            // Emergency fill with safe letters
+            const emergencyLetters = ['M', 'F', 'W', 'Y', 'B'];
             while (bank.length < 12) {
-                const allCommon = [...vowels, ...commonConsonants];
-                const letter = allCommon[Math.floor(rng() * allCommon.length)];
-                bank.push(letter);
+                const emergency = emergencyLetters[Math.floor(rng() * emergencyLetters.length)];
+                bank.push(emergency);
             }
             
             // Shuffle the final bank
