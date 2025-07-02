@@ -125,7 +125,7 @@
             <button class="start-game-btn" id="start-game-btn" onclick="startGame()">
                 <div class="start-game-icon">🎯</div>
                 <div class="start-game-text">Start Today's Game</div>
-                <div class="start-game-subtext">Find words from 12 letters • 3 minutes</div>
+                <div class="start-game-subtext">Find words from 9 letters • 3 minutes</div>
             </button>
         </div>
 
@@ -701,7 +701,7 @@ Play daily at: ${window.location.href}`;
             const safeLetters = [...vowels, ...solidConsonants, ...mixConsonants];
             let attempts = 0;
             
-            while (bank.length < 12 && attempts < 100) {
+            while (bank.length < 9 && attempts < 100) {
                 const letter = safeLetters[Math.floor(rng() * safeLetters.length)];
                 
                 // Strict duplicate avoidance - max 1 of each letter
@@ -713,7 +713,7 @@ Play daily at: ${window.location.href}`;
             
             // Emergency fill with safe letters
             const emergencyLetters = ['M', 'F', 'W', 'Y', 'B'];
-            while (bank.length < 12) {
+            while (bank.length < 9) {
                 const emergency = emergencyLetters[Math.floor(rng() * emergencyLetters.length)];
                 bank.push(emergency);
             }
@@ -724,7 +724,7 @@ Play daily at: ${window.location.href}`;
                 [bank[i], bank[j]] = [bank[j], bank[i]];
             }
             
-            return bank.slice(0, 12);
+            return bank.slice(0, 9);
         }
 
         // Load words from file with better error handling
@@ -922,8 +922,8 @@ Play daily at: ${window.location.href}`;
 
         // Create letter bank buttons
         function createLetterBank() {
-            const pyramidStructure = [5, 4, 3]; // Total 12 letters: 5 + 4 + 3
-            const letters = gameState.displayedLetters.slice(0, 12); // Use displayed order
+            const pyramidStructure = [4, 3, 2]; // Total 9 letters: 4 + 3 + 2
+            const letters = gameState.displayedLetters.slice(0, 9); // Use displayed order
             let html = '';
 
             let displayIndex = 0;
