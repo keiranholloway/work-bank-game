@@ -362,9 +362,9 @@ body {
     flex-direction: column; /* Stack rows vertically */
     align-items: center; /* Center rows horizontally */
     margin: 20px auto;
-    max-width: 400px; /* Limit overall width */
+    max-width: 450px; /* Limit overall width */
     width: 100%; /* Allow it to shrink on smaller screens */
-    gap: 8px; /* Space between rows */
+    gap: 10px; /* Space between rows */
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
@@ -372,7 +372,7 @@ body {
 .pyramid-row {
     display: flex;
     justify-content: center; /* Center buttons within the row */
-    gap: 6px; /* Space between buttons in a row */
+    gap: 8px; /* Space between buttons in a row */
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
@@ -380,9 +380,9 @@ body {
 /* Style for individual letter buttons inside the pyramid */
 .pyramid-row .letter-btn {
     /* Inherits base .letter-btn styles */
-    min-width: 45px; /* Ensure buttons are wide enough */
-    height: 45px;
-    font-size: 1.2rem;
+    min-width: 55px; /* Larger buttons for better usability */
+    height: 55px;
+    font-size: 1.4rem;
     border: none; /* Remove border from base style */
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.2);
@@ -912,16 +912,16 @@ body {
     
     /* Letter bank buttons */
     .pyramid-row .letter-btn {
-         min-width: 40px;
-         height: 40px;
-         font-size: 1.1rem;
+         min-width: 48px;
+         height: 48px;
+         font-size: 1.2rem;
          border-radius: 10px;
     }
      .pyramid-row {
-         gap: 5px;
+         gap: 6px;
      }
     .letter-bank {
-        gap: 6px;
+        gap: 8px;
     }
 
     .word-slot {
@@ -965,15 +965,15 @@ body {
     
     /* Letter bank buttons */
      .pyramid-row .letter-btn {
-         min-width: 45px;
-         height: 45px;
-         font-size: 1.2rem;
+         min-width: 50px;
+         height: 50px;
+         font-size: 1.3rem;
      }
      .pyramid-row {
-         gap: 6px;
+         gap: 7px;
      }
      .letter-bank {
-         gap: 8px;
+         gap: 9px;
      }
 
     .word-slot {

@@ -777,7 +777,7 @@ Play daily at: ${window.location.href}`;
                 
                 gameState.validWords = wordList;
                 gameState.letterBank = generateDailyBank();
-                gameState.displayedLetters = [...gameState.letterBank]; // Initialize display order
+                gameState.displayedLetters = optimizeLetterOrder([...gameState.letterBank]); // Initialize with optimized order
                 console.log(`Successfully loaded ${wordList.length} words from ${loadedFrom}`);
                 
                 // Check if today's game can be played
@@ -897,6 +897,51 @@ Play daily at: ${window.location.href}`;
             startTimer();
         }
 
+        // Optimized letter ordering for human playability
+        function optimizeLetterOrder(letters) {
+            // Separate letters by type for strategic placement
+            const vowels = letters.filter(letter => 'AEIOU'.includes(letter));
+            const consonants = letters.filter(letter => !'AEIOU'.includes(letter));
+            
+            // Sort by frequency/commonality for easier scanning
+            const commonLetters = ['S', 'T', 'R', 'N', 'L'];
+            const frequentConsonants = consonants.filter(c => commonLetters.includes(c));
+            const otherConsonants = consonants.filter(c => !commonLetters.includes(c));
+            
+            // Strategic placement: vowels and common consonants more accessible
+            const optimized = [];
+            
+            // Row 1 (4 letters): Mix of vowels and common consonants
+            if (vowels.length >= 2 && frequentConsonants.length >= 2) {
+                optimized.push(vowels[0], frequentConsonants[0], vowels[1], frequentConsonants[1]);
+                vowels.splice(0, 2);
+                frequentConsonants.splice(0, 2);
+            } else {
+                // Fallback to balanced distribution
+                for (let i = 0; i < 4 && i < letters.length; i++) {
+                    optimized.push(letters[i]);
+                }
+            }
+            
+            // Row 2 (3 letters): Remaining high-value letters
+            const remaining = [...vowels, ...frequentConsonants, ...otherConsonants];
+            for (let i = 0; i < 3 && i < remaining.length; i++) {
+                if (!optimized.includes(remaining[i])) {
+                    optimized.push(remaining[i]);
+                }
+            }
+            
+            // Row 3 (2 letters): Fill remaining
+            for (let letter of letters) {
+                if (!optimized.includes(letter)) {
+                    optimized.push(letter);
+                    if (optimized.length >= 9) break;
+                }
+            }
+            
+            return optimized.slice(0, 9);
+        }
+        
         // Shuffle letters function
         function shuffleLetters() {
             if (!canPlayToday()) return; // Prevent shuffling if game already completed
@@ -908,14 +953,17 @@ Play daily at: ${window.location.href}`;
                 return;
             }
             
-            // Fisher-Yates shuffle algorithm
+            // Use optimized ordering instead of pure random
             const shuffled = [...gameState.displayedLetters];
+            
+            // First shuffle randomly
             for (let i = shuffled.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
             }
             
-            gameState.displayedLetters = shuffled;
+            // Then apply strategic optimization
+            gameState.displayedLetters = optimizeLetterOrder(shuffled);
             createLetterBank();
             updateUI();
         }
@@ -945,52 +993,79 @@ Play daily at: ${window.location.href}`;
 
             elements.letterBank.innerHTML = html;
             
-            // Add event listeners to prevent zoom and handle clicks
+            // Add event listeners to prevent zoom and handle clicks (optimized)
             const letterButtons = elements.letterBank.querySelectorAll('.letter-btn');
-            letterButtons.forEach(button => {
-                // Prevent double-tap zoom
-                let lastTouchEnd = 0;
+            
+            // Use event delegation for better performance
+            elements.letterBank.addEventListener('click', function(e) {
+                const button = e.target.closest('.letter-btn');
+                if (!button) return;
                 
-                button.addEventListener('touchend', function(e) {
-                    const now = (new Date()).getTime();
-                    if (now - lastTouchEnd <= 300) {
-                        e.preventDefault(); // Prevent double-tap zoom
-                    }
-                    lastTouchEnd = now;
-                }, { passive: false });
-                
-                // Handle click/touch
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const letter = this.getAttribute('data-letter');
-                    const index = parseInt(this.getAttribute('data-index'));
-                    selectLetter(letter, index);
-                });
-                
-                // Prevent context menu
-                button.addEventListener('contextmenu', function(e) {
-                    e.preventDefault();
-                });
+                e.preventDefault();
+                const letter = button.getAttribute('data-letter');
+                const index = parseInt(button.getAttribute('data-index'));
+                selectLetter(letter, index);
             });
+            
+            // Prevent context menu and double-tap zoom with delegation
+            elements.letterBank.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+            
+            let lastTouchEnd = 0;
+            elements.letterBank.addEventListener('touchend', function(e) {
+                const now = performance.now();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault(); // Prevent double-tap zoom
+                }
+                lastTouchEnd = now;
+            }, { passive: false });
         }
 
-        // Calculate possible words
+        // Calculate possible words (optimized with memoization)
+        let possibleWordsCache = null;
+        let lastLetterBankHash = null;
+        
         function getPossibleWords() {
             if (!gameState.validWords || !gameState.letterBank) {
                 return [];
             }
-            return gameState.validWords.filter(word => canFormWord(word, gameState.letterBank));
+            
+            // Create hash of current letter bank for cache validation
+            const currentHash = gameState.letterBank.sort().join('');
+            
+            // Return cached result if letter bank hasn't changed
+            if (possibleWordsCache && lastLetterBankHash === currentHash) {
+                return possibleWordsCache;
+            }
+            
+            possibleWordsCache = gameState.validWords.filter(word => canFormWord(word, gameState.letterBank));
+            lastLetterBankHash = currentHash;
+            return possibleWordsCache;
         }
 
-        // Check if word can be formed
+        // Check if word can be formed (optimized)
         function canFormWord(word, bank) {
             if (!word || !bank) return false;
-            const bankCopy = [...bank];
+            
+            // Use letter counting for better performance
+            const bankCounts = {};
+            bank.forEach(letter => {
+                bankCounts[letter] = (bankCounts[letter] || 0) + 1;
+            });
+            
+            const wordCounts = {};
             for (let letter of word) {
-                const index = bankCopy.indexOf(letter);
-                if (index === -1) return false;
-                bankCopy.splice(index, 1);
+                wordCounts[letter] = (wordCounts[letter] || 0) + 1;
             }
+            
+            // Check if we have enough of each letter
+            for (let [letter, count] of Object.entries(wordCounts)) {
+                if (!bankCounts[letter] || bankCounts[letter] < count) {
+                    return false;
+                }
+            }
+            
             return true;
         }
 
@@ -1007,6 +1082,16 @@ Play daily at: ${window.location.href}`;
             return `${mins}:${secs.toString().padStart(2, '0')}`;
         }
 
+        // Debounced update function for better performance
+        let updateUITimeout = null;
+        
+        function debouncedUpdateUI() {
+            if (updateUITimeout) {
+                clearTimeout(updateUITimeout);
+            }
+            updateUITimeout = setTimeout(updateUI, 16); // ~60fps
+        }
+        
         // Update UI (optimized - only update what changed)
         function updateUI() {
             const possibleWords = getPossibleWords();
@@ -1037,12 +1122,18 @@ Play daily at: ${window.location.href}`;
                 slot.classList.toggle('filled', !!letter);
             }
             
-            // Update letter bank buttons - disable if game already completed today
+            // Update letter bank buttons - disable if game already completed today (optimized)
             const gameCompleted = !canPlayToday();
+            const selectedSet = new Set(gameState.selectedLetters); // O(1) lookup
+            const shouldDisable = gameCompleted || gameState.gameFinished || gameState.timeLeft === 0;
+            
             gameState.displayedLetters.forEach((letter, displayIndex) => {
                 const btn = document.getElementById(`letter-${displayIndex}`);
                 if (btn) {
-                    btn.disabled = gameCompleted || gameState.selectedLetters.includes(displayIndex) || gameState.gameFinished || gameState.timeLeft === 0;
+                    const isDisabled = shouldDisable || selectedSet.has(displayIndex);
+                    if (btn.disabled !== isDisabled) {
+                        btn.disabled = isDisabled;
+                    }
                 }
             });
             
