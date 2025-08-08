@@ -819,7 +819,9 @@ Play daily at: ${window.location.href}`;
                 const wordScore = calculateWordScore(word);
                 return `
                     <div class="possible-word ${isFound ? 'found' : 'missed'}" title="${wordScore} points">
-                        ${word}
+                        <a href="https://www.merriam-webster.com/dictionary/${word.toLowerCase()}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">
+                            ${word}
+                        </a>
                     </div>
                 `;
             }).join('');
