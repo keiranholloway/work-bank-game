@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Word Bank Game — Beta</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .beta-banner {
+            background: linear-gradient(90deg, rgba(255, 107, 107, 0.25), rgba(255, 215, 0, 0.25));
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+        .beta-banner a { color: #ffd700; text-decoration: underline; }
+        .hint-btn {
+            position: relative;
+            background: rgba(255, 215, 0, 0.15);
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            color: #fff;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.3rem;
+            transition: transform 0.15s ease, background 0.15s ease;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hint-btn:hover:not(:disabled) { background: rgba(255, 215, 0, 0.3); transform: scale(1.05); }
+        .hint-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .hint-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ffd700;
+            color: #222;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 1px 6px;
+            min-width: 18px;
+            text-align: center;
+        }
+        .hint-pulse { animation: hintPulse 0.6s ease; }
+        @keyframes hintPulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(255, 215, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+        }
+        .found-word.hinted .found-word-name::after {
+            content: ' *';
+            color: #ffd700;
+        }
+        .modal {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.96) 0%, rgba(118, 75, 162, 0.96) 100%);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="beta-banner">
+            🧪 Beta with Hints — <a href="../">back to stable</a>
+        </div>
+        <div class="header">
+            <button class="stats-btn" id="stats-btn" onclick="showStats()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3v18h18"></path>
+                    <path d="M7 16V9"></path>
+                    <path d="M12 16V6"></path>
+                    <path d="M17 16v-3"></path>
+                </svg>
+            </button>
+            <h1>⭐ Word Bank</h1>
+            <p>Create 5-letter words from your daily bank</p>
+        </div>
+        
+        <!-- Score Display -->
+        <div class="score-display" id="score-display">
+            <div class="score-item">
+                <div class="score-label">Score</div>
+                <div class="score-value" id="score-value">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Found</div>
+                <div class="score-value" id="found-value">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Possible</div>
+                <div class="score-value" id="possible-value">0</div>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        <div class="modal" id="stats-modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 3v18h18"></path>
+                            <path d="M7 16V9"></path>
+                            <path d="M12 16V6"></path>
+                            <path d="M17 16v-3"></path>
+                        </svg>
+                        Your Stats
+                    </h2>
+                    <button class="close-btn" onclick="hideStats()">×</button>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #ffd700;" id="stat-games">0</div>
+                        <div class="stat-label">Games Played</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #4caf50;" id="stat-best">0</div>
+                        <div class="stat-label">Best Score</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #2196f3;" id="stat-avg">0</div>
+                        <div class="stat-label">Avg Score</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #ff9800;" id="stat-streak">0</div>
+                        <div class="stat-label">Day Streak</div>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px;">
+                    <h3 style="margin-bottom: 15px; text-align: center;">🏆 Achievements</h3>
+                    <div class="achievements-grid" id="achievements-grid">
+                        <!-- Achievements populated by JS -->
+                    </div>
+                    <div style="text-align: center; margin-top: 15px; font-size: 0.8rem; opacity: 0.8;" id="achievement-count">
+                        0/12 unlocked
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="share-modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                        </svg>
+                        Share Results
+                    </h2>
+                    <button class="close-btn" onclick="hideShareModal()">×</button>
+                </div>
+                
+                <div style="background: rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 15px;" id="share-emoji">🎯</div>
+                    <div style="font-size: 2rem; font-weight: bold; color: #ffd700; margin-bottom: 10px;" id="share-score">0</div>
+                    <div style="opacity: 0.9;" id="share-details">0/0 words found</div>
+                </div>
+                
+                <div style="background: rgba(0, 0, 0, 0.2); border-radius: 8px; padding: 15px; margin-bottom: 20px; font-family: monospace; font-size: 0.8rem; white-space: pre-line;" id="share-text">
+                    Loading...
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-submit" onclick="copyShareText()" style="flex: 1;">📋 Copy</button>
+                    <button class="btn" onclick="shareToTwitter()" style="flex: 1; background: #1da1f2;">🐦 Tweet</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timer -->
+        <div class="timer" id="timer">Loading...</div>
+
+        <!-- Start Game Button -->
+        <div class="start-game-container" id="start-game-container" style="display: none;">
+            <button class="start-game-btn" id="start-game-btn" onclick="startGame()">
+                <div class="start-game-icon">🎯</div>
+                <div class="start-game-text">Start Today's Game</div>
+                <div class="start-game-subtext">Find words from 9 letters • 3 minutes</div>
+            </button>
+        </div>
+
+        <!-- Letter Bank with Shuffle Button -->
+        <div style="display: flex; align-items: center; gap: 20px; justify-content: center;" id="letter-bank-container">
+            <div class="letter-bank" id="letter-bank">
+                <!-- Letters will be populated here -->
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <button class="shuffle-btn" id="shuffle-btn" onclick="shuffleLetters()" title="Shuffle letters">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="16,3 21,3 21,8"></polyline>
+                        <line x1="4" y1="20" x2="21" y2="3"></line>
+                        <polyline points="21,16 21,21 16,21"></polyline>
+                        <line x1="15" y1="15" x2="21" y2="21"></line>
+                        <line x1="4" y1="4" x2="9" y2="9"></line>
+                    </svg>
+                </button>
+                <button class="hint-btn" id="hint-btn" onclick="useHint()" title="Reveal next 2 letters (2 per game)">
+                    💡<span class="hint-badge" id="hint-badge">2</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div class="game-over" id="game-over" style="display: none;">
+            <h2 id="game-over-title">🎉 Game Complete!</h2>
+            <p id="game-over-score"><strong>Final Score:</strong> 0 points</p>
+            <p id="game-over-words"><strong>Words Found:</strong> 0/0</p>
+            <p id="game-over-perfect" style="color: #ffd700; margin-top: 10px; display: none;">🌟 You found every possible word! 🌟</p>
+            
+            <!-- All possible words display -->
+            <div id="all-words-section" style="margin-top: 20px;">
+                <h3 style="margin-bottom: 15px; text-align: center;">All Possible Words</h3>
+                <div id="all-words-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; max-height: 300px; overflow-y: auto; background: rgba(0, 0, 0, 0.2); border-radius: 8px; padding: 15px;">
+                    <!-- All possible words will be populated here -->
+                </div>
+            </div>
+            
+            <button class="share-btn" onclick="showShareModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+                Share Results
+            </button>
+        </div>
+
+        <!-- Current Word -->
+        <div class="current-word" id="current-word">
+            <div class="word-slot" id="slot-0"></div>
+            <div class="word-slot" id="slot-1"></div>
+            <div class="word-slot" id="slot-2"></div>
+            <div class="word-slot" id="slot-3"></div>
+            <div class="word-slot" id="slot-4"></div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn btn-clear" id="clear-btn" onclick="clearWord()">Clear</button>
+            <button class="btn btn-back" id="back-btn" onclick="backspaceWord()">← Back</button>
+            <button class="btn btn-submit" id="submit-btn" onclick="submitWord()">Submit</button>
+        </div>
+
+        <!-- Message -->
+        <div class="message" id="message"></div>
+
+        <!-- Found Words -->
+        <div class="found-words" id="found-words" style="display: none;">
+            <h3 id="found-words-title">Found Words (0)</h3>
+            <div class="word-grid" id="word-grid">
+                <!-- Found words will be populated here -->
+            </div>
+        </div>
+
+        <!-- Loading/Error State -->
+        <div id="app-state">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading game...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            validWords: [],
+            letterBank: [],
+            displayedLetters: [], // Track the current display order of letters
+            currentWord: '',
+            selectedLetters: [], // Now tracks display indices instead of original indices
+            selectedLettersData: [], // Track both letter and display index
+            foundWords: [],
+            totalScore: 0,
+            timeLeft: 180,
+            gameStarted: false,
+            gameFinished: false,
+            timerInterval: null,
+            countdownInterval: null,
+            hintsRemaining: 2,
+            hintsUsed: 0,
+            hintedWords: []
+        };
+
+        // Achievement definitions
+        const achievements = {
+            firstGame: { name: 'Getting Started', desc: 'Complete your first game', icon: '🎯' },
+            speedDemon: { name: 'Speed Demon', desc: 'Finish with 2+ minutes left', icon: '⚡' },
+            wordHunter: { name: 'Word Hunter', desc: 'Find 10+ words in a game', icon: '🎯' },
+            perfectionist: { name: 'Perfectionist', desc: 'Find all possible words', icon: '💎' },
+            streak3: { name: 'On Fire', desc: 'Play 3 days in a row', icon: '🔥' },
+            streak7: { name: 'Dedicated', desc: 'Play 7 days in a row', icon: '🏆' },
+            highScorer: { name: 'High Scorer', desc: 'Score 50+ points', icon: '🌟' },
+            centurion: { name: 'Centurion', desc: 'Score 100+ points', icon: '💯' },
+            earlyBird: { name: 'Early Bird', desc: 'Play before 9 AM', icon: '🌅' },
+            nightOwl: { name: 'Night Owl', desc: 'Play after 10 PM', icon: '🦉' },
+            veteran: { name: 'Veteran', desc: 'Play 30 games', icon: '🎖️' },
+            wordSmith: { name: 'Word Smith', desc: 'Find 500 total words', icon: '⚒️' }
+        };
+
+        // Stats and achievements storage
+        let playerStats = {
+            gamesPlayed: 0,
+            bestScore: 0,
+            totalWords: 0,
+            currentStreak: 0,
+            lastPlayedDate: null,
+            unlockedAchievements: [],
+            dailyStats: {},
+            todaysGameCompleted: false,
+            todaysGameData: null
+        };
+
+        // Beta uses its own storage key so it doesn't share play state with the stable game.
+        const STATS_KEY = 'wordBankStatsBeta';
+
+        // Load stats from localStorage
+        function loadStats() {
+            const saved = localStorage.getItem(STATS_KEY);
+            if (saved) {
+                playerStats = { ...playerStats, ...JSON.parse(saved) };
+            }
+            
+            // Check if it's a new day
+            const today = new Date().toDateString();
+            if (playerStats.lastPlayedDate !== today) {
+                playerStats.todaysGameCompleted = false;
+                playerStats.todaysGameData = null;
+                // Don't save here - let the game completion handle it
+            }
+        }
+
+        // Save stats to localStorage
+        function saveStats() {
+            localStorage.setItem(STATS_KEY, JSON.stringify(playerStats));
+        }
+
+        // Check and unlock achievements
+        function checkAchievements(gameData) {
+            const newAchievements = [];
+            
+            // Check each achievement
+            if (!playerStats.unlockedAchievements.includes('firstGame') && playerStats.gamesPlayed >= 1) {
+                newAchievements.push('firstGame');
+            }
+            
+            if (!playerStats.unlockedAchievements.includes('speedDemon') && gameData.timeTaken <= 60 && gameData.completedEarly) {
+                newAchievements.push('speedDemon');
+            }
+            
+            if (!playerStats.unlockedAchievements.includes('wordHunter') && gameData.wordsFound >= 10) {
+                newAchievements.push('wordHunter');
+            }
+            
+            if (!playerStats.unlockedAchievements.includes('perfectionist') && gameData.completionPercentage >= 100) {
+                newAchievements.push('perfectionist');
+            }
+            
+            if (!playerStats.unlockedAchievements.includes('highScorer') && gameData.score >= 50) {
+                newAchievements.push('highScorer');
+            }
+            
+            if (!playerStats.unlockedAchievements.includes('centurion') && gameData.score >= 100) {
+                newAchievements.push('centurion');
+            }
+            
+            const hour = new Date().getHours();
+            if (!playerStats.unlockedAchievements.includes('earlyBird') && hour < 9) {
+                newAchievements.push('earlyBird');
+            }
+            
+            if (!playerStats.unlockedAchievements.includes('nightOwl') && hour >= 22) {
+                newAchievements.push('nightOwl');
+            }
+            
+            if (!playerStats.unlockedAchievements.includes('streak3') && playerStats.currentStreak >= 3) {
+                newAchievements.push('streak3');
+            }
+            
+            if (!playerStats.unlockedAchievements.includes('streak7') && playerStats.currentStreak >= 7) {
+                newAchievements.push('streak7');
+            }
+            
+            if (!playerStats.unlockedAchievements.includes('veteran') && playerStats.gamesPlayed >= 30) {
+                newAchievements.push('veteran');
+            }
+            
+            if (!playerStats.unlockedAchievements.includes('wordSmith') && playerStats.totalWords >= 500) {
+                newAchievements.push('wordSmith');
+            }
+            
+            // Show notifications for new achievements
+            newAchievements.forEach(achievementId => {
+                playerStats.unlockedAchievements.push(achievementId);
+                showAchievementNotification(achievements[achievementId]);
+            });
+            
+            if (newAchievements.length > 0) {
+                saveStats();
+            }
+        }
+
+        // Show achievement notification
+        function showAchievementNotification(achievement) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="font-size: 1.5rem;">${achievement.icon}</div>
+                    <div>
+                        <div style="font-weight: bold;">Achievement Unlocked!</div>
+                        <div style="font-size: 0.9rem;">${achievement.name}</div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 5000);
+        }
+
+        // Save game completion stats
+        function saveGameStats(gameData) {
+            const today = new Date().toDateString();
+            
+            // Mark today's game as completed
+            playerStats.todaysGameCompleted = true;
+            playerStats.todaysGameData = gameData;
+            
+            // Update daily stats
+            playerStats.dailyStats[today] = gameData;
+            
+            // Update overall stats
+            playerStats.gamesPlayed++;
+            playerStats.bestScore = Math.max(playerStats.bestScore, gameData.score);
+            playerStats.totalWords += gameData.wordsFound;
+            
+            // Calculate streak
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toDateString();
+            
+            if (playerStats.lastPlayedDate === yesterdayStr) {
+                playerStats.currentStreak++;
+            } else if (playerStats.lastPlayedDate !== today) {
+                playerStats.currentStreak = 1;
+            }
+            
+            playerStats.lastPlayedDate = today;
+            
+            saveStats();
+            checkAchievements(gameData);
+        }
+
+        // Show stats modal
+        function showStats() {
+            document.getElementById('stat-games').textContent = playerStats.gamesPlayed;
+            document.getElementById('stat-best').textContent = playerStats.bestScore;
+            document.getElementById('stat-avg').textContent = playerStats.gamesPlayed > 0 ? 
+                Math.round(Object.values(playerStats.dailyStats).reduce((sum, day) => sum + day.score, 0) / playerStats.gamesPlayed) : 0;
+            document.getElementById('stat-streak').textContent = playerStats.currentStreak;
+            
+            // Update achievements
+            const achievementsGrid = document.getElementById('achievements-grid');
+            achievementsGrid.innerHTML = Object.keys(achievements).map(id => {
+                const achievement = achievements[id];
+                const isUnlocked = playerStats.unlockedAchievements.includes(id);
+                return `
+                    <div class="achievement ${isUnlocked ? 'unlocked' : 'locked'}" title="${achievement.desc}">
+                        <div class="achievement-icon">${achievement.icon}</div>
+                        <div class="achievement-name">${achievement.name}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('achievement-count').textContent = 
+                `${playerStats.unlockedAchievements.length}/${Object.keys(achievements).length} unlocked`;
+            
+            document.getElementById('stats-modal').style.display = 'flex';
+        }
+
+        // Hide stats modal
+        function hideStats() {
+            document.getElementById('stats-modal').style.display = 'none';
+        }
+
+        // Show share modal
+        function showShareModal() {
+            const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const possibleWords = getPossibleWords();
+            const completionPercentage = Math.round((gameState.foundWords.length / possibleWords.length) * 100);
+            const timeUsed = gameState.timeLeft > 0 ? formatTime(180 - gameState.timeLeft) : '3:00';
+            
+            // Update share display
+            document.getElementById('share-emoji').textContent = 
+                gameState.totalScore >= 100 ? '💯' : gameState.totalScore >= 50 ? '⭐' : '🎯';
+            document.getElementById('share-score').textContent = gameState.totalScore;
+            document.getElementById('share-details').textContent = 
+                `${gameState.foundWords.length}/${possibleWords.length} words (${completionPercentage}%)`;
+            
+            // Generate share text
+            const hintLine = `💡 Hints: ${gameState.hintsUsed}/2`;
+            const shareText = `Word Bank (Beta) ${today}
+🎯 Score: ${gameState.totalScore}
+📝 Words: ${gameState.foundWords.length}/${possibleWords.length} (${completionPercentage}%)
+⏱️ Time: ${timeUsed}
+${hintLine}
+
+Play daily at: ${window.location.href}`;
+            
+            document.getElementById('share-text').textContent = shareText;
+            document.getElementById('share-modal').style.display = 'flex';
+        }
+
+        // Hide share modal
+        function hideShareModal() {
+            document.getElementById('share-modal').style.display = 'none';
+        }
+
+        // Copy share text
+        async function copyShareText() {
+            const shareText = document.getElementById('share-text').textContent;
+            try {
+                await navigator.clipboard.writeText(shareText);
+                showMessage('Results copied to clipboard! 📋');
+                hideShareModal();
+            } catch (err) {
+                showMessage('Copy failed - try selecting the text manually');
+            }
+        }
+
+        // Share to Twitter
+        function shareToTwitter() {
+            const shareText = document.getElementById('share-text').textContent;
+            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+            window.open(url, '_blank');
+        }
+
+        // Check if today's game can be played
+        function canPlayToday() {
+            const today = new Date().toDateString();
+            return !playerStats.todaysGameCompleted || playerStats.lastPlayedDate !== today;
+        }
+
+        // Get time until next game
+        function getTimeUntilNextGame() {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            return Math.max(0, tomorrow - now);
+        }
+
+        // Format countdown time
+        function formatCountdown(milliseconds) {
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            if (hours > 0) {
+                return `${hours}h ${minutes}m ${seconds}s`;
+            } else if (minutes > 0) {
+                return `${minutes}m ${seconds}s`;
+            } else {
+                return `${seconds}s`;
+            }
+        }
+
+        // Start countdown timer
+        function startCountdown() {
+            if (gameState.countdownInterval) {
+                clearInterval(gameState.countdownInterval);
+            }
+            
+            const countdownElement = document.getElementById('next-game-countdown');
+            if (!countdownElement) return;
+            
+            gameState.countdownInterval = setInterval(() => {
+                const timeLeft = getTimeUntilNextGame();
+                if (timeLeft <= 0) {
+                    clearInterval(gameState.countdownInterval);
+                    location.reload(); // Refresh to allow new game
+                } else {
+                    countdownElement.textContent = formatCountdown(timeLeft);
+                }
+            }, 1000);
+        }
+
+        // Letter scores
+        const letterScores = {
+            'A': 1, 'E': 1, 'I': 1, 'O': 1, 'U': 1, 'R': 1, 'T': 1, 'L': 1, 'S': 1, 'N': 1,
+            'C': 2, 'D': 2, 'P': 2, 'M': 2, 'H': 2, 'G': 2, 'B': 2, 'F': 2, 'Y': 2, 'W': 2,
+            'K': 3, 'V': 3, 'X': 4, 'Z': 4, 'J': 4, 'Q': 5
+        };
+
+        // DOM Elements (cached for performance)
+        let elements = {};
+
+        // Cache DOM elements
+        function cacheElements() {
+            elements = {
+                scoreDisplay: document.getElementById('score-display'),
+                scoreValue: document.getElementById('score-value'),
+                foundValue: document.getElementById('found-value'),
+                possibleValue: document.getElementById('possible-value'),
+                timer: document.getElementById('timer'),
+                letterBank: document.getElementById('letter-bank'),
+                gameOver: document.getElementById('game-over'),
+                gameOverTitle: document.getElementById('game-over-title'),
+                gameOverScore: document.getElementById('game-over-score'),
+                gameOverWords: document.getElementById('game-over-words'),
+                gameOverPerfect: document.getElementById('game-over-perfect'),
+                allWordsSection: document.getElementById('all-words-section'),
+                allWordsGrid: document.getElementById('all-words-grid'),
+                currentWord: document.getElementById('current-word'),
+                slots: [
+                    document.getElementById('slot-0'),
+                    document.getElementById('slot-1'),
+                    document.getElementById('slot-2'),
+                    document.getElementById('slot-3'),
+                    document.getElementById('slot-4')
+                ],
+                clearBtn: document.getElementById('clear-btn'),
+                backBtn: document.getElementById('back-btn'),
+                submitBtn: document.getElementById('submit-btn'),
+                message: document.getElementById('message'),
+                foundWords: document.getElementById('found-words'),
+                foundWordsTitle: document.getElementById('found-words-title'),
+                wordGrid: document.getElementById('word-grid'),
+                startGameContainer: document.getElementById('start-game-container'),
+                startGameBtn: document.getElementById('start-game-btn'),
+                letterBankContainer: document.getElementById('letter-bank-container'),
+                shuffleBtn: document.getElementById('shuffle-btn'),
+                hintBtn: document.getElementById('hint-btn'),
+                hintBadge: document.getElementById('hint-badge'),
+                appState: document.getElementById('app-state')
+            };
+        }
+
+        // Generate daily letter bank with improved distribution for better gameplay
+        function generateDailyBank() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const baseDate = new Date('2025-01-01');
+            const daysSinceBase = Math.floor((today - baseDate) / (1000 * 60 * 60 * 24));
+            
+            function mulberry32(a) {
+                return function() {
+                    let t = a += 0x6D2B79F5;
+                    t = Math.imul(t ^ t >>> 15, t | 1);
+                    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+                    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+                }
+            }
+            
+            const rng = mulberry32(daysSinceBase);
+            
+            // Strategic letter categorization for balanced gameplay
+            const vowels = ['A', 'E', 'I', 'O', 'U'];
+            const powerConsonants = ['R', 'S', 'T']; // Very strong for word formation
+            const solidConsonants = ['L', 'N', 'D', 'C']; // Reliable consonants
+            const mixConsonants = ['P', 'M', 'H', 'G', 'B', 'F', 'W', 'Y']; // Moderate utility
+            const challengeConsonants = ['K', 'V', 'J']; // Add controlled difficulty
+            const rareConsonants = ['X', 'Z', 'Q']; // Use very sparingly
+            
+            const bank = [];
+            const letterCounts = {};
+            
+            function addLetter(letter, maxCount = 1) {
+                const currentCount = letterCounts[letter] || 0;
+                if (currentCount < maxCount) {
+                    bank.push(letter);
+                    letterCounts[letter] = currentCount + 1;
+                    return true;
+                }
+                return false;
+            }
+            
+            // 1. Add exactly 3 vowels to control word count
+            const vowelsByUtility = ['E', 'A', 'I', 'O', 'U'];
+            let vowelsAdded = 0;
+            
+            // Favor high-utility vowels
+            if (rng() < 0.8) {
+                addLetter('E', 1);
+                vowelsAdded++;
+            }
+            if (vowelsAdded < 3 && rng() < 0.7) {
+                addLetter('A', 1);
+                vowelsAdded++;
+            }
+            
+            // Fill remaining vowel slots
+            while (vowelsAdded < 3) {
+                const vowel = vowels[Math.floor(rng() * vowels.length)];
+                if (addLetter(vowel, 1)) {
+                    vowelsAdded++;
+                }
+            }
+            
+            // 2. Add at most 1 power consonant to prevent too many easy words
+            if (rng() < 0.7) {
+                const power = powerConsonants[Math.floor(rng() * powerConsonants.length)];
+                addLetter(power, 1);
+            }
+            
+            // 3. Add 2-3 solid consonants for word backbone
+            const solidTarget = Math.floor(rng() * 2) + 2;
+            let solidAdded = 0;
+            
+            const shuffledSolid = [...solidConsonants].sort(() => rng() - 0.5);
+            for (const consonant of shuffledSolid) {
+                if (solidAdded < solidTarget && rng() < 0.8) {
+                    addLetter(consonant, 1);
+                    solidAdded++;
+                }
+            }
+            
+            // 4. Add mix consonants to fill most remaining slots
+            const mixTarget = Math.min(4, 12 - bank.length - 1);
+            let mixAdded = 0;
+            
+            const shuffledMix = [...mixConsonants].sort(() => rng() - 0.5);
+            for (const consonant of shuffledMix) {
+                if (mixAdded < mixTarget && rng() < 0.6) {
+                    addLetter(consonant, 1);
+                    mixAdded++;
+                }
+            }
+            
+            // 5. Occasionally add challenge consonants for difficulty balance
+            if (rng() < 0.3) {
+                const challengeCount = rng() < 0.15 ? 2 : 1;
+                let challengeAdded = 0;
+                
+                const shuffledChallenge = [...challengeConsonants].sort(() => rng() - 0.5);
+                for (const consonant of shuffledChallenge) {
+                    if (challengeAdded < challengeCount && bank.length < 12) {
+                        addLetter(consonant, 1);
+                        challengeAdded++;
+                    }
+                }
+            }
+            
+            // 6. Very rarely add rare consonants (reduce from previous version)
+            if (bank.length < 12 && rng() < 0.02) {
+                let rare = rareConsonants[Math.floor(rng() * rareConsonants.length)];
+                
+                // Skip Q without U
+                if (rare === 'Q' && !bank.includes('U')) {
+                    rare = null;
+                }
+                
+                if (rare) {
+                    addLetter(rare, 1);
+                }
+            }
+            
+            // 7. Fill remaining slots, avoid duplicates
+            const safeLetters = [...vowels, ...solidConsonants, ...mixConsonants];
+            let attempts = 0;
+            
+            while (bank.length < 9 && attempts < 100) {
+                const letter = safeLetters[Math.floor(rng() * safeLetters.length)];
+                
+                // Strict duplicate avoidance - max 1 of each letter
+                if (addLetter(letter, 1)) {
+                    // Success
+                }
+                attempts++;
+            }
+            
+            // Emergency fill with safe letters
+            const emergencyLetters = ['M', 'F', 'W', 'Y', 'B'];
+            while (bank.length < 9) {
+                const emergency = emergencyLetters[Math.floor(rng() * emergencyLetters.length)];
+                bank.push(emergency);
+            }
+            
+            // Shuffle the final bank
+            for (let i = bank.length - 1; i > 0; i--) {
+                const j = Math.floor(rng() * (i + 1));
+                [bank[i], bank[j]] = [bank[j], bank[i]];
+            }
+            
+            return bank.slice(0, 9);
+        }
+
+        // Load words from file with better error handling
+        async function loadWords() {
+            try {
+                console.log('Loading words.txt...');
+                
+                // Try multiple possible paths for the words file
+                const possiblePaths = [
+                    '../words.txt',
+                    '/words.txt',
+                    './words.txt',
+                    'words.txt'
+                ];
+                
+                let words = null;
+                let loadedFrom = null;
+                
+                for (const path of possiblePaths) {
+                    try {
+                        console.log(`Trying to load from: ${path}`);
+                        const response = await fetch(path);
+                        
+                        if (response.ok) {
+                            const text = await response.text();
+                            if (text && text.trim().length > 0) {
+                                console.log(`Successfully loaded from: ${path}`);
+                                words = text;
+                                loadedFrom = path;
+                                break;
+                            }
+                        }
+                    } catch (pathError) {
+                        console.log(`Failed to load from ${path}:`, pathError.message);
+                        continue;
+                    }
+                }
+                
+                if (!words) {
+                    throw new Error('Could not load words.txt from any path. Make sure the file exists and is accessible.');
+                }
+                
+                const wordList = words.split('\n')
+                    .map(word => word.trim().toUpperCase())
+                    .filter(word => word.length === 5 && /^[A-Z]+$/.test(word));
+                
+                if (wordList.length < 50) {
+                    throw new Error(`Not enough valid words found (${wordList.length}). Need at least 50 5-letter words.`);
+                }
+                
+                gameState.validWords = wordList;
+                gameState.letterBank = generateDailyBank();
+                gameState.displayedLetters = optimizeLetterOrder([...gameState.letterBank]); // Initialize with optimized order
+                console.log(`Successfully loaded ${wordList.length} words from ${loadedFrom}`);
+                
+                // Check if today's game can be played
+                if (!canPlayToday()) {
+                    showCompletedGame();
+                } else {
+                    initializeGame();
+                }
+            } catch (error) {
+                console.error('Error loading words:', error);
+                showError(`${error.message}\n\nPlease ensure words.txt exists in your repository root and contains 5-letter words (one per line).`);
+            }
+        }
+
+        // Show error
+        function showError(message) {
+            elements.appState.innerHTML = `
+                <div class="error">
+                    <h2>❌ Error Loading Game</h2>
+                    <p><strong>Problem:</strong> ${message}</p>
+                    <p>Make sure <code>words.txt</code> exists in your repository.</p>
+                    <button class="btn btn-submit" onclick="location.reload()">Try Again</button>
+                </div>
+            `;
+        }
+
+        // Show all possible words in game over screen
+        function showAllPossibleWords() {
+            const possibleWords = getPossibleWords();
+            const allWordsGrid = elements.allWordsGrid;
+            
+            if (!allWordsGrid || possibleWords.length === 0) return;
+            
+            // Sort words alphabetically for better presentation
+            const sortedWords = possibleWords.sort();
+            
+            allWordsGrid.innerHTML = sortedWords.map(word => {
+                const isFound = gameState.foundWords.includes(word);
+                const wordScore = calculateWordScore(word);
+                return `
+                    <div class="possible-word ${isFound ? 'found' : 'missed'}" title="${wordScore} points">
+                        <a href="https://www.merriam-webster.com/dictionary/${word.toLowerCase()}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">
+                            ${word}
+                        </a>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Show completed game screen
+        function showCompletedGame() {
+            elements.appState.style.display = 'none';
+            
+            // Hide timer, letter bank, and score display
+            elements.timer.style.display = 'none';
+            elements.letterBankContainer.style.display = 'none';
+            elements.scoreDisplay.style.display = 'none';
+            
+            // Restore today's game data if available
+            if (playerStats.todaysGameData) {
+                gameState.foundWords = playerStats.todaysGameData.foundWords || [];
+                gameState.totalScore = playerStats.todaysGameData.score || 0;
+                gameState.hintsUsed = playerStats.todaysGameData.hintsUsed || 0;
+                gameState.hintedWords = playerStats.todaysGameData.hintedWords || [];
+                gameState.hintsRemaining = Math.max(0, 2 - gameState.hintsUsed);
+                gameState.gameFinished = true;
+                gameState.timeLeft = 0;
+            }
+            
+            updateUI();
+            
+            // Show the game over screen
+            if (playerStats.todaysGameData) {
+                showAllPossibleWords();
+                elements.gameOver.style.display = 'block';
+                
+                // Add countdown to the game over screen
+                const initialCountdown = formatCountdown(getTimeUntilNextGame());
+                const countdownHtml = `
+                    <div style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                        <p style="margin-bottom: 10px; opacity: 0.9;">Next game available in:</p>
+                        <p style="font-size: 1.2rem; font-weight: bold; color: #ffd700;" id="next-game-countdown">
+                            ${initialCountdown}
+                        </p>
+                    </div>
+                `;
+                
+                // Insert countdown before the share button
+                const shareBtn = elements.gameOver.querySelector('.share-btn');
+                if (shareBtn && !document.getElementById('next-game-countdown')) {
+                    shareBtn.insertAdjacentHTML('beforebegin', countdownHtml);
+                }
+                
+                startCountdown();
+            }
+        }
+
+        // Initialize game UI with start button
+        function initializeGame() {
+            elements.appState.style.display = 'none';
+            
+            // Show start button, hide game elements
+            elements.startGameContainer.style.display = 'block';
+            elements.letterBankContainer.style.display = 'none';
+            elements.timer.textContent = 'Ready to play? 🎯';
+        }
+
+        // Start the actual game
+        function startGame() {
+            if (!canPlayToday()) return;
+            
+            // Hide start button, show game elements
+            elements.startGameContainer.style.display = 'none';
+            elements.letterBankContainer.style.display = 'flex';
+            
+            // Initialize the letter bank display
+            createLetterBank();
+            updateUI();
+            
+            // Start the timer immediately
+            gameState.gameStarted = true;
+            startTimer();
+        }
+
+        // Optimized letter ordering for human playability
+        function optimizeLetterOrder(letters) {
+            // Separate letters by type for strategic placement
+            const vowels = letters.filter(letter => 'AEIOU'.includes(letter));
+            const consonants = letters.filter(letter => !'AEIOU'.includes(letter));
+            
+            // Sort by frequency/commonality for easier scanning
+            const commonLetters = ['S', 'T', 'R', 'N', 'L'];
+            const frequentConsonants = consonants.filter(c => commonLetters.includes(c));
+            const otherConsonants = consonants.filter(c => !commonLetters.includes(c));
+            
+            // Strategic placement: vowels and common consonants more accessible
+            const optimized = [];
+            
+            // Row 1 (4 letters): Mix of vowels and common consonants
+            if (vowels.length >= 2 && frequentConsonants.length >= 2) {
+                optimized.push(vowels[0], frequentConsonants[0], vowels[1], frequentConsonants[1]);
+                vowels.splice(0, 2);
+                frequentConsonants.splice(0, 2);
+            } else {
+                // Fallback to balanced distribution
+                for (let i = 0; i < 4 && i < letters.length; i++) {
+                    optimized.push(letters[i]);
+                }
+            }
+            
+            // Row 2 (3 letters): Remaining high-value letters
+            const remaining = [...vowels, ...frequentConsonants, ...otherConsonants];
+            for (let i = 0; i < 3 && i < remaining.length; i++) {
+                if (!optimized.includes(remaining[i])) {
+                    optimized.push(remaining[i]);
+                }
+            }
+            
+            // Row 3 (2 letters): Fill remaining
+            for (let letter of letters) {
+                if (!optimized.includes(letter)) {
+                    optimized.push(letter);
+                    if (optimized.length >= 9) break;
+                }
+            }
+            
+            return optimized.slice(0, 9);
+        }
+        
+        // Use a hint: auto-fill the next 1-2 letters of a candidate word.
+        function useHint() {
+            if (!canPlayToday()) return;
+            if (!gameState.gameStarted || gameState.gameFinished || gameState.timeLeft === 0) {
+                showMessage('Start the game first!');
+                return;
+            }
+            if (gameState.hintsRemaining <= 0) {
+                showMessage('No hints remaining!');
+                return;
+            }
+            if (gameState.currentWord.length >= 5) {
+                showMessage('Word is already full — submit it!');
+                return;
+            }
+
+            const prefix = gameState.currentWord;
+            const foundSet = new Set(gameState.foundWords);
+            const candidates = getPossibleWords().filter(w =>
+                !foundSet.has(w) && w.startsWith(prefix)
+            );
+
+            if (candidates.length === 0) {
+                showMessage('No hint available for this prefix.');
+                return;
+            }
+
+            const revealLen = Math.min(2, 5 - prefix.length);
+
+            // Pick the next-letters extension shared by the most candidates.
+            // Tiebreak: lowest-scoring word (easier suggestion).
+            const groups = {};
+            for (const w of candidates) {
+                const ext = w.substr(prefix.length, revealLen);
+                if (!groups[ext]) groups[ext] = [];
+                groups[ext].push(w);
+            }
+            let bestExt = null;
+            let bestGroup = null;
+            for (const [ext, words] of Object.entries(groups)) {
+                if (
+                    !bestExt ||
+                    words.length > bestGroup.length ||
+                    (words.length === bestGroup.length &&
+                        Math.min(...words.map(calculateWordScore)) <
+                            Math.min(...bestGroup.map(calculateWordScore)))
+                ) {
+                    bestExt = ext;
+                    bestGroup = words;
+                }
+            }
+
+            // Map each hint letter onto an unused bank index. If a needed
+            // letter has no free slot, abort without consuming a hint.
+            const usedIndices = new Set(gameState.selectedLetters);
+            const picks = [];
+            for (const letter of bestExt) {
+                let foundIdx = -1;
+                for (let i = 0; i < gameState.displayedLetters.length; i++) {
+                    if (!usedIndices.has(i) && gameState.displayedLetters[i] === letter) {
+                        foundIdx = i;
+                        break;
+                    }
+                }
+                if (foundIdx === -1) {
+                    showMessage('Hint unavailable — letter already in use.');
+                    return;
+                }
+                usedIndices.add(foundIdx);
+                picks.push({ letter, idx: foundIdx });
+            }
+
+            // Apply the reveal.
+            for (const { letter, idx } of picks) {
+                gameState.currentWord += letter;
+                gameState.selectedLetters.push(idx);
+                gameState.selectedLettersData.push({ letter, displayIndex: idx });
+            }
+
+            // Remember the target so we can mark it if submitted.
+            const target = bestGroup[0];
+            if (!gameState.hintedWords.includes(target)) {
+                gameState.hintedWords.push(target);
+            }
+
+            gameState.hintsRemaining--;
+            gameState.hintsUsed++;
+
+            // Visual pulse on the revealed buttons.
+            picks.forEach(({ idx }) => {
+                const btn = document.getElementById(`letter-${idx}`);
+                if (btn) {
+                    btn.classList.add('hint-pulse');
+                    setTimeout(() => btn.classList.remove('hint-pulse'), 700);
+                }
+            });
+
+            showMessage(`💡 Hint: +${bestExt} (${gameState.hintsRemaining} left)`);
+            updateUI();
+        }
+
+        // Shuffle letters function
+        function shuffleLetters() {
+            if (!canPlayToday()) return; // Prevent shuffling if game already completed
+            if (gameState.gameFinished || gameState.timeLeft === 0) return;
+            
+            // Can't shuffle if any letters are currently selected
+            if (gameState.selectedLetters.length > 0) {
+                showMessage('Clear your current word before shuffling!');
+                return;
+            }
+            
+            // Use optimized ordering instead of pure random
+            const shuffled = [...gameState.displayedLetters];
+            
+            // First shuffle randomly
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            
+            // Then apply strategic optimization
+            gameState.displayedLetters = optimizeLetterOrder(shuffled);
+            createLetterBank();
+            updateUI();
+        }
+
+        // Create letter bank buttons
+        function createLetterBank() {
+            const pyramidStructure = [4, 3, 2]; // Total 9 letters: 4 + 3 + 2
+            const letters = gameState.displayedLetters.slice(0, 9); // Use displayed order
+            let html = '';
+
+            let displayIndex = 0;
+            for (let rowCount of pyramidStructure) {
+                const rowLetters = letters.slice(displayIndex, displayIndex + rowCount);
+                html += `<div class="pyramid-row">` + rowLetters.map((letter, i) => {
+                    const currentDisplayIndex = displayIndex + i;
+                    return `<button class="letter-btn" 
+                            id="letter-${currentDisplayIndex}" 
+                            data-letter="${letter}" 
+                            data-index="${currentDisplayIndex}"
+                            style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
+                        ${letter}
+                        <div class="letter-value">${letterScores[letter]}</div>
+                    </button>`;
+                }).join('') + `</div>`;
+                displayIndex += rowCount;
+            }
+
+            elements.letterBank.innerHTML = html;
+            
+            // Add event listeners to prevent zoom and handle clicks (optimized)
+            const letterButtons = elements.letterBank.querySelectorAll('.letter-btn');
+            
+            // Use event delegation for better performance
+            elements.letterBank.addEventListener('click', function(e) {
+                const button = e.target.closest('.letter-btn');
+                if (!button) return;
+                
+                e.preventDefault();
+                const letter = button.getAttribute('data-letter');
+                const index = parseInt(button.getAttribute('data-index'));
+                selectLetter(letter, index);
+            });
+            
+            // Prevent context menu and double-tap zoom with delegation
+            elements.letterBank.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+            
+            let lastTouchEnd = 0;
+            elements.letterBank.addEventListener('touchend', function(e) {
+                const now = performance.now();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault(); // Prevent double-tap zoom
+                }
+                lastTouchEnd = now;
+            }, { passive: false });
+        }
+
+        // Calculate possible words (optimized with memoization)
+        let possibleWordsCache = null;
+        let lastLetterBankHash = null;
+        
+        function getPossibleWords() {
+            if (!gameState.validWords || !gameState.letterBank) {
+                return [];
+            }
+            
+            // Create hash of current letter bank for cache validation
+            const currentHash = gameState.letterBank.sort().join('');
+            
+            // Return cached result if letter bank hasn't changed
+            if (possibleWordsCache && lastLetterBankHash === currentHash) {
+                return possibleWordsCache;
+            }
+            
+            possibleWordsCache = gameState.validWords.filter(word => canFormWord(word, gameState.letterBank));
+            lastLetterBankHash = currentHash;
+            return possibleWordsCache;
+        }
+
+        // Check if word can be formed (optimized)
+        function canFormWord(word, bank) {
+            if (!word || !bank) return false;
+            
+            // Use letter counting for better performance
+            const bankCounts = {};
+            bank.forEach(letter => {
+                bankCounts[letter] = (bankCounts[letter] || 0) + 1;
+            });
+            
+            const wordCounts = {};
+            for (let letter of word) {
+                wordCounts[letter] = (wordCounts[letter] || 0) + 1;
+            }
+            
+            // Check if we have enough of each letter
+            for (let [letter, count] of Object.entries(wordCounts)) {
+                if (!bankCounts[letter] || bankCounts[letter] < count) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        // Calculate word score
+        function calculateWordScore(word) {
+            if (!word) return 0;
+            return word.split('').reduce((score, letter) => score + (letterScores[letter] || 1), 0);
+        }
+
+        // Format time
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Debounced update function for better performance
+        let updateUITimeout = null;
+        
+        function debouncedUpdateUI() {
+            if (updateUITimeout) {
+                clearTimeout(updateUITimeout);
+            }
+            updateUITimeout = setTimeout(updateUI, 16); // ~60fps
+        }
+        
+        // Update UI (optimized - only update what changed)
+        function updateUI() {
+            const possibleWords = getPossibleWords();
+            
+            // Update scores
+            elements.scoreValue.textContent = gameState.totalScore;
+            elements.foundValue.textContent = gameState.foundWords.length;
+            elements.possibleValue.textContent = possibleWords.length;
+            
+            // Update timer
+            const timerColor = gameState.timeLeft > 60 ? '#90EE90' : gameState.timeLeft > 30 ? '#ffd700' : '#ff6b6b';
+            elements.timer.style.color = timerColor;
+            
+            // Show different timer text based on game state
+            if (!canPlayToday() && gameState.gameFinished) {
+                elements.timer.textContent = 'Game completed for today! 🎉';
+            } else if (gameState.timeLeft > 0 && !gameState.gameStarted) {
+                elements.timer.textContent = 'Ready? 🎯';
+            } else {
+                elements.timer.textContent = formatTime(gameState.timeLeft);
+            }
+            
+            // Update current word slots
+            for (let i = 0; i < 5; i++) {
+                const slot = elements.slots[i];
+                const letter = gameState.currentWord[i] || '';
+                slot.textContent = letter;
+                slot.classList.toggle('filled', !!letter);
+            }
+            
+            // Update letter bank buttons - disable if game already completed today (optimized)
+            const gameCompleted = !canPlayToday();
+            const selectedSet = new Set(gameState.selectedLetters); // O(1) lookup
+            const shouldDisable = gameCompleted || gameState.gameFinished || gameState.timeLeft === 0;
+            
+            gameState.displayedLetters.forEach((letter, displayIndex) => {
+                const btn = document.getElementById(`letter-${displayIndex}`);
+                if (btn) {
+                    const isDisabled = shouldDisable || selectedSet.has(displayIndex);
+                    if (btn.disabled !== isDisabled) {
+                        btn.disabled = isDisabled;
+                    }
+                }
+            });
+            
+            // Update shuffle button - disable if game already completed today
+            elements.shuffleBtn.disabled = gameCompleted || gameState.gameFinished || gameState.timeLeft === 0;
+
+            // Update hint button
+            if (elements.hintBtn) {
+                elements.hintBtn.disabled = gameCompleted
+                    || gameState.gameFinished
+                    || gameState.timeLeft === 0
+                    || !gameState.gameStarted
+                    || gameState.hintsRemaining <= 0
+                    || gameState.currentWord.length >= 5;
+                elements.hintBadge.textContent = gameState.hintsRemaining;
+            }
+            
+            // Update control buttons - disable if game already completed today
+            elements.clearBtn.disabled = gameCompleted || gameState.currentWord.length === 0 || gameState.gameFinished || gameState.timeLeft === 0;
+            elements.backBtn.disabled = gameCompleted || gameState.currentWord.length === 0 || gameState.gameFinished || gameState.timeLeft === 0;
+            elements.submitBtn.disabled = gameCompleted || gameState.currentWord.length !== 5 || gameState.gameFinished || gameState.timeLeft === 0;
+            
+            // Update found words
+            if (gameState.foundWords.length > 0) {
+                elements.foundWords.style.display = 'block';
+                elements.foundWordsTitle.textContent = `Found Words (${gameState.foundWords.length})`;
+                elements.wordGrid.innerHTML = gameState.foundWords.map(word => {
+                    const hinted = gameState.hintedWords.includes(word) ? ' hinted' : '';
+                    return `<div class="found-word${hinted}">
+                        <div class="found-word-name">${word}</div>
+                        <div class="found-word-score">${calculateWordScore(word)} pts</div>
+                    </div>`;
+                }).join('');
+            } else {
+                elements.foundWords.style.display = 'none';
+            }
+            
+            // Update game over screen
+            if (gameState.gameFinished) {
+                const isPerfect = gameState.foundWords.length === possibleWords.length;
+                elements.gameOver.style.display = 'block';
+                elements.gameOverTitle.textContent = isPerfect ? '🏆 Perfect Game!' : '🎉 Game Complete!';
+                elements.gameOverScore.innerHTML = `<strong>Final Score:</strong> ${gameState.totalScore} points`;
+                elements.gameOverWords.innerHTML = `<strong>Words Found:</strong> ${gameState.foundWords.length}/${possibleWords.length}`;
+                elements.gameOverPerfect.style.display = isPerfect ? 'block' : 'none';
+            } else {
+                elements.gameOver.style.display = 'none';
+            }
+        }
+
+        // Handle letter click
+        function selectLetter(letter, displayIndex) {
+            if (!canPlayToday()) return; // Prevent playing if game already completed
+            if (gameState.gameFinished || gameState.timeLeft === 0) return;
+            if (gameState.currentWord.length >= 5 || gameState.selectedLetters.includes(displayIndex)) return;
+            
+            // Timer is already started when game begins, no need to start it here
+            gameState.currentWord += letter;
+            gameState.selectedLetters.push(displayIndex);
+            gameState.selectedLettersData.push({ letter, displayIndex });
+            updateUI();
+        }
+
+        // Clear word
+        function clearWord() {
+            if (!canPlayToday()) return; // Prevent playing if game already completed
+            if (gameState.gameFinished || gameState.timeLeft === 0) return;
+            gameState.currentWord = '';
+            gameState.selectedLetters = [];
+            gameState.selectedLettersData = [];
+            
+            // Reset word color to normal
+            elements.currentWord.style.color = '';
+            
+            updateUI();
+        }
+
+        // Backspace
+        function backspaceWord() {
+            if (!canPlayToday()) return; // Prevent playing if game already completed
+            if (gameState.gameFinished || gameState.timeLeft === 0) return;
+            if (gameState.currentWord.length === 0) return;
+            
+            gameState.currentWord = gameState.currentWord.slice(0, -1);
+            gameState.selectedLetters.pop();
+            gameState.selectedLettersData.pop();
+            
+            // Reset word color to normal when backspacing
+            elements.currentWord.style.color = '';
+            
+            updateUI();
+        }
+
+        // Submit word
+        function submitWord() {
+            if (!canPlayToday()) return; // Prevent playing if game already completed
+            if (gameState.gameFinished || gameState.timeLeft === 0) return;
+            if (gameState.currentWord.length !== 5) {
+                showMessage('Word must be exactly 5 letters!');
+                return;
+            }
+            
+            if (!gameState.gameStarted) {
+                gameState.gameStarted = true;
+                startTimer();
+            }
+            
+            if (gameState.foundWords.includes(gameState.currentWord)) {
+                showMessage(`"${gameState.currentWord}" already found!`);
+                // Change word color to red for invalid word
+                elements.currentWord.style.color = '#ff6b6b';
+                // Clear word after a delay
+                setTimeout(() => {
+                    clearWord();
+                }, 500);
+                return;
+            }
+            
+            if (!gameState.validWords.includes(gameState.currentWord)) {
+                showMessage(`"${gameState.currentWord}" Not a valid word!`);
+                // Change word color to red for invalid word
+                elements.currentWord.style.color = '#ff6b6b';
+                // Clear word after a delay
+                setTimeout(() => {
+                    clearWord();
+                }, 500);
+                return;
+            }
+            
+            if (!canFormWord(gameState.currentWord, gameState.letterBank)) {
+                showMessage('Cannot form word with available letters!');
+                // Change word color to red for invalid word
+                elements.currentWord.style.color = '#ff6b6b';
+                // Clear word after a delay
+                setTimeout(() => {
+                    clearWord();
+                }, 500);
+                return;
+            }
+            
+            const wordScore = calculateWordScore(gameState.currentWord);
+            gameState.foundWords.push(gameState.currentWord);
+            gameState.totalScore += wordScore;
+            showMessage(`Great! "${gameState.currentWord}" scores ${wordScore} points!`);
+            
+            gameState.currentWord = '';
+            gameState.selectedLetters = [];
+            gameState.selectedLettersData = [];
+            
+            // Reset word color to normal
+            elements.currentWord.style.color = '';
+            
+            // Check if all words found
+            const possibleWords = getPossibleWords();
+            if (gameState.foundWords.length === possibleWords.length) {
+                endGame('🎉 Perfect! You found all words!');
+            }
+            
+            updateUI();
+        }
+
+        // Start timer
+        function startTimer() {
+            if (gameState.timerInterval) return;
+            
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeLeft--;
+                
+                if (gameState.timeLeft <= 0) {
+                    clearInterval(gameState.timerInterval);
+                    endGame("⏰ Time's up!");
+                }
+                
+                updateUI();
+            }, 1000);
+        }
+
+        // End game
+        function endGame(message) {
+            gameState.gameFinished = true;
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = null;
+            }
+            
+            // Hide timer, letter bank, and score display after game ends
+            elements.timer.style.display = 'none';
+            elements.letterBankContainer.style.display = 'none';
+            elements.scoreDisplay.style.display = 'none';
+            
+            // Save game stats
+            const possibleWords = getPossibleWords();
+            const gameData = {
+                score: gameState.totalScore,
+                wordsFound: gameState.foundWords.length,
+                totalPossible: possibleWords.length,
+                timeTaken: 180 - gameState.timeLeft,
+                completedEarly: gameState.timeLeft > 0,
+                completionPercentage: Math.round((gameState.foundWords.length / possibleWords.length) * 100),
+                foundWords: [...gameState.foundWords], // Save the actual words found
+                hintsUsed: gameState.hintsUsed,
+                hintedWords: [...gameState.hintedWords]
+            };
+            saveGameStats(gameData);
+            
+            showMessage(message);
+            updateUI();
+            
+            // Show all possible words in the game over screen
+            showAllPossibleWords();
+            
+            // Add countdown timer to game over screen
+            setTimeout(() => {
+                const gameOverElement = elements.gameOver;
+                if (gameOverElement && gameOverElement.style.display === 'block') {
+                    const initialCountdown = formatCountdown(getTimeUntilNextGame());
+                    const countdownHtml = `
+                        <div style="margin-top: 15px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                            <p style="margin-bottom: 10px; opacity: 0.9;">Next game available in:</p>
+                            <p style="font-size: 1.2rem; font-weight: bold; color: #ffd700;" id="next-game-countdown">
+                                ${initialCountdown}
+                            </p>
+                        </div>
+                    `;
+                    
+                    // Insert countdown before the share button if not already present
+                    const shareBtn = gameOverElement.querySelector('.share-btn');
+                    if (shareBtn && !document.getElementById('next-game-countdown')) {
+                        shareBtn.insertAdjacentHTML('beforebegin', countdownHtml);
+                        startCountdown();
+                    }
+                }
+            }, 100);
+        }
+
+        // Show message
+        function showMessage(text) {
+            elements.message.textContent = text;
+            setTimeout(() => {
+                if (elements.message && elements.message.textContent === text) {
+                    elements.message.textContent = '';
+                }
+            }, 3000);
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Starting Word Bank Game...');
+            cacheElements();
+            loadStats();
+            loadWords();
+            
+            // Global double-tap zoom prevention
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, { passive: false });
+            
+            // Prevent zoom on double-click for desktop browsers
+            document.addEventListener('dblclick', function(event) {
+                event.preventDefault();
+            }, { passive: false });
+            
+            // Comprehensive pinch-to-zoom prevention
+            let lastTouchDistance = 0;
+            
+            document.addEventListener('touchstart', function(event) {
+                if (event.touches.length > 1) {
+                    // Multi-touch detected - could be pinch
+                    const touch1 = event.touches[0];
+                    const touch2 = event.touches[1];
+                    lastTouchDistance = Math.sqrt(
+                        Math.pow(touch2.pageX - touch1.pageX, 2) + 
+                        Math.pow(touch2.pageY - touch1.pageY, 2)
+                    );
+                }
+            }, { passive: false });
+            
+            document.addEventListener('touchmove', function(event) {
+                if (event.touches.length > 1) {
+                    // Prevent pinch zoom
+                    event.preventDefault();
+                    
+                    const touch1 = event.touches[0];
+                    const touch2 = event.touches[1];
+                    const currentDistance = Math.sqrt(
+                        Math.pow(touch2.pageX - touch1.pageX, 2) + 
+                        Math.pow(touch2.pageY - touch1.pageY, 2)
+                    );
+                    
+                    // If distance is changing significantly, it's a pinch gesture
+                    if (Math.abs(currentDistance - lastTouchDistance) > 10) {
+                        event.preventDefault();
+                    }
+                    
+                    lastTouchDistance = currentDistance;
+                }
+            }, { passive: false });
+            
+            // Additional zoom prevention
+            document.addEventListener('gesturestart', function(event) {
+                event.preventDefault();
+            }, { passive: false });
+            
+            document.addEventListener('gesturechange', function(event) {
+                event.preventDefault();
+            }, { passive: false });
+            
+            document.addEventListener('gestureend', function(event) {
+                event.preventDefault();
+            }, { passive: false });
+            
+            // Prevent wheel zoom (for desktop/trackpad)
+            document.addEventListener('wheel', function(event) {
+                if (event.ctrlKey) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Prevent keyboard zoom shortcuts
+            document.addEventListener('keydown', function(event) {
+                if ((event.ctrlKey || event.metaKey) && 
+                    (event.key === '+' || event.key === '-' || event.key === '=' || event.key === '0')) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
+        });
+    </script>
+</body>
+</html>
