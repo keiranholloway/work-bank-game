@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Word Bank Duel</title>
+    <style>
+        :root {
+            --bg: #17191f;
+            --panel: #242832;
+            --panel-2: #2f3440;
+            --line: #444b5b;
+            --text: #f5f6f8;
+            --muted: #aab1c1;
+            --gold: #f1c84b;
+            --green: #57c785;
+            --red: #ff6b6b;
+            --blue: #65a8ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at top, #303747 0, var(--bg) 42rem);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        }
+
+        button {
+            font: inherit;
+        }
+
+        .shell {
+            width: min(960px, 100%);
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .topbar {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        h1, h2, h3, p {
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 1.45rem;
+            letter-spacing: 0;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .link {
+            color: var(--text);
+            text-decoration: none;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 0.88rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            gap: 14px;
+            align-items: start;
+        }
+
+        .panel {
+            background: rgba(36, 40, 50, 0.92);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 14px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+        }
+
+        .lobby {
+            display: grid;
+            gap: 14px;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        label {
+            display: grid;
+            gap: 7px;
+            color: var(--muted);
+            font-size: 0.82rem;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #171a21;
+            color: var(--text);
+            padding: 12px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 8px;
+            min-height: 44px;
+            padding: 11px 14px;
+            background: var(--panel-2);
+            color: var(--text);
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .btn.primary {
+            background: var(--green);
+            color: #101613;
+        }
+
+        .btn.warn {
+            background: var(--gold);
+            color: #17130a;
+        }
+
+        .btn.danger {
+            background: var(--red);
+            color: #1d0c0c;
+        }
+
+        .btn:disabled {
+            opacity: 0.45;
+            cursor: default;
+        }
+
+        .room-code {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+            background: #171a21;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 0;
+        }
+
+        .room-code strong {
+            font-family: "SF Mono", Consolas, monospace;
+            color: var(--gold);
+            overflow-wrap: anywhere;
+        }
+
+        .status-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .metric {
+            background: #171a21;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--gold);
+        }
+
+        .metric-label {
+            color: var(--muted);
+            font-size: 0.75rem;
+            margin-top: 3px;
+        }
+
+        .arena {
+            display: none;
+            gap: 14px;
+        }
+
+        .timer {
+            text-align: center;
+            font-family: "SF Mono", Consolas, monospace;
+            font-size: 2.25rem;
+            font-weight: 900;
+            color: var(--green);
+            padding: 10px 0 4px;
+        }
+
+        .race-callout {
+            text-align: center;
+            color: var(--muted);
+            min-height: 22px;
+            font-weight: 700;
+        }
+
+        .letter-bank {
+            display: grid;
+            gap: 8px;
+            justify-content: center;
+            padding: 10px 0;
+        }
+
+        .letter-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .letter {
+            width: 58px;
+            height: 58px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel-2);
+            color: var(--text);
+            font-size: 1.45rem;
+            font-weight: 900;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .letter small {
+            position: absolute;
+            right: 5px;
+            bottom: 3px;
+            color: var(--gold);
+            font-size: 0.62rem;
+            font-weight: 700;
+        }
+
+        .letter:disabled {
+            opacity: 0.36;
+            cursor: default;
+        }
+
+        .slots {
+            display: flex;
+            justify-content: center;
+            gap: 7px;
+            margin: 8px 0 12px;
+        }
+
+        .slot {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            border: 2px solid var(--line);
+            background: #171a21;
+            display: grid;
+            place-items: center;
+            font-size: 1.35rem;
+            font-weight: 900;
+        }
+
+        .slot.filled {
+            border-color: var(--gold);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .message {
+            min-height: 24px;
+            text-align: center;
+            color: var(--gold);
+            font-weight: 800;
+            margin-top: 10px;
+        }
+
+        .players {
+            display: grid;
+            gap: 10px;
+        }
+
+        .player-card {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 12px;
+            background: #171a21;
+        }
+
+        .player-card.self {
+            border-color: var(--blue);
+        }
+
+        .player-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .player-name {
+            font-weight: 900;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .badge {
+            border-radius: 999px;
+            padding: 4px 8px;
+            color: #111;
+            font-size: 0.72rem;
+            font-weight: 900;
+            background: var(--muted);
+            flex: 0 0 auto;
+        }
+
+        .badge.ready {
+            background: var(--green);
+        }
+
+        .badge.clear {
+            background: var(--gold);
+        }
+
+        .progress {
+            height: 10px;
+            background: #0f1116;
+            border-radius: 999px;
+            overflow: hidden;
+            margin: 9px 0;
+        }
+
+        .bar {
+            height: 100%;
+            width: 0;
+            background: var(--green);
+            transition: width 0.2s ease;
+        }
+
+        .player-stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 0.82rem;
+        }
+
+        .found-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .word-pill {
+            border-radius: 6px;
+            background: var(--panel-2);
+            padding: 7px 8px;
+            text-align: center;
+            font-family: "SF Mono", Consolas, monospace;
+            font-size: 0.84rem;
+            font-weight: 800;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .result-title {
+            font-size: 1.7rem;
+            font-weight: 900;
+            color: var(--gold);
+            margin-bottom: 8px;
+        }
+
+        .comparison {
+            display: grid;
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .comparison h3 {
+            font-size: 0.96rem;
+            margin-bottom: 8px;
+        }
+
+        .dim {
+            color: var(--muted);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 760px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                grid-template-columns: 1fr;
+            }
+
+            .status-strip {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .letter {
+                width: 52px;
+                height: 52px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .shell {
+                padding: 10px;
+            }
+
+            .letter {
+                width: 46px;
+                height: 46px;
+                font-size: 1.25rem;
+            }
+
+            .slot {
+                width: 42px;
+                height: 42px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <div class="topbar">
+            <div>
+                <h1>Word Bank Duel</h1>
+                <p class="subtitle">Same board, same start, first clear wins.</p>
+            </div>
+            <a class="link" href="./index.html">Classic beta</a>
+        </div>
+
+        <section class="grid">
+            <div>
+                <section class="panel lobby" id="lobby">
+                    <div class="room-code">
+                        <div>
+                            <div class="dim">Room link</div>
+                            <strong id="room-link-text">Loading...</strong>
+                        </div>
+                        <button class="btn" id="copy-link-btn">Copy</button>
+                    </div>
+
+                    <div class="row">
+                        <label>
+                            Your name
+                            <input id="player-name" autocomplete="nickname" maxlength="20" placeholder="Player name">
+                        </label>
+                        <button class="btn primary" id="ready-btn">Ready</button>
+                    </div>
+
+                    <div class="status-strip">
+                        <div class="metric">
+                            <div class="metric-value" id="possible-count">0</div>
+                            <div class="metric-label">Words Today</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="mode-label">Sprint</div>
+                            <div class="metric-label">Format</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="ready-count">0/2</div>
+                            <div class="metric-label">Ready</div>
+                        </div>
+                    </div>
+
+                    <p class="dim" id="lobby-note">Share the room link, both players press Ready, then the match starts from the same countdown.</p>
+                </section>
+
+                <section class="panel arena" id="arena">
+                    <div class="timer" id="timer">3:00</div>
+                    <div class="race-callout" id="race-callout">Waiting for start</div>
+
+                    <div class="letter-bank" id="letter-bank"></div>
+
+                    <div class="slots" id="slots"></div>
+
+                    <div class="controls">
+                        <button class="btn" id="clear-btn">Clear</button>
+                        <button class="btn" id="back-btn">Back</button>
+                        <button class="btn primary" id="submit-btn">Submit</button>
+                    </div>
+
+                    <div class="message" id="message"></div>
+                </section>
+
+                <section class="panel results" id="results">
+                    <div class="result-title" id="result-title">Result</div>
+                    <p class="dim" id="result-summary"></p>
+                    <div class="comparison" id="comparison"></div>
+                    <div class="row" style="margin-top: 14px;">
+                        <button class="btn warn" id="new-match-btn">New room</button>
+                        <button class="btn" id="copy-result-btn">Copy result</button>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="panel">
+                <h2 style="font-size: 1rem; margin-bottom: 10px;">Live Race</h2>
+                <div class="players" id="players"></div>
+                <div class="found-list" id="own-words"></div>
+            </aside>
+        </section>
+    </main>
+
+    <script>
+        const GAME_SECONDS = 180;
+        const REQUIRED_PLAYERS = 2;
+        const letterScores = {
+            A: 1, E: 1, I: 1, O: 1, U: 1, R: 1, T: 1, L: 1, S: 1, N: 1,
+            C: 2, D: 2, P: 2, M: 2, H: 2, G: 2, B: 2, F: 2, Y: 2, W: 2,
+            K: 3, V: 3, X: 4, Z: 4, J: 4, Q: 5
+        };
+
+        const params = new URLSearchParams(window.location.search);
+        const roomId = params.get('room') || createRoomId();
+        if (!params.get('room')) {
+            params.set('room', roomId);
+            history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
+        }
+
+        const todayKey = new Date().toISOString().slice(0, 10);
+        const storageKey = `wordBankDuel:${todayKey}:${roomId}`;
+        const playerKey = `wordBankDuelPlayer:${roomId}`;
+        const channel = 'BroadcastChannel' in window ? new BroadcastChannel(storageKey) : null;
+        const playerId = sessionStorage.getItem(playerKey) || crypto.randomUUID();
+        sessionStorage.setItem(playerKey, playerId);
+
+        let validWords = [];
+        let possibleWords = [];
+        let letterBank = [];
+        let selected = [];
+        let currentWord = '';
+        let state = loadState();
+        let tickHandle = null;
+
+        const elements = {
+            lobby: document.getElementById('lobby'),
+            arena: document.getElementById('arena'),
+            results: document.getElementById('results'),
+            roomLinkText: document.getElementById('room-link-text'),
+            copyLinkBtn: document.getElementById('copy-link-btn'),
+            playerName: document.getElementById('player-name'),
+            readyBtn: document.getElementById('ready-btn'),
+            possibleCount: document.getElementById('possible-count'),
+            modeLabel: document.getElementById('mode-label'),
+            readyCount: document.getElementById('ready-count'),
+            lobbyNote: document.getElementById('lobby-note'),
+            timer: document.getElementById('timer'),
+            raceCallout: document.getElementById('race-callout'),
+            letterBank: document.getElementById('letter-bank'),
+            slots: document.getElementById('slots'),
+            clearBtn: document.getElementById('clear-btn'),
+            backBtn: document.getElementById('back-btn'),
+            submitBtn: document.getElementById('submit-btn'),
+            message: document.getElementById('message'),
+            players: document.getElementById('players'),
+            ownWords: document.getElementById('own-words'),
+            resultTitle: document.getElementById('result-title'),
+            resultSummary: document.getElementById('result-summary'),
+            comparison: document.getElementById('comparison'),
+            newMatchBtn: document.getElementById('new-match-btn'),
+            copyResultBtn: document.getElementById('copy-result-btn')
+        };
+
+        boot();
+
+        async function boot() {
+            elements.roomLinkText.textContent = location.href;
+            elements.playerName.value = getSelf().name;
+            wireEvents();
+            await loadWords();
+            const puzzle = generateRacePuzzle();
+            letterBank = puzzle.bank;
+            possibleWords = puzzle.words;
+            elements.possibleCount.textContent = possibleWords.length;
+            elements.modeLabel.textContent = getPuzzleMode(possibleWords.length);
+            renderLetters();
+            renderSlots();
+            render();
+            startTicker();
+            announce();
+        }
+
+        function wireEvents() {
+            elements.copyLinkBtn.addEventListener('click', () => copyText(location.href, 'Room link copied'));
+            elements.readyBtn.addEventListener('click', toggleReady);
+            elements.playerName.addEventListener('input', updateName);
+            elements.clearBtn.addEventListener('click', clearWord);
+            elements.backBtn.addEventListener('click', backspaceWord);
+            elements.submitBtn.addEventListener('click', submitWord);
+            elements.newMatchBtn.addEventListener('click', () => {
+                location.href = `${location.pathname}?room=${createRoomId()}`;
+            });
+            elements.copyResultBtn.addEventListener('click', copyResult);
+            window.addEventListener('storage', (event) => {
+                if (event.key === storageKey) {
+                    state = loadState();
+                    render();
+                }
+            });
+            if (channel) {
+                channel.addEventListener('message', () => {
+                    state = loadState();
+                    render();
+                });
+            }
+            document.addEventListener('keydown', handleKeyboard);
+        }
+
+        async function loadWords() {
+            const response = await fetch('./words.txt');
+            const text = await response.text();
+            validWords = text.split('\n')
+                .map(word => word.trim().toUpperCase())
+                .filter(word => word.length === 5 && /^[A-Z]+$/.test(word));
+        }
+
+        function createRoomId() {
+            return Math.random().toString(36).slice(2, 8).toUpperCase();
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem(storageKey);
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (error) {
+                    localStorage.removeItem(storageKey);
+                }
+            }
+            return {
+                roomId,
+                todayKey,
+                phase: 'lobby',
+                startAt: null,
+                endAt: null,
+                winnerId: null,
+                players: {
+                    [playerId]: createPlayer()
+                }
+            };
+        }
+
+        function saveState(nextState) {
+            state = nextState;
+            localStorage.setItem(storageKey, JSON.stringify(state));
+            announce();
+            render();
+        }
+
+        function announce() {
+            if (channel) channel.postMessage({ type: 'state' });
+        }
+
+        function createPlayer() {
+            return {
+                id: playerId,
+                name: sessionStorage.getItem(`${playerKey}:name`) || 'Player',
+                ready: false,
+                words: [],
+                score: 0,
+                invalids: 0,
+                completedAt: null,
+                lastWordAt: null,
+                presentAt: Date.now()
+            };
+        }
+
+        function getSelf() {
+            if (!state.players[playerId]) {
+                state.players[playerId] = createPlayer();
+                persistOnly();
+            }
+            return state.players[playerId];
+        }
+
+        function persistOnly() {
+            localStorage.setItem(storageKey, JSON.stringify(state));
+            announce();
+        }
+
+        function updateName() {
+            const name = elements.playerName.value.trim() || 'Player';
+            sessionStorage.setItem(`${playerKey}:name`, name);
+            const next = cloneState();
+            next.players[playerId] = { ...getSelf(), name, presentAt: Date.now() };
+            saveState(next);
+        }
+
+        function toggleReady() {
+            const next = cloneState();
+            const self = next.players[playerId] || createPlayer();
+            if (next.phase !== 'lobby') return;
+            next.players[playerId] = { ...self, name: elements.playerName.value.trim() || self.name, ready: !self.ready, presentAt: Date.now() };
+
+            const players = Object.values(next.players);
+            const readyPlayers = players.filter(player => player.ready);
+            if (players.length >= REQUIRED_PLAYERS && readyPlayers.length >= REQUIRED_PLAYERS) {
+                next.phase = 'countdown';
+                next.startAt = Date.now() + 5000;
+                next.endAt = next.startAt + GAME_SECONDS * 1000;
+            }
+            saveState(next);
+        }
+
+        function cloneState() {
+            return JSON.parse(JSON.stringify(state));
+        }
+
+        function startTicker() {
+            if (tickHandle) clearInterval(tickHandle);
+            tickHandle = setInterval(() => {
+                const next = cloneState();
+                const self = next.players[playerId] || createPlayer();
+                next.players[playerId] = { ...self, presentAt: Date.now() };
+
+                if (next.phase === 'countdown' && Date.now() >= next.startAt) {
+                    next.phase = 'playing';
+                }
+
+                if (next.phase === 'playing' && Date.now() >= next.endAt) {
+                    finishMatch(next);
+                }
+
+                localStorage.setItem(storageKey, JSON.stringify(next));
+                state = next;
+                render();
+                if (channel) channel.postMessage({ type: 'tick' });
+            }, 250);
+        }
+
+        function render() {
+            const self = getSelf();
+            const players = Object.values(state.players);
+            const readyPlayers = players.filter(player => player.ready);
+            elements.readyCount.textContent = `${Math.min(readyPlayers.length, REQUIRED_PLAYERS)}/${REQUIRED_PLAYERS}`;
+            elements.readyBtn.textContent = self.ready ? 'Unready' : 'Ready';
+            elements.readyBtn.disabled = state.phase !== 'lobby';
+
+            elements.lobby.classList.toggle('hidden', state.phase !== 'lobby' && state.phase !== 'countdown');
+            elements.arena.style.display = state.phase === 'countdown' || state.phase === 'playing' ? 'grid' : 'none';
+            elements.results.style.display = state.phase === 'finished' ? 'block' : 'none';
+
+            renderPlayers();
+            renderOwnWords();
+            renderTimer();
+            renderControls();
+            renderResult();
+        }
+
+        function renderPlayers() {
+            const players = Object.values(state.players)
+                .sort((a, b) => rankPlayers(a, b));
+
+            elements.players.innerHTML = players.map(player => {
+                const count = player.words.length;
+                const pct = possibleWords.length ? Math.round((count / possibleWords.length) * 100) : 0;
+                const isSelf = player.id === playerId;
+                const status = player.completedAt ? 'Cleared' : player.ready ? 'Ready' : 'Waiting';
+                const badgeClass = player.completedAt ? 'clear' : player.ready ? 'ready' : '';
+                return `
+                    <div class="player-card ${isSelf ? 'self' : ''}">
+                        <div class="player-head">
+                            <div class="player-name">${escapeHtml(player.name)}${isSelf ? ' (you)' : ''}</div>
+                            <div class="badge ${badgeClass}">${status}</div>
+                        </div>
+                        <div class="progress"><div class="bar" style="width: ${pct}%"></div></div>
+                        <div class="player-stats">
+                            <span>${count}/${possibleWords.length} words</span>
+                            <span>${player.score} pts</span>
+                            <span>${player.invalids} misses</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderOwnWords() {
+            const words = getSelf().words;
+            elements.ownWords.innerHTML = words.map(entry => `<div class="word-pill">${entry.word}</div>`).join('');
+        }
+
+        function renderTimer() {
+            if (state.phase === 'countdown') {
+                const seconds = Math.max(0, Math.ceil((state.startAt - Date.now()) / 1000));
+                elements.timer.textContent = seconds > 0 ? String(seconds) : 'Go';
+                elements.raceCallout.textContent = 'Both players are locked in';
+                elements.lobbyNote.textContent = `Match starts in ${seconds}s`;
+                return;
+            }
+
+            if (state.phase === 'playing') {
+                const remaining = Math.max(0, Math.ceil((state.endAt - Date.now()) / 1000));
+                elements.timer.textContent = formatTime(remaining);
+                elements.timer.style.color = remaining > 60 ? 'var(--green)' : remaining > 30 ? 'var(--gold)' : 'var(--red)';
+                elements.raceCallout.textContent = getRaceCallout();
+                return;
+            }
+
+            elements.timer.textContent = '3:00';
+            elements.raceCallout.textContent = 'Waiting for start';
+        }
+
+        function renderControls() {
+            const disabled = state.phase !== 'playing' || !!getSelf().completedAt;
+            elements.clearBtn.disabled = disabled || currentWord.length === 0;
+            elements.backBtn.disabled = disabled || currentWord.length === 0;
+            elements.submitBtn.disabled = disabled || currentWord.length !== 5;
+            document.querySelectorAll('.letter').forEach((button) => {
+                const index = Number(button.dataset.index);
+                button.disabled = disabled || selected.some(item => item.index === index) || currentWord.length >= 5;
+            });
+        }
+
+        function renderResult() {
+            if (state.phase !== 'finished') return;
+            const players = Object.values(state.players).sort((a, b) => rankPlayers(a, b));
+            const winner = players[0];
+            const selfWon = winner && winner.id === playerId;
+            elements.resultTitle.textContent = selfWon ? 'You won the duel' : `${winner?.name || 'Opponent'} won the duel`;
+            elements.resultSummary.textContent = getResultSummary(players);
+
+            const allWords = [...possibleWords].sort();
+            elements.comparison.innerHTML = `
+                <div>
+                    <h3>Final Ranking</h3>
+                    <div class="players">
+                        ${players.map((player, index) => `
+                            <div class="player-card ${player.id === playerId ? 'self' : ''}">
+                                <div class="player-head">
+                                    <div class="player-name">${index + 1}. ${escapeHtml(player.name)}${player.id === playerId ? ' (you)' : ''}</div>
+                                    <div class="badge ${player.completedAt ? 'clear' : ''}">${player.completedAt ? formatElapsed(player.completedAt - state.startAt) : `${player.words.length}/${possibleWords.length}`}</div>
+                                </div>
+                                <div class="player-stats">
+                                    <span>${player.words.length} words</span>
+                                    <span>${player.score} pts</span>
+                                    <span>${player.invalids} misses</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div>
+                    <h3>All Words</h3>
+                    <div class="found-list">
+                        ${allWords.map(word => `<div class="word-pill">${word}</div>`).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLetters() {
+            const rows = [4, 3, 2];
+            let index = 0;
+            elements.letterBank.innerHTML = rows.map(count => {
+                const buttons = letterBank.slice(index, index + count).map((letter, offset) => {
+                    const letterIndex = index + offset;
+                    return `<button class="letter" data-letter="${letter}" data-index="${letterIndex}">${letter}<small>${letterScores[letter]}</small></button>`;
+                }).join('');
+                index += count;
+                return `<div class="letter-row">${buttons}</div>`;
+            }).join('');
+
+            elements.letterBank.addEventListener('click', (event) => {
+                const button = event.target.closest('.letter');
+                if (!button) return;
+                selectLetter(button.dataset.letter, Number(button.dataset.index));
+            });
+        }
+
+        function renderSlots() {
+            elements.slots.innerHTML = Array.from({ length: 5 }, (_, index) => `<div class="slot" id="slot-${index}"></div>`).join('');
+            updateSlots();
+        }
+
+        function updateSlots() {
+            for (let i = 0; i < 5; i++) {
+                const slot = document.getElementById(`slot-${i}`);
+                const letter = currentWord[i] || '';
+                slot.textContent = letter;
+                slot.classList.toggle('filled', !!letter);
+            }
+            renderControls();
+        }
+
+        function selectLetter(letter, index) {
+            if (state.phase !== 'playing' || currentWord.length >= 5 || selected.some(item => item.index === index)) return;
+            currentWord += letter;
+            selected.push({ letter, index });
+            updateSlots();
+        }
+
+        function clearWord() {
+            currentWord = '';
+            selected = [];
+            updateSlots();
+        }
+
+        function backspaceWord() {
+            currentWord = currentWord.slice(0, -1);
+            selected.pop();
+            updateSlots();
+        }
+
+        function submitWord() {
+            if (state.phase !== 'playing' || currentWord.length !== 5) return;
+            const word = currentWord;
+            const next = cloneState();
+            const self = next.players[playerId] || createPlayer();
+            const alreadyFound = self.words.some(entry => entry.word === word);
+
+            if (alreadyFound || !validWords.includes(word) || !canFormWord(word, letterBank)) {
+                next.players[playerId] = { ...self, invalids: self.invalids + 1 };
+                saveState(next);
+                showMessage(alreadyFound ? `${word} already found` : `${word} is not valid`);
+                clearWord();
+                return;
+            }
+
+            const entry = { word, score: calculateWordScore(word), at: Date.now() };
+            const words = [...self.words, entry];
+            const updated = {
+                ...self,
+                words,
+                score: words.reduce((sum, item) => sum + item.score, 0),
+                lastWordAt: entry.at,
+                completedAt: words.length === possibleWords.length ? entry.at : self.completedAt,
+                presentAt: Date.now()
+            };
+            next.players[playerId] = updated;
+
+            clearWord();
+            if (updated.completedAt) {
+                finishMatch(next);
+            } else {
+                saveState(next);
+                showMessage(`${word} +${entry.score}`);
+            }
+        }
+
+        function finishMatch(next) {
+            next.phase = 'finished';
+            const players = Object.values(next.players).sort((a, b) => rankPlayers(a, b));
+            next.winnerId = players[0]?.id || null;
+            saveState(next);
+        }
+
+        function rankPlayers(a, b) {
+            const aCleared = a.words.length === possibleWords.length;
+            const bCleared = b.words.length === possibleWords.length;
+            if (aCleared !== bCleared) return aCleared ? -1 : 1;
+            if (aCleared && bCleared && a.completedAt !== b.completedAt) return a.completedAt - b.completedAt;
+            if (a.words.length !== b.words.length) return b.words.length - a.words.length;
+            if (a.score !== b.score) return b.score - a.score;
+            if ((a.lastWordAt || Infinity) !== (b.lastWordAt || Infinity)) return (a.lastWordAt || Infinity) - (b.lastWordAt || Infinity);
+            if (a.invalids !== b.invalids) return a.invalids - b.invalids;
+            return a.name.localeCompare(b.name);
+        }
+
+        function getRaceCallout() {
+            const players = Object.values(state.players);
+            const self = getSelf();
+            const opponent = players.find(player => player.id !== playerId);
+            if (!opponent) return 'Waiting for opponent progress';
+            const gap = self.words.length - opponent.words.length;
+            if (self.words.length === possibleWords.length) return `Cleared in ${formatElapsed(self.completedAt - state.startAt)}`;
+            if (possibleWords.length - self.words.length === 1) return 'Match point';
+            if (gap > 0) return `${gap} ahead`;
+            if (gap < 0) return `${Math.abs(gap)} behind`;
+            return 'Tied';
+        }
+
+        function getResultSummary(players) {
+            const winner = players[0];
+            if (!winner) return '';
+            if (winner.completedAt) {
+                return `${winner.name} cleared all ${possibleWords.length} words in ${formatElapsed(winner.completedAt - state.startAt)}.`;
+            }
+            return `${winner.name} won with ${winner.words.length}/${possibleWords.length} words and ${winner.score} points.`;
+        }
+
+        function generateRacePuzzle() {
+            const date = new Date();
+            date.setHours(0, 0, 0, 0);
+            const baseSeed = Math.floor((date - new Date('2025-01-01')) / 86400000);
+            const target = targetRangeForDay(baseSeed);
+            let fallback = null;
+
+            for (let attempt = 0; attempt < 160; attempt++) {
+                const bank = generateBank(baseSeed + attempt * 97);
+                const words = validWords.filter(word => canFormWord(word, bank));
+                if (!fallback || Math.abs(words.length - target.mid) < Math.abs(fallback.words.length - target.mid)) {
+                    fallback = { bank, words };
+                }
+                if (words.length >= target.min && words.length <= target.max) {
+                    return { bank: optimizeLetterOrder(bank), words };
+                }
+            }
+
+            return { bank: optimizeLetterOrder(fallback.bank), words: fallback.words };
+        }
+
+        function targetRangeForDay(seed) {
+            const mode = seed % 4;
+            if (mode === 0) return { min: 5, max: 10, mid: 7 };
+            if (mode === 1 || mode === 2) return { min: 11, max: 22, mid: 16 };
+            return { min: 23, max: 40, mid: 30 };
+        }
+
+        function generateBank(seed) {
+            const rng = mulberry32(seed);
+            const vowels = ['A', 'E', 'I', 'O', 'U'];
+            const consonants = ['R', 'S', 'T', 'L', 'N', 'D', 'C', 'P', 'M', 'H', 'G', 'B', 'F', 'W', 'Y', 'K', 'V'];
+            const bank = [];
+
+            addUnique(bank, pick(vowels, rng));
+            addUnique(bank, pick(['E', 'A', 'I', 'O'], rng));
+            addUnique(bank, pick(vowels, rng));
+
+            while (bank.length < 9) {
+                addUnique(bank, pick(consonants, rng));
+            }
+
+            for (let i = bank.length - 1; i > 0; i--) {
+                const j = Math.floor(rng() * (i + 1));
+                [bank[i], bank[j]] = [bank[j], bank[i]];
+            }
+            return bank;
+        }
+
+        function addUnique(bank, letter) {
+            if (!bank.includes(letter)) bank.push(letter);
+        }
+
+        function pick(list, rng) {
+            return list[Math.floor(rng() * list.length)];
+        }
+
+        function mulberry32(seed) {
+            return function() {
+                let t = seed += 0x6D2B79F5;
+                t = Math.imul(t ^ t >>> 15, t | 1);
+                t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+                return ((t ^ t >>> 14) >>> 0) / 4294967296;
+            };
+        }
+
+        function optimizeLetterOrder(letters) {
+            const vowels = letters.filter(letter => 'AEIOU'.includes(letter));
+            const consonants = letters.filter(letter => !'AEIOU'.includes(letter));
+            return [...vowels, ...consonants].slice(0, 9);
+        }
+
+        function canFormWord(word, bank) {
+            const counts = {};
+            bank.forEach(letter => counts[letter] = (counts[letter] || 0) + 1);
+            for (const letter of word) {
+                if (!counts[letter]) return false;
+                counts[letter]--;
+            }
+            return true;
+        }
+
+        function calculateWordScore(word) {
+            return word.split('').reduce((sum, letter) => sum + (letterScores[letter] || 1), 0);
+        }
+
+        function getPuzzleMode(count) {
+            if (count <= 10) return 'Sprint';
+            if (count <= 22) return 'Standard';
+            return 'Gauntlet';
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function formatElapsed(milliseconds) {
+            return formatTime(Math.max(0, Math.ceil(milliseconds / 1000)));
+        }
+
+        function handleKeyboard(event) {
+            if (state.phase !== 'playing') return;
+            const key = event.key.toUpperCase();
+            if (/^[A-Z]$/.test(key)) {
+                const index = letterBank.findIndex((letter, letterIndex) => letter === key && !selected.some(item => item.index === letterIndex));
+                if (index >= 0) selectLetter(key, index);
+            } else if (event.key === 'Backspace') {
+                backspaceWord();
+            } else if (event.key === 'Enter') {
+                submitWord();
+            } else if (event.key === 'Escape') {
+                clearWord();
+            }
+        }
+
+        function showMessage(text) {
+            elements.message.textContent = text;
+            setTimeout(() => {
+                if (elements.message.textContent === text) elements.message.textContent = '';
+            }, 1600);
+        }
+
+        async function copyText(text, message) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showMessage(message);
+            } catch (error) {
+                showMessage('Copy failed');
+            }
+        }
+
+        function copyResult() {
+            const players = Object.values(state.players).sort((a, b) => rankPlayers(a, b));
+            const lines = [
+                `Word Bank Duel ${todayKey}`,
+                getResultSummary(players),
+                ...players.map((player, index) => `${index + 1}. ${player.name}: ${player.words.length}/${possibleWords.length}, ${player.score} pts`)
+            ];
+            copyText(lines.join('\n'), 'Result copied');
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+</body>
+</html>
